@@ -491,6 +491,11 @@
                 const allPoles = [...poles, ...previewPoles];
                 const allZeros = [...zeros, ...previewZeros];
                 
+                // Variables para almacenar la magnitud en la posición del cursor
+                let cursorMagnitude = 1; // Valor predeterminado
+                let cursorX = -1; // Posición X del cursor (-1 significa que no está sobre la gráfica)
+                let cursorY = -1; // Posición Y del cursor
+                
                 // Calcular la respuesta en frecuencia
                 if (allPoles.length > 0 || allZeros.length > 0) {
                     const numPoints = 500;
@@ -529,11 +534,22 @@
                         if (magnitude > maxMagnitude) {
                             maxMagnitude = magnitude;
                         }
+                        
+                        // Si el ratón está sobre la gráfica, calcular la magnitud en esa posición
+                        if (mouseOverFreq && Math.abs(normalizedFreq - currentFrequency) < 0.001) {
+                            cursorMagnitude = magnitude;
+                        }
                     }
                     
                     // Ajustar la escala vertical para que la respuesta sea visible
                     // pero no permita que valores muy grandes dominen la visualización
                     maxMagnitude = Math.min(maxMagnitude, 10);
+                    
+                    // Si el ratón está sobre la gráfica, calcular la posición Y del cursor
+                    if (mouseOverFreq) {
+                        cursorX = (currentFrequency + 0.5) * plotWidth;
+                        cursorY = plotHeight - (cursorMagnitude / maxMagnitude) * plotHeight;
+                    }
                     
                     // Dibujar marcas en eje y con escala dinámica
                     const yTickCount = 5;
@@ -638,6 +654,41 @@
                     p.stroke(0, 0, 255);
                     p.strokeWeight(2);
                     p.line(0, plotHeight - plotHeight/yTickCount, plotWidth, plotHeight - plotHeight/yTickCount);
+                    
+                    // Si el ratón está sobre la gráfica, calcular la posición Y del cursor (siempre 1 en este caso)
+                    if (mouseOverFreq) {
+                        cursorX = (currentFrequency + 0.5) * plotWidth;
+                        cursorY = plotHeight - plotHeight/yTickCount;
+                        cursorMagnitude = 1;
+                    }
+                }
+                
+                // Dibujar punto en la posición del cursor y su proyección si el ratón está sobre la gráfica
+                if (mouseOverFreq && cursorX >= 0 && cursorY >= 0) {
+                    // Dibujar línea vertical desde el eje X hasta el punto
+                    p.stroke(0, 150, 0, 180); // Verde semi-transparente
+                    p.strokeWeight(1);
+                    p.line(cursorX, plotHeight, cursorX, cursorY);
+                    
+                    // Dibujar punto en la curva
+                    p.fill(0, 150, 0);
+                    p.stroke(0);
+                    p.strokeWeight(1);
+                    p.ellipse(cursorX, cursorY, 8, 8);
+                    
+                    // Dibujar punto en el eje X (proyección)
+                    p.fill(0, 150, 0);
+                    p.stroke(0);
+                    p.strokeWeight(1);
+                    p.ellipse(cursorX, plotHeight, 6, 6);
+                    
+                    // Mostrar valores
+                    p.fill(0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT, p.BOTTOM);
+                    p.text(`|H(e^jω)| = ${cursorMagnitude.toFixed(3)}`, cursorX + 10, cursorY - 5);
+                    p.textAlign(p.CENTER, p.TOP);
+                    p.text(`ω/2π = ${currentFrequency.toFixed(3)}`, cursorX, plotHeight + 15);
                 }
                 
                 // Añadir título

@@ -7,11 +7,17 @@ This repository contains interactive web demonstrations for teaching signal proc
 ### 1. Fourier Transform Demonstration (`fourier-demo.html`)
 An interactive visualization of the Fourier Transform principles. This demo helps students understand how different signals can be decomposed into their frequency components through visual representation.
 
+**Live Demo**: [https://cjescudero.github.io/teachingdemos/fourier-demo.html](https://cjescudero.github.io/teachingdemos/fourier-demo.html)
+
 ### 2. RAG (Retrieval-Augmented Generation) Simulator (`rag-html-simple.html`)
 A simple simulator that demonstrates the concept of embeddings and retrieval-augmented generation in natural language processing. This tool helps visualize how semantic similarity works in vector spaces for information retrieval.
 
+**Live Demo**: [https://cjescudero.github.io/teachingdemos/rag-html-simple.html](https://cjescudero.github.io/teachingdemos/rag-html-simple.html)
+
 ### 3. Poles, Zeros and Fourier Transform (`poles-zeros-fourier.html`)
 An interactive demonstration showing the relationship between poles, zeros, and the Fourier Transform in signal processing. This visualization helps students understand how the placement of poles and zeros affects frequency response.
+
+**Live Demo**: [https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html](https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html)
 
 ## Usage
 
@@ -33,6 +39,10 @@ These demos are standalone HTML files that can be opened directly in any modern 
    - Use a modern browser (Chrome, Firefox, Safari, or Edge)
    - Enable JavaScript in your browser settings
    - For the best experience, view on a desktop or laptop computer with a screen width of at least 1024px
+
+## Online Access
+
+All demos are also available online through GitHub Pages. You can access them directly using the links in the "Available Demos" section above without needing to download or clone the repository.
 
 ## Technologies Used
 

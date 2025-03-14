@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Embeddings RAG</title>
+  <title>RAG Embeddings Simulator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -166,38 +166,38 @@
 </head>
 <body>
   <div class="container">
-    <h1>Simulador de Embeddings en RAG</h1>
+    <h1>RAG Embeddings Simulator</h1>
     
     <div class="card">
-      <h2>Selecciona una consulta:</h2>
+      <h2>Select a query:</h2>
       <select id="query-select">
-        <option value="1">¿Cómo funcionan los algoritmos de machine learning?</option>
-        <option value="2">Explica las redes neuronales y deep learning</option>
-        <option value="3">¿Qué es el procesamiento de lenguaje natural?</option>
-        <option value="4">¿Cómo funciona la tecnología transformer?</option>
-        <option value="5">¿Cuáles son los tipos de bases de datos?</option>
-        <option value="6">Diferencias entre SQL y NoSQL</option>
+        <option value="1">How do machine learning algorithms work?</option>
+        <option value="2">Explain neural networks and deep learning</option>
+        <option value="3">What is natural language processing?</option>
+        <option value="4">How does transformer technology work?</option>
+        <option value="5">What are the types of databases?</option>
+        <option value="6">Differences between SQL and NoSQL</option>
       </select>
       
       <div class="info-box">
-        <p><strong>Tema:</strong> <span id="query-theme">machine learning</span></p>
-        <p><strong>Vector de embedding:</strong> <span id="query-vector">[0.82, 0.65, 0.40]</span></p>
+        <p><strong>Topic:</strong> <span id="query-theme">machine learning</span></p>
+        <p><strong>Embedding vector:</strong> <span id="query-vector">[0.82, 0.65, 0.40]</span></p>
       </div>
     </div>
     
     <div class="row">
       <div class="col">
         <div class="card">
-          <h2>Espacio de Embeddings (3D)</h2>
-          <p style="font-size: 12px; color: #718096;">Haz clic y arrastra para rotar la visualización</p>
+          <h2>Embeddings Space (3D)</h2>
+          <p style="font-size: 12px; color: #718096;">Click and drag to rotate the visualization</p>
           
           <div id="visualization" class="visualization">
             <svg id="svg" width="100%" height="100%" viewBox="-200 -150 400 300">
-              <!-- Se llenará mediante JavaScript -->
+              <!-- Will be filled by JavaScript -->
             </svg>
             
             <div class="legend">
-              <h3 style="margin-top: 0; margin-bottom: 8px;">Leyenda</h3>
+              <h3 style="margin-top: 0; margin-bottom: 8px;">Legend</h3>
               <div class="legend-item">
                 <div class="color-box" style="background-color: #4285F4;"></div>
                 <span>Machine Learning</span>
@@ -208,11 +208,11 @@
               </div>
               <div class="legend-item">
                 <div class="color-box" style="background-color: #FBBC05;"></div>
-                <span>Bases de Datos</span>
+                <span>Databases</span>
               </div>
               <div class="legend-item">
                 <div class="color-box" style="background-color: #EA4335;"></div>
-                <span>Consulta</span>
+                <span>Query</span>
               </div>
             </div>
             
@@ -223,54 +223,54 @@
       
       <div class="col">
         <div class="card">
-          <h2>Documentos</h2>
+          <h2>Documents</h2>
           
           <div class="tabs">
-            <button class="tab active" data-tab="retrieved">Documentos Recuperados (<span id="retrieved-count">3</span>)</button>
-            <button class="tab" data-tab="rest">Resto de Documentos (<span id="rest-count">9</span>)</button>
+            <button class="tab active" data-tab="retrieved">Retrieved Documents (<span id="retrieved-count">3</span>)</button>
+            <button class="tab" data-tab="rest">Remaining Documents (<span id="rest-count">9</span>)</button>
           </div>
           
           <div class="doc-list" id="doc-container">
-            <!-- Se llenará mediante JavaScript -->
+            <!-- Will be filled by JavaScript -->
           </div>
         </div>
       </div>
     </div>
     
     <div class="card">
-      <h2>Respuesta del Modelo RAG</h2>
+      <h2>RAG Model Response</h2>
       
       <div class="response-box" id="response">
-        <!-- Se llenará mediante JavaScript -->
+        <!-- Will be filled by JavaScript -->
       </div>
     </div>
   </div>
 
   <script>
-    // Datos
+    // Data
     const documents = {
       machinelearning: [
         { 
           id: 1, 
-          text: "Los modelos de aprendizaje automático requieren grandes cantidades de datos para entrenamiento.",
+          text: "Machine learning models require large amounts of data for training.",
           vector: [0.8, 0.7, 0.4],
           color: "#4285F4"
         },
         { 
           id: 2, 
-          text: "El aprendizaje profundo es una rama del machine learning basado en redes neuronales artificiales.",
+          text: "Deep learning is a branch of machine learning based on artificial neural networks.",
           vector: [0.9, 0.6, 0.5],
           color: "#4285F4"
         },
         { 
           id: 3, 
-          text: "La regresión lineal es uno de los algoritmos más básicos de aprendizaje supervisado.", 
+          text: "Linear regression is one of the most basic supervised learning algorithms.", 
           vector: [0.75, 0.8, 0.3],
           color: "#4285F4"
         },
         { 
           id: 4, 
-          text: "El sobreajuste ocurre cuando un modelo aprende demasiado de los datos de entrenamiento.",
+          text: "Overfitting occurs when a model learns too much from the training data.",
           vector: [0.85, 0.7, 0.2],
           color: "#4285F4"
         }
@@ -279,25 +279,25 @@
       nlp: [
         { 
           id: 5, 
-          text: "El procesamiento de lenguaje natural permite a las máquinas entender texto humano.",
+          text: "Natural language processing allows machines to understand human text.",
           vector: [-0.2, 0.8, 0.7],
           color: "#34A853"
         },
         { 
           id: 6, 
-          text: "Los transformer han revolucionado el campo del NLP con su mecanismo de atención.",
+          text: "Transformers have revolutionized the field of NLP with their attention mechanism.",
           vector: [-0.3, 0.9, 0.6],
           color: "#34A853"
         },
         { 
           id: 7, 
-          text: "La generación de texto utiliza modelos que predicen la siguiente palabra basada en contexto.",
+          text: "Text generation uses models that predict the next word based on context.",
           vector: [-0.25, 0.85, 0.65],
           color: "#34A853"
         },
         { 
           id: 8, 
-          text: "El análisis de sentimiento clasifica textos según la emoción expresada.",
+          text: "Sentiment analysis classifies texts according to the expressed emotion.",
           vector: [-0.15, 0.75, 0.8],
           color: "#34A853"
         }
@@ -306,25 +306,25 @@
       database: [
         { 
           id: 9, 
-          text: "Las bases de datos relacionales organizan datos en tablas con relaciones entre ellas.",
+          text: "Relational databases organize data in tables with relationships between them.",
           vector: [-0.7, 0.3, -0.6],
           color: "#FBBC05"
         },
         { 
           id: 10, 
-          text: "NoSQL es un tipo de base de datos diseñada para modelos específicos de datos.",
+          text: "NoSQL is a type of database designed for specific data models.",
           vector: [-0.8, 0.25, -0.5],
           color: "#FBBC05"
         },
         { 
           id: 11, 
-          text: "SQL es un lenguaje estándar para acceder y manipular bases de datos.",
+          text: "SQL is a standard language for accessing and manipulating databases.",
           vector: [-0.75, 0.2, -0.7],
           color: "#FBBC05"
         },
         { 
           id: 12, 
-          text: "Los índices mejoran la velocidad de recuperación de datos en bases de datos.",
+          text: "Indexes improve the speed of data retrieval in databases.",
           vector: [-0.65, 0.35, -0.55],
           color: "#FBBC05"
         }
@@ -332,15 +332,15 @@
     };
 
     const queries = [
-      { id: 1, text: "¿Cómo funcionan los algoritmos de machine learning?", vector: [0.82, 0.65, 0.4], theme: "machinelearning" },
-      { id: 2, text: "Explica las redes neuronales y deep learning", vector: [0.88, 0.62, 0.48], theme: "machinelearning" },
-      { id: 3, text: "¿Qué es el procesamiento de lenguaje natural?", vector: [-0.25, 0.82, 0.68], theme: "nlp" },
-      { id: 4, text: "¿Cómo funciona la tecnología transformer?", vector: [-0.28, 0.87, 0.62], theme: "nlp" },
-      { id: 5, text: "¿Cuáles son los tipos de bases de datos?", vector: [-0.72, 0.28, -0.58], theme: "database" },
-      { id: 6, text: "Diferencias entre SQL y NoSQL", vector: [-0.76, 0.24, -0.62], theme: "database" },
+      { id: 1, text: "How do machine learning algorithms work?", vector: [0.82, 0.65, 0.4], theme: "machinelearning" },
+      { id: 2, text: "Explain neural networks and deep learning", vector: [0.88, 0.62, 0.48], theme: "machinelearning" },
+      { id: 3, text: "What is natural language processing?", vector: [-0.25, 0.82, 0.68], theme: "nlp" },
+      { id: 4, text: "How does transformer technology work?", vector: [-0.28, 0.87, 0.62], theme: "nlp" },
+      { id: 5, text: "What are the types of databases?", vector: [-0.72, 0.28, -0.58], theme: "database" },
+      { id: 6, text: "Differences between SQL and NoSQL", vector: [-0.76, 0.24, -0.62], theme: "database" },
     ];
 
-    // Estado
+    // State
     let selectedQuery = queries[0];
     let allDocs = [];
     let retrievedDocs = [];
@@ -352,7 +352,7 @@
     let lastMousePos = { x: 0, y: 0 };
     let zoomLevel = 1.0;
 
-    // Referencias al DOM
+    // DOM references
     const svg = document.getElementById('svg');
     const querySelect = document.getElementById('query-select');
     const queryTheme = document.getElementById('query-theme');
@@ -364,28 +364,28 @@
     const response = document.getElementById('response');
     const tabs = document.querySelectorAll('.tab');
 
-    // Inicializar
+    // Initialize
     function init() {
-      // Unir todos los documentos
+      // Combine all documents
       allDocs = [
         ...documents.machinelearning,
         ...documents.nlp,
         ...documents.database
       ];
       
-      // Calcular centroide
+      // Calculate centroid
       calculateCentroid();
       
-      // Configurar eventos
+      // Setup events
       setupEvents();
       
-      // Renderizar inicial
+      // Initial render
       updateQueryInfo();
       retrieveDocuments();
       renderVisualization();
     }
 
-    // Calcular centroide
+    // Calculate centroid
     function calculateCentroid() {
       const vectorSum = [0, 0, 0];
       
@@ -402,9 +402,9 @@
       ];
     }
 
-    // Configurar eventos
+    // Setup events
     function setupEvents() {
-      // Cambio de consulta
+      // Query change
       querySelect.addEventListener('change', () => {
         const queryId = parseInt(querySelect.value);
         selectedQuery = queries.find(q => q.id === queryId);
@@ -424,7 +424,7 @@
         });
       });
       
-      // Rotación
+      // Rotation
       visualization.addEventListener('mousedown', (e) => {
         isDragging = true;
         lastMousePos = { x: e.clientX, y: e.clientY };
@@ -436,7 +436,7 @@
         const dx = e.clientX - lastMousePos.x;
         const dy = e.clientY - lastMousePos.y;
         
-        // Limitar rotación en X
+        // Limit X rotation
         const newX = Math.max(-60, Math.min(60, rotation.x + dy * 0.5));
         rotation = {
           x: newX,
@@ -451,11 +451,11 @@
         isDragging = false;
       });
       
-      // Zoom con rueda del ratón
+      // Zoom with mouse wheel
       visualization.addEventListener('wheel', (e) => {
         e.preventDefault();
         
-        // Ajustar zoom (reducir el factor para un zoom más suave)
+        // Adjust zoom (reduce factor for smoother zoom)
         const zoomFactor = 0.1;
         
         if (e.deltaY < 0) {
@@ -470,51 +470,51 @@
       }, { passive: false });
     }
 
-    // Actualizar información de consulta
+    // Update query information
     function updateQueryInfo() {
       queryTheme.textContent = selectedQuery.theme;
       queryVector.textContent = `[${selectedQuery.vector.map(v => v.toFixed(2)).join(', ')}]`;
     }
 
-    // Calcular distancia euclidiana
+    // Calculate Euclidean distance
     function calculateDistance(vec1, vec2) {
       return Math.sqrt(
         vec1.reduce((sum, val, i) => sum + Math.pow(val - vec2[i], 2), 0)
       );
     }
 
-    // Recuperar documentos
+    // Retrieve documents
     function retrieveDocuments() {
-      // Calcular distancias
+      // Calculate distances
       const docsWithDistance = allDocs.map(doc => ({
         ...doc,
         distance: calculateDistance(selectedQuery.vector, doc.vector)
       }));
       
-      // Ordenar por distancia
+      // Sort by distance
       const sorted = [...docsWithDistance].sort((a, b) => a.distance - b.distance);
       
-      // Separar documentos recuperados y resto
+      // Separate retrieved documents and the rest
       retrievedDocs = sorted.slice(0, 3);
       restDocs = sorted.slice(3);
       
-      // Actualizar contadores
+      // Update counters
       retrievedCount.textContent = retrievedDocs.length;
       restCount.textContent = restDocs.length;
       
-      // Renderizar
+      // Render
       renderDocs();
       renderResponse();
     }
 
-    // Renderizar documentos
+    // Render documents
     function renderDocs() {
       docContainer.innerHTML = '';
       
       const docs = activeTab === 'retrieved' ? retrievedDocs : restDocs;
       
       if (docs.length === 0) {
-        docContainer.innerHTML = `<p style="text-align: center; color: #718096;">No hay documentos ${activeTab === 'retrieved' ? 'recuperados' : 'adicionales'}</p>`;
+        docContainer.innerHTML = `<p style="text-align: center; color: #718096;">No ${activeTab === 'retrieved' ? 'retrieved' : 'additional'} documents</p>`;
         return;
       }
       
@@ -525,8 +525,8 @@
         
         docEl.innerHTML = `
           <div class="doc-header">
-            <span>Documento #${doc.id}</span>
-            <span class="similarity">Similitud: ${(100 - doc.distance * 100).toFixed(1)}%</span>
+            <span>Document #${doc.id}</span>
+            <span class="similarity">Similarity: ${(100 - doc.distance * 100).toFixed(1)}%</span>
           </div>
           <div>${doc.text}</div>
           <div class="doc-vector">Vector: [${doc.vector.map(v => v.toFixed(2)).join(', ')}]</div>
@@ -536,41 +536,41 @@
       });
     }
 
-    // Renderizar respuesta
+    // Render response
     function renderResponse() {
       let text = '';
       
       if (selectedQuery.theme === 'machinelearning') {
-        text = "Los modelos de aprendizaje automático (machine learning) analizan y aprenden de grandes conjuntos de datos para realizar predicciones. Utilizan algoritmos como redes neuronales para el aprendizaje profundo. Un problema común es el sobreajuste, donde el modelo aprende demasiado de los datos de entrenamiento y no generaliza bien a nuevos datos.";
+        text = "Machine learning models analyze and learn from large datasets to make predictions. They use algorithms such as neural networks for deep learning. A common problem is overfitting, where the model learns too much from the training data and doesn't generalize well to new data.";
       } else if (selectedQuery.theme === 'nlp') {
-        text = "El procesamiento de lenguaje natural (NLP) permite a las computadoras entender el lenguaje humano. Los modelos transformer han revolucionado este campo con su mecanismo de atención, permitiendo analizar el contexto completo de un texto. Estos modelos se utilizan para tareas como generación de texto, traducción y análisis de sentimiento.";
+        text = "Natural Language Processing (NLP) allows computers to understand human language. Transformer models have revolutionized this field with their attention mechanism, allowing them to analyze the complete context of a text. These models are used for tasks such as text generation, translation, and sentiment analysis.";
       } else {
-        text = "Las bases de datos pueden ser relacionales (usando SQL) o NoSQL. Las relacionales organizan datos en tablas con relaciones definidas entre ellas, mientras que NoSQL está diseñado para modelos específicos de datos. SQL es el lenguaje estándar para acceder y manipular bases de datos relacionales, y los índices mejoran la velocidad de recuperación de información.";
+        text = "Databases can be relational (using SQL) or NoSQL. Relational databases organize data in tables with defined relationships between them, while NoSQL is designed for specific data models. SQL is the standard language for accessing and manipulating relational databases, and indexes improve the speed of information retrieval.";
       }
       
       response.innerHTML = `<p>${text}</p>`;
     }
 
-    // Proyectar 3D a 2D
+    // Project 3D to 2D
     function project(x, y, z) {
-      // Centrar según centroide
+      // Center according to centroid
       const centeredX = x - centroid[0] * 150;
       const centeredY = y - centroid[1] * 150;
       const centeredZ = z - centroid[2] * 150;
       
-      // Convertir grados a radianes
+      // Convert degrees to radians
       const radX = rotation.x * Math.PI / 180;
       const radY = rotation.y * Math.PI / 180;
       
-      // Rotar en Y
+      // Rotate in Y
       const rotX = centeredX * Math.cos(radY) - centeredZ * Math.sin(radY);
       const rotZ = centeredX * Math.sin(radY) + centeredZ * Math.cos(radY);
       
-      // Rotar en X
+      // Rotate in X
       const rotY = centeredY * Math.cos(radX) - rotZ * Math.sin(radX);
       const finalZ = centeredY * Math.sin(radX) + rotZ * Math.cos(radX);
       
-      // Escalar por profundidad
+      // Scale by depth
       const scale = (400 / (400 + finalZ)) * zoomLevel;
       
       return {
@@ -581,7 +581,7 @@
       };
     }
 
-    // Escalar vector
+    // Scale vector
     function scaleVector(vec) {
       const factor = 150;
       return [
@@ -591,17 +591,17 @@
       ];
     }
 
-    // Crear elemento SVG
+    // Create SVG element
     function createSvgElement(tag) {
       return document.createElementNS('http://www.w3.org/2000/svg', tag);
     }
 
-    // Renderizar visualización 3D
+    // Render 3D visualization
     function renderVisualization() {
-      // Limpiar SVG
+      // Clear SVG
       svg.innerHTML = '';
       
-      // Dibujar origen (centroide)
+      // Draw origin (centroid)
       const origin = createSvgElement('circle');
       origin.setAttribute('cx', '0');
       origin.setAttribute('cy', '0');
@@ -611,12 +611,12 @@
       origin.setAttribute('stroke-width', '1');
       svg.appendChild(origin);
       
-      // Ejes
+      // Axes
       const xAxis = project(150, 0, 0);
       const yAxis = project(0, 150, 0);
       const zAxis = project(0, 0, 150);
       
-      // Eje X (rojo)
+      // X axis (red)
       const xLine = createSvgElement('line');
       xLine.setAttribute('x1', '0');
       xLine.setAttribute('y1', '0');
@@ -627,7 +627,7 @@
       xLine.setAttribute('stroke-dasharray', '4,4');
       svg.appendChild(xLine);
       
-      // Eje Y (verde)
+      // Y axis (green)
       const yLine = createSvgElement('line');
       yLine.setAttribute('x1', '0');
       yLine.setAttribute('y1', '0');
@@ -638,7 +638,7 @@
       yLine.setAttribute('stroke-dasharray', '4,4');
       svg.appendChild(yLine);
       
-      // Eje Z (azul)
+      // Z axis (blue)
       const zLine = createSvgElement('line');
       zLine.setAttribute('x1', '0');
       zLine.setAttribute('y1', '0');
@@ -649,7 +649,7 @@
       zLine.setAttribute('stroke-dasharray', '4,4');
       svg.appendChild(zLine);
       
-      // Etiquetas de ejes
+      // Axis labels
       const xText = createSvgElement('text');
       xText.setAttribute('x', xAxis.x + 10);
       xText.setAttribute('y', xAxis.y);
@@ -677,7 +677,7 @@
       zText.textContent = 'Z';
       svg.appendChild(zText);
       
-      // Documentos
+      // Documents
       allDocs.forEach(doc => {
         const [x, y, z] = scaleVector(doc.vector);
         const projected = project(x, y, z);
@@ -701,7 +701,7 @@
         svg.appendChild(g);
       });
       
-      // Consulta
+      // Query
       const [qx, qy, qz] = scaleVector(selectedQuery.vector);
       const queryProj = project(qx, qy, qz);
       const querySize = Math.max(4, 8 * queryProj.scale);
@@ -726,7 +726,7 @@
       queryG.appendChild(queryText);
       svg.appendChild(queryG);
       
-      // Líneas entre consulta y documentos recuperados
+      // Lines between query and retrieved documents
       retrievedDocs.forEach(doc => {
         const [dx, dy, dz] = scaleVector(doc.vector);
         const docProj = project(dx, dy, dz);
@@ -745,7 +745,7 @@
       });
     }
 
-    // Iniciar aplicación
+    // Start application
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>

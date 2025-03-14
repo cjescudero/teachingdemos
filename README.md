@@ -24,6 +24,16 @@ These demos are standalone HTML files that can be opened directly in any modern 
 
 2. Open any of the HTML files in your web browser to start using the demonstrations.
 
+3. Interacting with the demos:
+   - **Fourier Transform Demo**: Use the sliders to adjust frequency components and observe how they affect the composite signal. Click on the graph to add custom points.
+   - **RAG Simulator**: Enter text in the input field to see how embeddings are generated and how similar documents are retrieved based on semantic similarity.
+   - **Poles and Zeros Demo**: Drag poles and zeros on the complex plane to see how they affect the frequency response in real-time.
+
+4. For optimal performance:
+   - Use a modern browser (Chrome, Firefox, Safari, or Edge)
+   - Enable JavaScript in your browser settings
+   - For the best experience, view on a desktop or laptop computer with a screen width of at least 1024px
+
 ## Technologies Used
 
 - HTML5
@@ -34,7 +44,29 @@ These demos are standalone HTML files that can be opened directly in any modern 
 
 ## License
 
-[Add your license information here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+MIT License
+
+Copyright (c) 2023 [Your Name or Organization]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## Contributing
 

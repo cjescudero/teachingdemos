@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demostración del Teorema de Fourier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .canvas-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        
+        .canvas-container h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        
+        .controls h2 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+        /* Estilo base para todos los casos usando CSS Grid */
+        #waveControlsContainer {
+            display: grid;
+            gap: 15px;
+            width: 100%;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        /* Estilo específico para exactamente dos controles */
+        #waveControlsContainer.two-controls {
+            grid-template-columns: 1fr 1fr !important;
+        }
+
+        /* Estilo para todos los controles de onda */
+        .wave-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        /* Media queries para más de 2 controles */
+        @media (min-width: 768px) {
+            #waveControlsContainer:not(.two-controls) {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (min-width: 992px) {
+            #waveControlsContainer:not(.two-controls) {
+                grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+            }
+        }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+        }
+        .slider-container span {
+            font-weight: bold;
+        }
+        canvas {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .preset-button {
+            background-color: #2196F3;
+        }
+        .preset-button:hover {
+            background-color: #0b7dda;
+        }
+        .add-wave {
+            background-color: #ff9800;
+        }
+        .add-wave:hover {
+            background-color: #e68a00;
+        }
+        .remove-wave {
+            background-color: #f44336;
+        }
+        .remove-wave:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Demostración del Teorema de Fourier</h1>
+    <div class="container">
+        <div class="controls" style="margin-bottom: 15px;">
+            <h2>Selección de Tipo de Señal</h2>
+            <div class="buttons" style="margin-top: 5px;">
+                <button id="triangleWaveBtn" class="preset-button">Onda Triangular</button>
+                <button id="squareWaveBtn" class="preset-button">Onda Cuadrada</button>
+                <button id="sawtoothWaveBtn" class="preset-button">Onda Sierra</button>
+                <button id="pulseWaveBtn" class="preset-button">Pulso</button>
+                <button id="defaultWaveBtn" class="preset-button" style="background-color: #9C27B0;">Reset</button>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <div>
+                <h3>Señal Compuesta (Suma)</h3>
+                <canvas id="resultCanvas"></canvas>
+            </div>
+            <div>
+                <h3>Ondas Individuales</h3>
+                <canvas id="wavesCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2>Controles de Ondas</h2>
+            
+            <div style="margin-top: 5px; margin-bottom: 10px; width: 100%; display: flex; align-items: center;">
+                <label for="numWavesInput" style="margin-right: 10px; font-weight: bold;">Número de ondas:</label>
+                <input type="number" id="numWavesInput" min="1" max="20" value="2" style="width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                <button id="updateWavesBtn" class="add-wave" style="margin-left: 10px;">Actualizar</button>
+            </div>
+            
+            <div id="waveControlsContainer">
+                <!-- Los controles de ondas se generarán dinámicamente con JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de canvas
+        const resultCanvas = document.getElementById('resultCanvas');
+        const wavesCanvas = document.getElementById('wavesCanvas');
+        const resultCtx = resultCanvas.getContext('2d');
+        const wavesCtx = wavesCanvas.getContext('2d');
+        
+        // Asegurar que los canvas tengan el tamaño adecuado
+        function resizeCanvas() {
+            resultCanvas.width = resultCanvas.offsetWidth;
+            resultCanvas.height = resultCanvas.offsetHeight;
+            wavesCanvas.width = wavesCanvas.offsetWidth;
+            wavesCanvas.height = wavesCanvas.offsetHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Estado de la aplicación
+        const defaultWaves = [
+            { amplitude: 1.0, frequency: 1, phase: 0, color: 'red' },
+            { amplitude: 0.5, frequency: 3, phase: 0, color: 'blue' }
+        ];
+        
+        let waves = JSON.parse(JSON.stringify(defaultWaves));
+        
+        const colors = [
+            'red', 'blue', 'green', 'purple', 'orange', 
+            'magenta', 'teal', 'brown', 'darkblue', 'darkgreen'
+        ];
+        
+        // Calcula el factor de escala basado en las amplitudes de todas las ondas
+        function calculateScaleFactor(waves, canvasHeight) {
+            // Calcula la suma máxima posible de amplitudes
+            let maxAmplitudeSum = 0;
+            waves.forEach(wave => {
+                maxAmplitudeSum += Math.abs(wave.amplitude);
+            });
+            
+            // Dejamos un margen del 10% arriba y abajo
+            const margin = 0.1;
+            const availableHeight = canvasHeight * (1 - 2 * margin);
+            
+            // Aseguramos que la señal siempre estará dentro del canvas
+            // Si maxAmplitudeSum es 0, usamos un valor predeterminado para evitar división por cero
+            return maxAmplitudeSum > 0 ? availableHeight / (2 * maxAmplitudeSum) : canvasHeight / 4;
+        }
+        
+        // Dibuja las ondas individuales y su suma
+        function drawWaves() {
+            // Limpiar los canvas
+            resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+            wavesCtx.clearRect(0, 0, wavesCanvas.width, wavesCanvas.height);
+            
+            // Calcular el factor de escala para cada canvas
+            const resultScaleFactor = calculateScaleFactor(waves, resultCanvas.height);
+            const wavesScaleFactor = calculateScaleFactor([{amplitude: 1}], wavesCanvas.height / waves.length);
+            
+            // Dibujar ejes
+            drawAxes(resultCtx, resultCanvas);
+            drawAxes(wavesCtx, wavesCanvas);
+            
+            // Calcular la altura media de los canvas para centrar las ondas
+            const resultMidY = resultCanvas.height / 2;
+            const wavesMidY = wavesCanvas.height / (waves.length + 1);
+            
+            // Dibujar cada onda individual en el canvas de ondas
+            let waveY = wavesMidY;
+            waves.forEach((wave, index) => {
+                drawSineWave(wavesCtx, wave, 0, waveY, wave.color, wavesScaleFactor);
+                waveY += wavesMidY;
+            });
+            
+            // Dibujar la onda compuesta (suma) en el canvas de resultado
+            drawCompositeSineWave(resultCtx, waves, 0, resultMidY, 'black', resultScaleFactor);
+        }
+        
+        // Dibujar ejes
+        function drawAxes(ctx, canvas) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const midY = height / 2;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            
+            // Eje X
+            ctx.moveTo(0, midY);
+            ctx.lineTo(width, midY);
+            
+            // Líneas de cuadrícula vertical
+            for (let x = 0; x < width; x += width / 10) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Dibujar una onda sinusoidal
+        function drawSineWave(ctx, wave, startX, midY, color, scaleFactor) {
+            const width = ctx.canvas.width;
+            const amplitude = wave.amplitude * scaleFactor;
+            const frequency = wave.frequency;
+            const phase = wave.phase;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            for (let x = 0; x < width; x++) {
+                // Coordenada normalizada (0 a 1 en ancho del canvas)
+                const normalizedX = x / width;
+                // Escalamos a 8π para representar 4 períodos completos
+                const t = normalizedX * Math.PI * 8;
+                
+                const y = midY - amplitude * Math.sin(frequency * t + phase);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Dibujar la onda compuesta (suma de ondas)
+        function drawCompositeSineWave(ctx, waves, startX, midY, color, scaleFactor) {
+            const width = ctx.canvas.width;
+            
+            // Calculamos la señal con mucha mayor resolución y una ventana de tiempo mucho mayor
+            const totalPeriods = 100; // Calculamos 100 períodos completos
+            const visiblePeriods = 4; // Pero solo mostramos 4
+            
+            // Total de puntos a calcular (100 veces más de los que se muestran)
+            const numPoints = width * 10;
+            
+            // Array para guardar los puntos calculados
+            const points = new Array(numPoints);
+            
+            // Calcular la señal completa con alta precisión
+            for (let i = 0; i < numPoints; i++) {
+                // Coordenada normalizada en el rango extendido
+                const normalizedX = i / numPoints;
+                // Usamos un rango de tiempo mucho mayor (100 veces más)
+                const t = normalizedX * Math.PI * 2 * totalPeriods;
+                
+                // Calcular suma en este punto
+                let sum = 0;
+                for (let j = 0; j < waves.length; j++) {
+                    const wave = waves[j];
+                    sum += wave.amplitude * Math.sin(wave.frequency * t + wave.phase);
+                }
+                
+                // Guardar el punto calculado
+                points[i] = sum;
+            }
+            
+            // Dibujar solo la porción visible (4 períodos)
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            // Calculamos el índice de inicio para mostrar solo un segmento estable
+            // Tomamos una ventana desde la mitad, donde la señal ya está estabilizada
+            const startIndex = Math.floor(numPoints / 2);
+            const pixelsPerPeriod = width / visiblePeriods;
+            const pointsPerPeriod = numPoints / totalPeriods;
+            const pointsToShow = pointsPerPeriod * visiblePeriods;
+            
+            for (let x = 0; x < width; x++) {
+                // Mapear el pixel a un índice en nuestro array de puntos
+                const index = startIndex + Math.floor(x * pointsToShow / width);
+                // Obtener el valor calculado
+                const value = points[index];
+                // Aplicar escala y desplazamiento
+                const y = midY - value * scaleFactor;
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Crear los controles para una onda
+        function createWaveControls(waveIndex) {
+            const wave = waves[waveIndex];
+            const container = document.getElementById('waveControlsContainer');
+            
+            const waveControl = document.createElement('div');
+            waveControl.className = 'wave-controls';
+            waveControl.id = `wave-${waveIndex}`;
+            
+            waveControl.innerHTML = `
+                <h3>Onda ${waveIndex + 1} <span style="color: ${wave.color}">■</span></h3>
+                
+                <div class="slider-container">
+                    <label>
+                        Amplitud:
+                        <span id="amplitude-value-${waveIndex}">${wave.amplitude.toFixed(2)}</span>
+                    </label>
+                    <input type="range" id="amplitude-${waveIndex}" min="0" max="2" step="0.01" value="${wave.amplitude}">
+                </div>
+                
+                <div class="slider-container">
+                    <label>
+                        Frecuencia:
+                        <span id="frequency-value-${waveIndex}">${wave.frequency}</span>
+                    </label>
+                    <input type="range" id="frequency-${waveIndex}" min="1" max="20" step="1" value="${wave.frequency}">
+                </div>
+                
+                <div class="slider-container">
+                    <label>
+                        Fase:
+                        <span id="phase-value-${waveIndex}">${wave.phase.toFixed(2)}</span>
+                    </label>
+                    <input type="range" id="phase-${waveIndex}" min="0" max="${2 * Math.PI}" step="0.1" value="${wave.phase}">
+                </div>
+            `;
+            
+            container.appendChild(waveControl);
+            
+            // Añadir event listeners a los sliders
+            document.getElementById(`amplitude-${waveIndex}`).addEventListener('input', (e) => {
+                waves[waveIndex].amplitude = parseFloat(e.target.value);
+                document.getElementById(`amplitude-value-${waveIndex}`).textContent = waves[waveIndex].amplitude.toFixed(2);
+                drawWaves();
+            });
+            
+            document.getElementById(`frequency-${waveIndex}`).addEventListener('input', (e) => {
+                waves[waveIndex].frequency = parseInt(e.target.value);
+                document.getElementById(`frequency-value-${waveIndex}`).textContent = waves[waveIndex].frequency;
+                drawWaves();
+            });
+            
+            document.getElementById(`phase-${waveIndex}`).addEventListener('input', (e) => {
+                waves[waveIndex].phase = parseFloat(e.target.value);
+                document.getElementById(`phase-value-${waveIndex}`).textContent = waves[waveIndex].phase.toFixed(2);
+                drawWaves();
+            });
+        }
+        
+        // Generar controles para todas las ondas
+        function generateWaveControls() {
+            const container = document.getElementById('waveControlsContainer');
+            container.innerHTML = '';
+            
+            waves.forEach((_, index) => {
+                createWaveControls(index);
+            });
+            
+            // Aplicar la clase two-controls después de crear los controles
+            updateTwoControlsClass();
+        }
+        
+        // Función para actualizar la clase two-controls
+        function updateTwoControlsClass() {
+            const container = document.getElementById('waveControlsContainer');
+            const controls = container.querySelectorAll('.wave-controls');
+            
+            if (controls.length === 2) {
+                container.classList.add('two-controls');
+            } else {
+                container.classList.remove('two-controls');
+            }
+        }
+        
+        // Función para actualizar el número de ondas
+        function updateNumberOfWaves() {
+            const numWaves = parseInt(document.getElementById('numWavesInput').value);
+            
+            // Validar el número de ondas
+            if (isNaN(numWaves) || numWaves < 1) {
+                alert('El número de ondas debe ser al menos 1');
+                document.getElementById('numWavesInput').value = waves.length;
+                return;
+            }
+            
+            if (numWaves > 20) {
+                alert('El número máximo de ondas es 20');
+                document.getElementById('numWavesInput').value = 20;
+                return;
+            }
+            
+            // Si se reduce el número de ondas
+            if (numWaves < waves.length) {
+                waves = waves.slice(0, numWaves);
+            } 
+            // Si se aumenta el número de ondas
+            else if (numWaves > waves.length) {
+                const currentLength = waves.length;
+                
+                for (let i = currentLength; i < numWaves; i++) {
+                    const newColor = colors[i % colors.length];
+                    waves.push({
+                        amplitude: 0.3,
+                        frequency: i + 1,
+                        phase: 0,
+                        color: newColor
+                    });
+                }
+            }
+            
+            // Actualizar la interfaz
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        }
+        
+        // Evento para el botón de actualizar
+        document.getElementById('updateWavesBtn').addEventListener('click', updateNumberOfWaves);
+        
+        // También actualizar cuando se presiona Enter en el campo numérico
+        document.getElementById('numWavesInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                updateNumberOfWaves();
+            }
+        });
+        
+        // PRESETS DE ONDAS CON MÁS ARMÓNICOS
+        
+        // Preset: Onda Cuadrada (aproximación con series de Fourier)
+        document.getElementById('squareWaveBtn').addEventListener('click', () => {
+            // Reiniciamos el array de ondas
+            waves = [];
+            
+            // Número predeterminado para onda cuadrada: 15 armónicos impares
+            const numHarmonics = 15;
+            
+            // Implementación para onda cuadrada
+            for (let k = 1; k <= 29; k += 2) {
+                if (waves.length >= numHarmonics) break;
+                
+                waves.push({
+                    amplitude: 4/(k * Math.PI),
+                    frequency: k,
+                    phase: 0,
+                    color: colors[Math.floor((k-1)/2) % colors.length]
+                });
+            }
+            
+            // Actualizar el campo numérico para mostrar el número de ondas de este preset
+            document.getElementById('numWavesInput').value = waves.length;
+            
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        });
+        
+        // Preset: Onda Triangular (aproximación con series de Fourier)
+        document.getElementById('triangleWaveBtn').addEventListener('click', () => {
+            // Reiniciamos el array de ondas
+            waves = [];
+            
+            // Número predeterminado para onda triangular: 15 armónicos impares
+            const numHarmonics = 15;
+            
+            // Implementación para onda triangular
+            for (let k = 1; k <= 29; k += 2) {
+                if (waves.length >= numHarmonics) break;
+                
+                const sign = Math.floor(k/2) % 2 === 0 ? 1 : -1;
+                waves.push({
+                    amplitude: (8/(Math.PI * Math.PI * k * k)) * sign,
+                    frequency: k,
+                    phase: 0,
+                    color: colors[Math.floor((k-1)/2) % colors.length]
+                });
+            }
+            
+            // Actualizar el campo numérico para mostrar el número de ondas de este preset
+            document.getElementById('numWavesInput').value = waves.length;
+            
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        });
+        
+        // Preset: Onda Sierra (aproximación con series de Fourier)
+        document.getElementById('sawtoothWaveBtn').addEventListener('click', () => {
+            // Reiniciamos el array de ondas
+            waves = [];
+            
+            // Un pulso más preciso con más componentes (lo que era originalmente el "pulso")
+            waves.push({
+                amplitude: 0.8,
+                frequency: 1,
+                phase: 0,
+                color: colors[0]
+            });
+            
+            for (let k = 2; k <= 20; k++) {
+                waves.push({
+                    amplitude: 0.8 * Math.exp(-0.4 * (k-1)),
+                    frequency: k,
+                    phase: 0,
+                    color: colors[(k-1) % colors.length]
+                });
+            }
+            
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        });
+        
+        // Preset: Pulso 
+        document.getElementById('pulseWaveBtn').addEventListener('click', () => {
+            // Reiniciamos el array de ondas
+            waves = [];
+            
+            // Serie correcta para onda sierra (lo que era originalmente "onda sierra")
+            for (let k = 1; k <= 20; k++) {
+                waves.push({
+                    amplitude: 1/(k * Math.PI),
+                    frequency: k,
+                    phase: Math.PI/2,
+                    color: colors[(k-1) % colors.length]
+                });
+            }
+            
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        });
+        
+        // Preset: Volver a la señal original
+        document.getElementById('defaultWaveBtn').addEventListener('click', () => {
+            waves = JSON.parse(JSON.stringify(defaultWaves));
+            generateWaveControls();
+            drawWaves();
+            updateTwoControlsClass();
+        });
+        
+        // Inicializar la aplicación
+        function init() {
+            // Asegurar que los canvas tengan el tamaño adecuado
+            resizeCanvas();
+            
+            // Generar controles para las ondas iniciales
+            generateWaveControls();
+            
+            // Aplicar explícitamente la clase two-controls
+            updateTwoControlsClass();
+            
+            // Dibujar las ondas en los canvas
+            drawWaves();
+            
+            // Redibujamos las ondas después de un pequeño retraso para asegurar que todo está correctamente inicializado
+            setTimeout(drawWaves, 100);
+        }
+        
+        // Iniciar la aplicación cuando se carga la página
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // También inicializamos cuando la ventana está completamente cargada
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            drawWaves();
+        });
+    </script>
+</body>
+</html>

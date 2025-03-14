@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Embeddings RAG</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fa;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #4a5568;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -10px;
+    }
+    
+    .col {
+      flex: 1;
+      padding: 0 10px;
+      min-width: 300px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    
+    .info-box {
+      background-color: #ebf8ff;
+      border-left: 4px solid #4299e1;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+    
+    .visualization {
+      height: 400px;
+      background-color: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      position: relative;
+      cursor: move;
+      overflow: hidden;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 14px;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid #4299e1;
+      color: #4299e1;
+      font-weight: bold;
+    }
+    
+    .doc-list {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    
+    .doc-item {
+      padding: 12px;
+      background-color: #f7fafc;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border-left: 4px solid;
+    }
+    
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    
+    .similarity {
+      color: #718096;
+      font-size: 14px;
+      font-weight: normal;
+    }
+    
+    .doc-vector {
+      color: #718096;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .response-box {
+      background-color: #ebf4ff;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    
+    .legend {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .color-box {
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      border-radius: 3px;
+    }
+    
+    .tips {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulador de Embeddings en RAG</h1>
+    
+    <div class="card">
+      <h2>Selecciona una consulta:</h2>
+      <select id="query-select">
+        <option value="1">¿Cómo funcionan los algoritmos de machine learning?</option>
+        <option value="2">Explica las redes neuronales y deep learning</option>
+        <option value="3">¿Qué es el procesamiento de lenguaje natural?</option>
+        <option value="4">¿Cómo funciona la tecnología transformer?</option>
+        <option value="5">¿Cuáles son los tipos de bases de datos?</option>
+        <option value="6">Diferencias entre SQL y NoSQL</option>
+      </select>
+      
+      <div class="info-box">
+        <p><strong>Tema:</strong> <span id="query-theme">machine learning</span></p>
+        <p><strong>Vector de embedding:</strong> <span id="query-vector">[0.82, 0.65, 0.40]</span></p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <h2>Espacio de Embeddings (3D)</h2>
+          <p style="font-size: 12px; color: #718096;">Haz clic y arrastra para rotar la visualización</p>
+          
+          <div id="visualization" class="visualization">
+            <svg id="svg" width="100%" height="100%" viewBox="-200 -150 400 300">
+              <!-- Se llenará mediante JavaScript -->
+            </svg>
+            
+            <div class="legend">
+              <h3 style="margin-top: 0; margin-bottom: 8px;">Leyenda</h3>
+              <div class="legend-item">
+                <div class="color-box" style="background-color: #4285F4;"></div>
+                <span>Machine Learning</span>
+              </div>
+              <div class="legend-item">
+                <div class="color-box" style="background-color: #34A853;"></div>
+                <span>NLP</span>
+              </div>
+              <div class="legend-item">
+                <div class="color-box" style="background-color: #FBBC05;"></div>
+                <span>Bases de Datos</span>
+              </div>
+              <div class="legend-item">
+                <div class="color-box" style="background-color: #EA4335;"></div>
+                <span>Consulta</span>
+              </div>
+            </div>
+            
+
+          </div>
+        </div>
+      </div>
+      
+      <div class="col">
+        <div class="card">
+          <h2>Documentos</h2>
+          
+          <div class="tabs">
+            <button class="tab active" data-tab="retrieved">Documentos Recuperados (<span id="retrieved-count">3</span>)</button>
+            <button class="tab" data-tab="rest">Resto de Documentos (<span id="rest-count">9</span>)</button>
+          </div>
+          
+          <div class="doc-list" id="doc-container">
+            <!-- Se llenará mediante JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Respuesta del Modelo RAG</h2>
+      
+      <div class="response-box" id="response">
+        <!-- Se llenará mediante JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Datos
+    const documents = {
+      machinelearning: [
+        { 
+          id: 1, 
+          text: "Los modelos de aprendizaje automático requieren grandes cantidades de datos para entrenamiento.",
+          vector: [0.8, 0.7, 0.4],
+          color: "#4285F4"
+        },
+        { 
+          id: 2, 
+          text: "El aprendizaje profundo es una rama del machine learning basado en redes neuronales artificiales.",
+          vector: [0.9, 0.6, 0.5],
+          color: "#4285F4"
+        },
+        { 
+          id: 3, 
+          text: "La regresión lineal es uno de los algoritmos más básicos de aprendizaje supervisado.", 
+          vector: [0.75, 0.8, 0.3],
+          color: "#4285F4"
+        },
+        { 
+          id: 4, 
+          text: "El sobreajuste ocurre cuando un modelo aprende demasiado de los datos de entrenamiento.",
+          vector: [0.85, 0.7, 0.2],
+          color: "#4285F4"
+        }
+      ],
+      
+      nlp: [
+        { 
+          id: 5, 
+          text: "El procesamiento de lenguaje natural permite a las máquinas entender texto humano.",
+          vector: [-0.2, 0.8, 0.7],
+          color: "#34A853"
+        },
+        { 
+          id: 6, 
+          text: "Los transformer han revolucionado el campo del NLP con su mecanismo de atención.",
+          vector: [-0.3, 0.9, 0.6],
+          color: "#34A853"
+        },
+        { 
+          id: 7, 
+          text: "La generación de texto utiliza modelos que predicen la siguiente palabra basada en contexto.",
+          vector: [-0.25, 0.85, 0.65],
+          color: "#34A853"
+        },
+        { 
+          id: 8, 
+          text: "El análisis de sentimiento clasifica textos según la emoción expresada.",
+          vector: [-0.15, 0.75, 0.8],
+          color: "#34A853"
+        }
+      ],
+      
+      database: [
+        { 
+          id: 9, 
+          text: "Las bases de datos relacionales organizan datos en tablas con relaciones entre ellas.",
+          vector: [-0.7, 0.3, -0.6],
+          color: "#FBBC05"
+        },
+        { 
+          id: 10, 
+          text: "NoSQL es un tipo de base de datos diseñada para modelos específicos de datos.",
+          vector: [-0.8, 0.25, -0.5],
+          color: "#FBBC05"
+        },
+        { 
+          id: 11, 
+          text: "SQL es un lenguaje estándar para acceder y manipular bases de datos.",
+          vector: [-0.75, 0.2, -0.7],
+          color: "#FBBC05"
+        },
+        { 
+          id: 12, 
+          text: "Los índices mejoran la velocidad de recuperación de datos en bases de datos.",
+          vector: [-0.65, 0.35, -0.55],
+          color: "#FBBC05"
+        }
+      ]
+    };
+
+    const queries = [
+      { id: 1, text: "¿Cómo funcionan los algoritmos de machine learning?", vector: [0.82, 0.65, 0.4], theme: "machinelearning" },
+      { id: 2, text: "Explica las redes neuronales y deep learning", vector: [0.88, 0.62, 0.48], theme: "machinelearning" },
+      { id: 3, text: "¿Qué es el procesamiento de lenguaje natural?", vector: [-0.25, 0.82, 0.68], theme: "nlp" },
+      { id: 4, text: "¿Cómo funciona la tecnología transformer?", vector: [-0.28, 0.87, 0.62], theme: "nlp" },
+      { id: 5, text: "¿Cuáles son los tipos de bases de datos?", vector: [-0.72, 0.28, -0.58], theme: "database" },
+      { id: 6, text: "Diferencias entre SQL y NoSQL", vector: [-0.76, 0.24, -0.62], theme: "database" },
+    ];
+
+    // Estado
+    let selectedQuery = queries[0];
+    let allDocs = [];
+    let retrievedDocs = [];
+    let restDocs = [];
+    let activeTab = 'retrieved';
+    let rotation = { x: 20, y: 40 };
+    let centroid = [0, 0, 0];
+    let isDragging = false;
+    let lastMousePos = { x: 0, y: 0 };
+    let zoomLevel = 1.0;
+
+    // Referencias al DOM
+    const svg = document.getElementById('svg');
+    const querySelect = document.getElementById('query-select');
+    const queryTheme = document.getElementById('query-theme');
+    const queryVector = document.getElementById('query-vector');
+    const docContainer = document.getElementById('doc-container');
+    const retrievedCount = document.getElementById('retrieved-count');
+    const restCount = document.getElementById('rest-count');
+    const visualization = document.getElementById('visualization');
+    const response = document.getElementById('response');
+    const tabs = document.querySelectorAll('.tab');
+
+    // Inicializar
+    function init() {
+      // Unir todos los documentos
+      allDocs = [
+        ...documents.machinelearning,
+        ...documents.nlp,
+        ...documents.database
+      ];
+      
+      // Calcular centroide
+      calculateCentroid();
+      
+      // Configurar eventos
+      setupEvents();
+      
+      // Renderizar inicial
+      updateQueryInfo();
+      retrieveDocuments();
+      renderVisualization();
+    }
+
+    // Calcular centroide
+    function calculateCentroid() {
+      const vectorSum = [0, 0, 0];
+      
+      allDocs.forEach(doc => {
+        vectorSum[0] += doc.vector[0];
+        vectorSum[1] += doc.vector[1];
+        vectorSum[2] += doc.vector[2];
+      });
+      
+      centroid = [
+        vectorSum[0] / allDocs.length,
+        vectorSum[1] / allDocs.length,
+        vectorSum[2] / allDocs.length
+      ];
+    }
+
+    // Configurar eventos
+    function setupEvents() {
+      // Cambio de consulta
+      querySelect.addEventListener('change', () => {
+        const queryId = parseInt(querySelect.value);
+        selectedQuery = queries.find(q => q.id === queryId);
+        
+        updateQueryInfo();
+        retrieveDocuments();
+        renderVisualization();
+      });
+      
+      // Tabs
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          activeTab = tab.dataset.tab;
+          renderDocs();
+        });
+      });
+      
+      // Rotación
+      visualization.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        lastMousePos = { x: e.clientX, y: e.clientY };
+      });
+      
+      visualization.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - lastMousePos.x;
+        const dy = e.clientY - lastMousePos.y;
+        
+        // Limitar rotación en X
+        const newX = Math.max(-60, Math.min(60, rotation.x + dy * 0.5));
+        rotation = {
+          x: newX,
+          y: (rotation.y + dx * 0.5) % 360
+        };
+        
+        lastMousePos = { x: e.clientX, y: e.clientY };
+        renderVisualization();
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+      
+      // Zoom con rueda del ratón
+      visualization.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        
+        // Ajustar zoom (reducir el factor para un zoom más suave)
+        const zoomFactor = 0.1;
+        
+        if (e.deltaY < 0) {
+          // Zoom in
+          zoomLevel = Math.min(3.0, zoomLevel + zoomFactor);
+        } else {
+          // Zoom out
+          zoomLevel = Math.max(0.5, zoomLevel - zoomFactor);
+        }
+        
+        renderVisualization();
+      }, { passive: false });
+    }
+
+    // Actualizar información de consulta
+    function updateQueryInfo() {
+      queryTheme.textContent = selectedQuery.theme;
+      queryVector.textContent = `[${selectedQuery.vector.map(v => v.toFixed(2)).join(', ')}]`;
+    }
+
+    // Calcular distancia euclidiana
+    function calculateDistance(vec1, vec2) {
+      return Math.sqrt(
+        vec1.reduce((sum, val, i) => sum + Math.pow(val - vec2[i], 2), 0)
+      );
+    }
+
+    // Recuperar documentos
+    function retrieveDocuments() {
+      // Calcular distancias
+      const docsWithDistance = allDocs.map(doc => ({
+        ...doc,
+        distance: calculateDistance(selectedQuery.vector, doc.vector)
+      }));
+      
+      // Ordenar por distancia
+      const sorted = [...docsWithDistance].sort((a, b) => a.distance - b.distance);
+      
+      // Separar documentos recuperados y resto
+      retrievedDocs = sorted.slice(0, 3);
+      restDocs = sorted.slice(3);
+      
+      // Actualizar contadores
+      retrievedCount.textContent = retrievedDocs.length;
+      restCount.textContent = restDocs.length;
+      
+      // Renderizar
+      renderDocs();
+      renderResponse();
+    }
+
+    // Renderizar documentos
+    function renderDocs() {
+      docContainer.innerHTML = '';
+      
+      const docs = activeTab === 'retrieved' ? retrievedDocs : restDocs;
+      
+      if (docs.length === 0) {
+        docContainer.innerHTML = `<p style="text-align: center; color: #718096;">No hay documentos ${activeTab === 'retrieved' ? 'recuperados' : 'adicionales'}</p>`;
+        return;
+      }
+      
+      docs.forEach(doc => {
+        const docEl = document.createElement('div');
+        docEl.className = 'doc-item';
+        docEl.style.borderLeftColor = doc.color;
+        
+        docEl.innerHTML = `
+          <div class="doc-header">
+            <span>Documento #${doc.id}</span>
+            <span class="similarity">Similitud: ${(100 - doc.distance * 100).toFixed(1)}%</span>
+          </div>
+          <div>${doc.text}</div>
+          <div class="doc-vector">Vector: [${doc.vector.map(v => v.toFixed(2)).join(', ')}]</div>
+        `;
+        
+        docContainer.appendChild(docEl);
+      });
+    }
+
+    // Renderizar respuesta
+    function renderResponse() {
+      let text = '';
+      
+      if (selectedQuery.theme === 'machinelearning') {
+        text = "Los modelos de aprendizaje automático (machine learning) analizan y aprenden de grandes conjuntos de datos para realizar predicciones. Utilizan algoritmos como redes neuronales para el aprendizaje profundo. Un problema común es el sobreajuste, donde el modelo aprende demasiado de los datos de entrenamiento y no generaliza bien a nuevos datos.";
+      } else if (selectedQuery.theme === 'nlp') {
+        text = "El procesamiento de lenguaje natural (NLP) permite a las computadoras entender el lenguaje humano. Los modelos transformer han revolucionado este campo con su mecanismo de atención, permitiendo analizar el contexto completo de un texto. Estos modelos se utilizan para tareas como generación de texto, traducción y análisis de sentimiento.";
+      } else {
+        text = "Las bases de datos pueden ser relacionales (usando SQL) o NoSQL. Las relacionales organizan datos en tablas con relaciones definidas entre ellas, mientras que NoSQL está diseñado para modelos específicos de datos. SQL es el lenguaje estándar para acceder y manipular bases de datos relacionales, y los índices mejoran la velocidad de recuperación de información.";
+      }
+      
+      response.innerHTML = `<p>${text}</p>`;
+    }
+
+    // Proyectar 3D a 2D
+    function project(x, y, z) {
+      // Centrar según centroide
+      const centeredX = x - centroid[0] * 150;
+      const centeredY = y - centroid[1] * 150;
+      const centeredZ = z - centroid[2] * 150;
+      
+      // Convertir grados a radianes
+      const radX = rotation.x * Math.PI / 180;
+      const radY = rotation.y * Math.PI / 180;
+      
+      // Rotar en Y
+      const rotX = centeredX * Math.cos(radY) - centeredZ * Math.sin(radY);
+      const rotZ = centeredX * Math.sin(radY) + centeredZ * Math.cos(radY);
+      
+      // Rotar en X
+      const rotY = centeredY * Math.cos(radX) - rotZ * Math.sin(radX);
+      const finalZ = centeredY * Math.sin(radX) + rotZ * Math.cos(radX);
+      
+      // Escalar por profundidad
+      const scale = (400 / (400 + finalZ)) * zoomLevel;
+      
+      return {
+        x: rotX * scale,
+        y: rotY * scale,
+        z: finalZ,
+        scale
+      };
+    }
+
+    // Escalar vector
+    function scaleVector(vec) {
+      const factor = 150;
+      return [
+        vec[0] * factor,
+        vec[1] * factor,
+        vec[2] * factor
+      ];
+    }
+
+    // Crear elemento SVG
+    function createSvgElement(tag) {
+      return document.createElementNS('http://www.w3.org/2000/svg', tag);
+    }
+
+    // Renderizar visualización 3D
+    function renderVisualization() {
+      // Limpiar SVG
+      svg.innerHTML = '';
+      
+      // Dibujar origen (centroide)
+      const origin = createSvgElement('circle');
+      origin.setAttribute('cx', '0');
+      origin.setAttribute('cy', '0');
+      origin.setAttribute('r', '3');
+      origin.setAttribute('fill', '#666');
+      origin.setAttribute('stroke', '#000');
+      origin.setAttribute('stroke-width', '1');
+      svg.appendChild(origin);
+      
+      // Ejes
+      const xAxis = project(150, 0, 0);
+      const yAxis = project(0, 150, 0);
+      const zAxis = project(0, 0, 150);
+      
+      // Eje X (rojo)
+      const xLine = createSvgElement('line');
+      xLine.setAttribute('x1', '0');
+      xLine.setAttribute('y1', '0');
+      xLine.setAttribute('x2', xAxis.x);
+      xLine.setAttribute('y2', xAxis.y);
+      xLine.setAttribute('stroke', '#d63031');
+      xLine.setAttribute('stroke-width', '1.5');
+      xLine.setAttribute('stroke-dasharray', '4,4');
+      svg.appendChild(xLine);
+      
+      // Eje Y (verde)
+      const yLine = createSvgElement('line');
+      yLine.setAttribute('x1', '0');
+      yLine.setAttribute('y1', '0');
+      yLine.setAttribute('x2', yAxis.x);
+      yLine.setAttribute('y2', yAxis.y);
+      yLine.setAttribute('stroke', '#00b894');
+      yLine.setAttribute('stroke-width', '1.5');
+      yLine.setAttribute('stroke-dasharray', '4,4');
+      svg.appendChild(yLine);
+      
+      // Eje Z (azul)
+      const zLine = createSvgElement('line');
+      zLine.setAttribute('x1', '0');
+      zLine.setAttribute('y1', '0');
+      zLine.setAttribute('x2', zAxis.x);
+      zLine.setAttribute('y2', zAxis.y);
+      zLine.setAttribute('stroke', '#0984e3');
+      zLine.setAttribute('stroke-width', '1.5');
+      zLine.setAttribute('stroke-dasharray', '4,4');
+      svg.appendChild(zLine);
+      
+      // Etiquetas de ejes
+      const xText = createSvgElement('text');
+      xText.setAttribute('x', xAxis.x + 10);
+      xText.setAttribute('y', xAxis.y);
+      xText.setAttribute('font-size', '12');
+      xText.setAttribute('fill', '#d63031');
+      xText.setAttribute('font-weight', 'bold');
+      xText.textContent = 'X';
+      svg.appendChild(xText);
+      
+      const yText = createSvgElement('text');
+      yText.setAttribute('x', yAxis.x);
+      yText.setAttribute('y', yAxis.y - 10);
+      yText.setAttribute('font-size', '12');
+      yText.setAttribute('fill', '#00b894');
+      yText.setAttribute('font-weight', 'bold');
+      yText.textContent = 'Y';
+      svg.appendChild(yText);
+      
+      const zText = createSvgElement('text');
+      zText.setAttribute('x', zAxis.x + 5);
+      zText.setAttribute('y', zAxis.y + 5);
+      zText.setAttribute('font-size', '12');
+      zText.setAttribute('fill', '#0984e3');
+      zText.setAttribute('font-weight', 'bold');
+      zText.textContent = 'Z';
+      svg.appendChild(zText);
+      
+      // Documentos
+      allDocs.forEach(doc => {
+        const [x, y, z] = scaleVector(doc.vector);
+        const projected = project(x, y, z);
+        const size = Math.max(3, 6 * projected.scale);
+        const isRetrieved = retrievedDocs.some(d => d.id === doc.id);
+        
+        const g = createSvgElement('g');
+        g.setAttribute('transform', `translate(${projected.x}, ${projected.y})`);
+        
+        const circle = createSvgElement('circle');
+        circle.setAttribute('r', isRetrieved ? size * 1.5 : size);
+        circle.setAttribute('fill', doc.color);
+        circle.setAttribute('opacity', isRetrieved ? '0.9' : '0.6');
+        
+        if (isRetrieved) {
+          circle.setAttribute('stroke', '#000');
+          circle.setAttribute('stroke-width', '1');
+        }
+        
+        g.appendChild(circle);
+        svg.appendChild(g);
+      });
+      
+      // Consulta
+      const [qx, qy, qz] = scaleVector(selectedQuery.vector);
+      const queryProj = project(qx, qy, qz);
+      const querySize = Math.max(4, 8 * queryProj.scale);
+      
+      const queryG = createSvgElement('g');
+      queryG.setAttribute('transform', `translate(${queryProj.x}, ${queryProj.y})`);
+      
+      const queryCircle = createSvgElement('circle');
+      queryCircle.setAttribute('r', querySize);
+      queryCircle.setAttribute('fill', '#EA4335');
+      queryCircle.setAttribute('stroke', '#000');
+      queryCircle.setAttribute('stroke-width', '1.5');
+      
+      const queryText = createSvgElement('text');
+      queryText.setAttribute('font-size', '12');
+      queryText.setAttribute('text-anchor', 'middle');
+      queryText.setAttribute('y', -querySize - 5);
+      queryText.setAttribute('fill', '#000');
+      queryText.textContent = 'Query';
+      
+      queryG.appendChild(queryCircle);
+      queryG.appendChild(queryText);
+      svg.appendChild(queryG);
+      
+      // Líneas entre consulta y documentos recuperados
+      retrievedDocs.forEach(doc => {
+        const [dx, dy, dz] = scaleVector(doc.vector);
+        const docProj = project(dx, dy, dz);
+        
+        const line = createSvgElement('line');
+        line.setAttribute('x1', queryProj.x);
+        line.setAttribute('y1', queryProj.y);
+        line.setAttribute('x2', docProj.x);
+        line.setAttribute('y2', docProj.y);
+        line.setAttribute('stroke', '#000');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('stroke-dasharray', '3,3');
+        line.setAttribute('opacity', '0.7');
+        
+        svg.appendChild(line);
+      });
+    }
+
+    // Iniciar aplicación
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

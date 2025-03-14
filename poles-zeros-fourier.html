@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demostración de Polos, Ceros y Transformada de Fourier</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .plots-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .plot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .plot-title {
+            font-weight: bold;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .plot-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background-color: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .controls-title {
+            font-weight: bold;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .canvas-container {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.active-btn {
+            background-color: #2196F3;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.8);
+        }
+        .delete-button {
+            background-color: #f44336;
+        }
+        .delete-button:hover {
+            background-color: #d32f2f;
+        }
+        .point-list {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .lists-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+        }
+        .list-container {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        .explanation {
+            margin-top: 30px;
+            text-align: justify;
+        }
+        .controls-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Demostración de Polos, Ceros y Transformada de Fourier</h1>
+        <div class="controls-container">
+            <div class="plot-controls">
+                <span class="controls-title">Añadir:</span>
+                <button id="add-zero-btn">Cero</button>
+                <button id="add-zero-conjugate-btn">Ceros conjugados</button>
+                <button id="add-pole-btn">Polo</button>
+                <button id="add-pole-conjugate-btn">Polos conjugados</button>
+            </div>
+        </div>
+        <div class="plots-container">
+            <div class="plot-wrapper">
+                <div class="canvas-container" id="z-plane-container"></div>
+                <div class="plot-title">Plano Z</div>
+            </div>
+            <div class="plot-wrapper">
+                <div class="canvas-container" id="frequency-response-container"></div>
+            </div>
+        </div>
+        <div class="point-list">
+            <div style="width: 100%; text-align: center; margin-bottom: 15px;">
+                <button id="clear-btn" class="delete-button" style="padding: 10px 20px; font-size: 1.1em;">Limpiar Todo</button>
+            </div>
+            <div class="lists-container">
+                <div class="list-container">
+                    <h3>Ceros</h3>
+                    <div id="zeros-list"></div>
+                </div>
+                <div class="list-container">
+                    <h3>Polos</h3>
+                    <div id="poles-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales - solo declaradas una vez
+        let zPlaneSketch, freqResponseSketch;
+        let poles = [];
+        let zeros = [];
+        let currentMode = 'none'; // 'zero', 'pole'
+        let addConjugate = false;
+        let previewPoles = [];
+        let previewZeros = [];
+        
+        // Función para resaltar un botón activo 
+        function setActiveButton(activeButtonId) {
+            // Quitar clase active de todos los botones
+            document.querySelectorAll('.plot-controls button').forEach(button => {
+                button.classList.remove('active-btn');
+            });
+            
+            // Añadir clase active al botón seleccionado
+            if (activeButtonId) {
+                document.getElementById(activeButtonId).classList.add('active-btn');
+            }
+        }
+        
+        // Configuración del plano Z
+        function createZPlaneSketch(p) {
+            const width = 400;
+            const height = 400;
+            const center = { x: width / 2, y: height / 2 };
+            const radius = 150;
+            
+            p.setup = function() {
+                const canvas = p.createCanvas(width, height);
+                canvas.parent('z-plane-container');
+                
+                // Añadir interacción de movimiento del ratón para vista previa
+                canvas.mouseMoved(function() {
+                    if (currentMode !== 'none' && p.mouseX >= 0 && p.mouseX <= width && p.mouseY >= 0 && p.mouseY <= height) {
+                        const x = (p.mouseX - center.x) / radius;
+                        const y = (center.y - p.mouseY) / radius;
+                        
+                        // Actualizar arreglos de vista previa
+                        previewPoles = [];
+                        previewZeros = [];
+                        
+                        if (currentMode === 'zero') {
+                            previewZeros.push(math.complex(x, y));
+                            if (addConjugate) {
+                                previewZeros.push(math.complex(x, -y)); // Añadir conjugado
+                            }
+                        } else if (currentMode === 'pole') {
+                            previewPoles.push(math.complex(x, y));
+                            if (addConjugate) {
+                                previewPoles.push(math.complex(x, -y)); // Añadir conjugado
+                            }
+                        }
+                        
+                        p.redraw();
+                        // Actualizar la vista previa de la respuesta en frecuencia
+                        freqResponseSketch.redraw();
+                    } else {
+                        if (previewPoles.length > 0 || previewZeros.length > 0) {
+                            previewPoles = [];
+                            previewZeros = [];
+                            p.redraw();
+                            freqResponseSketch.redraw();
+                        }
+                    }
+                });
+                
+                // Añadir interacción de clic
+                canvas.mousePressed(function(event) {
+                    // Verificar si es clic derecho (p5.js usa mouseButton)
+                    if (p.mouseButton === p.RIGHT) {
+                        // Cancelar la acción actual
+                        currentMode = 'none';
+                        previewPoles = [];
+                        previewZeros = [];
+                        setActiveButton(null);
+                        p.redraw();
+                        freqResponseSketch.redraw();
+                        return false; // Prevenir el menú contextual
+                    }
+                    
+                    // Continuar con el clic izquierdo normal
+                    if (currentMode !== 'none' && p.mouseX >= 0 && p.mouseX <= width && p.mouseY >= 0 && p.mouseY <= height) {
+                        const x = (p.mouseX - center.x) / radius;
+                        const y = (center.y - p.mouseY) / radius;
+                        
+                        if (currentMode === 'zero') {
+                            zeros.push(math.complex(x, y));
+                            if (addConjugate) {
+                                zeros.push(math.complex(x, -y)); // Añadir conjugado
+                            }
+                        } else if (currentMode === 'pole') {
+                            poles.push(math.complex(x, y));
+                            if (addConjugate) {
+                                poles.push(math.complex(x, -y)); // Añadir conjugado
+                            }
+                        }
+                        
+                        // Desactivar el botón después de añadir el elemento
+                        currentMode = 'none';
+                        previewPoles = [];
+                        previewZeros = [];
+                        setActiveButton(null);
+                        
+                        updatePointLists();
+                        p.redraw();
+                        freqResponseSketch.redraw();
+                    }
+                });
+            };
+            
+            p.draw = function() {
+                p.background(255);
+                
+                p.translate(center.x, center.y);
+                
+                // Dibujar ejes
+                p.stroke(200);
+                p.strokeWeight(1);
+                p.line(-width/2, 0, width/2, 0); // Eje x
+                p.line(0, -height/2, 0, height/2); // Eje y
+                
+                // Dibujar círculo unitario
+                p.stroke(100);
+                p.strokeWeight(1);
+                p.noFill();
+                p.ellipse(0, 0, radius * 2, radius * 2);
+                
+                // Dibujar etiquetas de ejes
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("Re", width/2 - 20, 15);
+                p.text("Im", 15, -height/2 + 40); // Bajado para evitar superposición con el título
+                
+                // Dibujar marcas en ejes sin las etiquetas numéricas
+                p.stroke(200);
+                for (let i = -1; i <= 1; i += 0.5) {
+                    if (i !== 0) {
+                        // Marcas en eje x
+                        p.line(i * radius, -5, i * radius, 5);
+                        
+                        // Marcas en eje y
+                        p.line(-5, -i * radius, 5, -i * radius);
+                    }
+                }
+                
+                // Dibujar ceros
+                p.fill(0, 0, 255);
+                p.stroke(0);
+                p.strokeWeight(1);
+                for (let zero of zeros) {
+                    p.ellipse(zero.re * radius, -zero.im * radius, 10, 10);
+                }
+                
+                // Dibujar polos
+                p.stroke(255, 0, 0);
+                p.strokeWeight(2);
+                for (let pole of poles) {
+                    p.push();
+                    p.translate(pole.re * radius, -pole.im * radius);
+                    p.line(-6, -6, 6, 6);
+                    p.line(-6, 6, 6, -6);
+                    p.pop();
+                }
+                
+                // Dibujar vista previa si está activa
+                if (previewZeros.length > 0 || previewPoles.length > 0) {
+                    // Dibujar ceros de vista previa
+                    p.fill(0, 0, 255, 128); // Semi-transparente
+                    p.stroke(0);
+                    p.strokeWeight(1);
+                    for (let zero of previewZeros) {
+                        p.ellipse(zero.re * radius, -zero.im * radius, 10, 10);
+                        
+                        // Mostrar coordenadas
+                        p.fill(0);
+                        p.noStroke();
+                        p.textAlign(p.LEFT, p.BOTTOM);
+                        p.text(`(${zero.re.toFixed(2)} ${zero.im >= 0 ? '+' : ''}${zero.im.toFixed(2)}i)`, 
+                               zero.re * radius + 10, -zero.im * radius);
+                    }
+                    
+                    // Dibujar polos de vista previa
+                    for (let pole of previewPoles) {
+                        // Dibujar la X roja
+                        p.stroke(255, 0, 0, 200);
+                        p.strokeWeight(2);
+                        p.line(pole.re * radius - 6, -pole.im * radius - 6, pole.re * radius + 6, -pole.im * radius + 6);
+                        p.line(pole.re * radius - 6, -pole.im * radius + 6, pole.re * radius + 6, -pole.im * radius - 6);
+                        
+                        // Mostrar coordenadas
+                        p.fill(0);
+                        p.noStroke();
+                        p.textAlign(p.LEFT, p.BOTTOM);
+                        p.text(`(${pole.re.toFixed(2)} ${pole.im >= 0 ? '+' : ''}${pole.im.toFixed(2)}i)`, 
+                               pole.re * radius + 10, -pole.im * radius);
+                    }
+                }
+                
+                // Mostrar punto en la circunferencia unidad y vectores si el ratón está sobre la gráfica de frecuencia
+                if (mouseOverFreq) {
+                    // Calcular ángulo en radianes
+                    const angle = currentFrequency * 2 * Math.PI;
+                    
+                    // Calcular punto en la circunferencia unidad
+                    const circleX = Math.cos(angle) * radius;
+                    const circleY = -Math.sin(angle) * radius; // Negativo porque Y crece hacia abajo en el canvas
+                    
+                    // Dibujar punto en la circunferencia
+                    p.fill(0);
+                    p.stroke(0);
+                    p.strokeWeight(2);
+                    p.ellipse(circleX, circleY, 8, 8);
+                    
+                    // Mostrar la frecuencia
+                    p.noStroke();
+                    p.fill(0);
+                    p.textAlign(p.LEFT, p.CENTER);
+                    p.text(`ω/2π = ${currentFrequency.toFixed(3)}`, circleX + 10, circleY);
+                    
+                    // Dibujar vectores desde los ceros
+                    p.stroke(0, 0, 255, 180); // Azul semi-transparente para ceros
+                    p.strokeWeight(1);
+                    for (let zero of zeros) {
+                        p.line(zero.re * radius, -zero.im * radius, circleX, circleY);
+                    }
+                    
+                    // Dibujar vectores desde los polos
+                    p.stroke(255, 0, 0, 180); // Rojo semi-transparente para polos
+                    p.strokeWeight(1);
+                    for (let pole of poles) {
+                        p.line(pole.re * radius, -pole.im * radius, circleX, circleY);
+                    }
+                }
+            };
+        }
+        
+        // Configuración de la respuesta en frecuencia
+        function createFreqResponseSketch(p) {
+            const width = 600;
+            const height = 400;
+            const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+            
+            p.setup = function() {
+                const canvas = p.createCanvas(width, height);
+                canvas.parent('frequency-response-container');
+                
+                // Añadir interacción de movimiento del ratón para mostrar posición en plano Z
+                canvas.mouseMoved(function() {
+                    if (p.mouseX >= margin.left && p.mouseX <= width - margin.right && 
+                        p.mouseY >= margin.top && p.mouseY <= height - margin.bottom) {
+                        mouseOverFreq = true;
+                        
+                        // Calcular frecuencia normalizada (-0.5 a 0.5) correspondiente a la posición del ratón
+                        currentFrequency = (p.mouseX - margin.left) / plotWidth - 0.5;
+                        
+                        // Actualizar el plano Z para mostrar el punto y los vectores
+                        zPlaneSketch.redraw();
+                    } else {
+                        if (mouseOverFreq) {
+                            mouseOverFreq = false;
+                            zPlaneSketch.redraw();
+                        }
+                    }
+                });
+                
+                // Cuando el ratón sale del canvas, ocultar los vectores
+                canvas.mouseOut(function() {
+                    mouseOverFreq = false;
+                    zPlaneSketch.redraw();
+                });
+            };
+            
+            p.draw = function() {
+                p.background(255);
+                p.translate(margin.left, margin.top);
+                
+                // Dibujar ejes
+                p.stroke(0);
+                p.strokeWeight(1);
+                p.line(0, plotHeight, plotWidth, plotHeight); // Eje x
+                p.line(plotWidth/2, 0, plotWidth/2, plotHeight); // Eje y (centrado)
+                
+                // Dibujar etiquetas de ejes
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.text("Frecuencia normalizada (ω/2π)", plotWidth/2, plotHeight + 40);
+                p.push();
+                p.translate(-45, plotHeight/2);
+                p.rotate(-p.HALF_PI);
+                p.text("Magnitud |H(e^jω)|", 0, 0);
+                p.pop();
+                
+                // Dibujar marcas en eje x
+                for (let i = -0.5; i <= 0.5; i += 0.25) {
+                    const x = (i + 0.5) * plotWidth;
+                    p.stroke(0);
+                    p.line(x, plotHeight, x, plotHeight + 5);
+                    p.noStroke();
+                    p.text(i.toFixed(2), x, plotHeight + 25);
+                }
+                
+                // Combinar polos y ceros reales con los de vista previa para la respuesta
+                const allPoles = [...poles, ...previewPoles];
+                const allZeros = [...zeros, ...previewZeros];
+                
+                // Calcular la respuesta en frecuencia
+                if (allPoles.length > 0 || allZeros.length > 0) {
+                    const numPoints = 500;
+                    let maxMagnitude = 0;
+                    let magnitudes = [];
+                    
+                    // Calcular magnitudes para todas las frecuencias (de -π a π)
+                    for (let i = 0; i < numPoints; i++) {
+                        // Frecuencia de -π a π (equivalente a -0.5 a 0.5 en normalización ω/2π)
+                        const normalizedFreq = i / (numPoints - 1) - 0.5;
+                        const omega = normalizedFreq * 2 * Math.PI;
+                        const z = math.complex(Math.cos(omega), Math.sin(omega));
+                        
+                        // Calcular H(z)
+                        let numerator = math.complex(1, 0);
+                        let denominator = math.complex(1, 0);
+                        
+                        // Calcular producto de términos (z - cero)
+                        for (let zero of allZeros) {
+                            const term = math.subtract(z, zero);
+                            numerator = math.multiply(numerator, term);
+                        }
+                        
+                        // Calcular producto de términos (z - polo)
+                        for (let pole of allPoles) {
+                            const term = math.subtract(z, pole);
+                            denominator = math.multiply(denominator, term);
+                        }
+                        
+                        // Calcular H(z) = numerator / denominator
+                        const H = math.divide(numerator, denominator);
+                        const magnitude = math.abs(H);
+                        magnitudes.push(magnitude);
+                        
+                        // Actualizar máxima magnitud
+                        if (magnitude > maxMagnitude) {
+                            maxMagnitude = magnitude;
+                        }
+                    }
+                    
+                    // Ajustar la escala vertical para que la respuesta sea visible
+                    // pero no permita que valores muy grandes dominen la visualización
+                    maxMagnitude = Math.min(maxMagnitude, 10);
+                    
+                    // Dibujar marcas en eje y con escala dinámica
+                    const yTickCount = 5;
+                    for (let i = 0; i <= yTickCount; i++) {
+                        const y = plotHeight - (i / yTickCount) * plotHeight;
+                        const value = (i / yTickCount) * maxMagnitude;
+                        p.stroke(200);
+                        p.line(0, y, plotWidth, y); // Línea de cuadrícula
+                        p.stroke(0);
+                        p.line(plotWidth/2-5, y, plotWidth/2+5, y);
+                        p.noStroke();
+                        p.textAlign(p.RIGHT, p.CENTER);
+                        p.text(value.toFixed(1), plotWidth/2-15, y);
+                    }
+                    
+                    // Si hay vista previa, primero dibujamos la respuesta actual para comparar
+                    if (previewPoles.length > 0 || previewZeros.length > 0) {
+                        // Calcular la respuesta actual sin la vista previa
+                        let currentMagnitudes = [];
+                        
+                        for (let i = 0; i < numPoints; i++) {
+                            const normalizedFreq = i / (numPoints - 1) - 0.5;
+                            const omega = normalizedFreq * 2 * Math.PI;
+                            const z = math.complex(Math.cos(omega), Math.sin(omega));
+                            
+                            // Calcular H(z) solo con polos y ceros actuales
+                            let numerator = math.complex(1, 0);
+                            let denominator = math.complex(1, 0);
+                            
+                            for (let zero of zeros) {
+                                const term = math.subtract(z, zero);
+                                numerator = math.multiply(numerator, term);
+                            }
+                            
+                            for (let pole of poles) {
+                                const term = math.subtract(z, pole);
+                                denominator = math.multiply(denominator, term);
+                            }
+                            
+                            const H = math.divide(numerator, denominator);
+                            const magnitude = math.abs(H);
+                            currentMagnitudes.push(magnitude);
+                        }
+                        
+                        // Dibujar la respuesta actual como línea gris
+                        p.stroke(150);
+                        p.strokeWeight(1);
+                        p.noFill();
+                        p.beginShape();
+                        for (let i = 0; i < numPoints; i++) {
+                            const x = i * plotWidth / (numPoints - 1);
+                            const y = plotHeight - (currentMagnitudes[i] / maxMagnitude) * plotHeight;
+                            p.vertex(x, y);
+                        }
+                        p.endShape();
+                        
+                        // Añadir leyenda para la respuesta actual
+                        p.fill(150);
+                        p.noStroke();
+                        p.rect(plotWidth - 120, 10, 10, 10);
+                        p.fill(0);
+                        p.textAlign(p.LEFT, p.CENTER);
+                        p.text("Respuesta actual", plotWidth - 105, 15);
+                    }
+                    
+                    // Dibujar la respuesta en frecuencia con la vista previa
+                    p.stroke(0, 0, 255);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    p.beginShape();
+                    for (let i = 0; i < numPoints; i++) {
+                        const x = i * plotWidth / (numPoints - 1);
+                        const y = plotHeight - (magnitudes[i] / maxMagnitude) * plotHeight;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // Si hay vista previa, añadir leyenda para la nueva respuesta
+                    if (previewPoles.length > 0 || previewZeros.length > 0) {
+                        p.fill(0, 0, 255);
+                        p.noStroke();
+                        p.rect(plotWidth - 120, 30, 10, 10);
+                        p.fill(0);
+                        p.textAlign(p.LEFT, p.CENTER);
+                        p.text("Respuesta con cambios", plotWidth - 105, 35);
+                    }
+                } else {
+                    // Dibujar marcas en eje y con escala fija cuando no hay polos ni ceros
+                    const yTickCount = 5;
+                    for (let i = 0; i <= yTickCount; i++) {
+                        const y = plotHeight - (i / yTickCount) * plotHeight;
+                        p.stroke(200);
+                        p.line(0, y, plotWidth, y); // Línea de cuadrícula
+                        p.stroke(0);
+                        p.line(plotWidth/2-5, y, plotWidth/2+5, y);
+                        p.noStroke();
+                        p.textAlign(p.RIGHT, p.CENTER);
+                        p.text(i.toFixed(1), plotWidth/2-15, y);
+                    }
+                    
+                    // Dibujar una línea horizontal en 1 cuando no hay polos ni ceros
+                    p.stroke(0, 0, 255);
+                    p.strokeWeight(2);
+                    p.line(0, plotHeight - plotHeight/yTickCount, plotWidth, plotHeight - plotHeight/yTickCount);
+                }
+                
+                // Añadir título
+                p.fill(0);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.TOP);
+                p.textSize(16);
+                p.text("Respuesta en Frecuencia (Módulo)", plotWidth/2, -30);
+                p.textSize(12);
+            };
+        }
+        
+        // Actualizar listas de puntos
+        function updatePointLists() {
+            const zerosListElement = document.getElementById('zeros-list');
+            const polesListElement = document.getElementById('poles-list');
+            
+            // Limpiar listas
+            zerosListElement.innerHTML = '';
+            polesListElement.innerHTML = '';
+            
+            // Añadir ceros a la lista
+            zeros.forEach((zero, index) => {
+                const listItem = document.createElement('div');
+                listItem.innerHTML = `Cero ${index + 1}: ${zero.re.toFixed(3)} ${zero.im >= 0 ? '+' : ''}${zero.im.toFixed(3)}i 
+                                    <button class="delete-button" onclick="removeZero(${index})">Eliminar</button>`;
+                zerosListElement.appendChild(listItem);
+            });
+            
+            // Añadir polos a la lista
+            poles.forEach((pole, index) => {
+                const listItem = document.createElement('div');
+                listItem.innerHTML = `Polo ${index + 1}: ${pole.re.toFixed(3)} ${pole.im >= 0 ? '+' : ''}${pole.im.toFixed(3)}i 
+                                    <button class="delete-button" onclick="removePole(${index})">Eliminar</button>`;
+                polesListElement.appendChild(listItem);
+            });
+        }
+        
+        // Eliminar un cero
+        window.removeZero = function(index) {
+            zeros.splice(index, 1);
+            updatePointLists();
+            zPlaneSketch.redraw();
+            freqResponseSketch.redraw();
+        };
+        
+        // Eliminar un polo
+        window.removePole = function(index) {
+            poles.splice(index, 1);
+            updatePointLists();
+            zPlaneSketch.redraw();
+            freqResponseSketch.redraw();
+        };
+        
+        // Inicializar P5 sketches cuando la ventana esté cargada
+        window.onload = function() {
+            // Inicializar primero las variables de interactividad
+            mouseOverFreq = false;
+            currentFrequency = 0;
+            
+            // Inicializar los sketches
+            zPlaneSketch = new p5(createZPlaneSketch);
+            freqResponseSketch = new p5(createFreqResponseSketch);
+            
+            // Configurar botones
+            document.getElementById('add-zero-btn').addEventListener('click', function() {
+                if (currentMode === 'zero' && !addConjugate) {
+                    // Desactivar si ya está activo
+                    currentMode = 'none';
+                    setActiveButton(null);
+                } else {
+                    currentMode = 'zero';
+                    addConjugate = false;
+                    setActiveButton('add-zero-btn');
+                }
+                zPlaneSketch.redraw();
+            });
+            
+            document.getElementById('add-zero-conjugate-btn').addEventListener('click', function() {
+                if (currentMode === 'zero' && addConjugate) {
+                    // Desactivar si ya está activo
+                    currentMode = 'none';
+                    setActiveButton(null);
+                } else {
+                    currentMode = 'zero';
+                    addConjugate = true;
+                    setActiveButton('add-zero-conjugate-btn');
+                }
+                zPlaneSketch.redraw();
+            });
+            
+            document.getElementById('add-pole-btn').addEventListener('click', function() {
+                if (currentMode === 'pole' && !addConjugate) {
+                    // Desactivar si ya está activo
+                    currentMode = 'none';
+                    setActiveButton(null);
+                } else {
+                    currentMode = 'pole';
+                    addConjugate = false;
+                    setActiveButton('add-pole-btn');
+                }
+                zPlaneSketch.redraw();
+            });
+            
+            document.getElementById('add-pole-conjugate-btn').addEventListener('click', function() {
+                if (currentMode === 'pole' && addConjugate) {
+                    // Desactivar si ya está activo
+                    currentMode = 'none';
+                    setActiveButton(null);
+                } else {
+                    currentMode = 'pole';
+                    addConjugate = true;
+                    setActiveButton('add-pole-conjugate-btn');
+                }
+                zPlaneSketch.redraw();
+            });
+            
+            document.getElementById('clear-btn').addEventListener('click', function() {
+                poles = [];
+                zeros = [];
+                previewPoles = [];
+                previewZeros = [];
+                currentMode = 'none';
+                setActiveButton(null);
+                updatePointLists();
+                zPlaneSketch.redraw();
+                freqResponseSketch.redraw();
+            });
+            
+            // Prevenir menú contextual en el canvas para que el clic derecho funcione correctamente
+            document.getElementById('z-plane-container').addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // También prevenir el menú contextual en el canvas de respuesta en frecuencia
+            document.getElementById('frequency-response-container').addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Inicializar las listas de puntos
+            updatePointLists();
+        };
+    </script>
+</body>
+</html>

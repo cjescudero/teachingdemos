@@ -9,15 +9,15 @@ An interactive visualization of the Fourier Transform principles. This demo help
 
 **Live Demo**: [https://cjescudero.github.io/teachingdemos/fourier-demo.html](https://cjescudero.github.io/teachingdemos/fourier-demo.html)
 
-### 2. RAG (Retrieval-Augmented Generation) Simulator (`rag-html-simple.html`)
-A simple simulator that demonstrates the concept of embeddings and retrieval-augmented generation in natural language processing. This tool helps visualize how semantic similarity works in vector spaces for information retrieval.
-
-**Live Demo**: [https://cjescudero.github.io/teachingdemos/rag-html-simple.html](https://cjescudero.github.io/teachingdemos/rag-html-simple.html)
-
-### 3. Poles, Zeros and Fourier Transform (`poles-zeros-fourier.html`)
+### 2. Poles, Zeros and Fourier Transform (`poles-zeros-fourier.html`)
 An interactive demonstration showing the relationship between poles, zeros, and the Fourier Transform in signal processing. This visualization helps students understand how the placement of poles and zeros affects frequency response.
 
 **Live Demo**: [https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html](https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html)
+
+### 3. RAG (Retrieval-Augmented Generation) Simulator (`rag-html-simple.html`)
+A simple simulator that demonstrates the concept of embeddings and retrieval-augmented generation in natural language processing. This tool helps visualize how semantic similarity works in vector spaces for information retrieval.
+
+**Live Demo**: [https://cjescudero.github.io/teachingdemos/rag-html-simple.html](https://cjescudero.github.io/teachingdemos/rag-html-simple.html)
 
 ## Usage
 

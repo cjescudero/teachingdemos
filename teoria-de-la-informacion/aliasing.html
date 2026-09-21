@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aliasing – Periodicidad espectral en tiempo discreto</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #ffffff;
+    color: #1a1a2e;
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .nav-menu {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.8rem;
+    color: #888;
+    text-decoration: none;
+    opacity: 0.85;
+    z-index: 100;
+    transition: color 0.2s, opacity 0.2s;
+  }
+  .nav-menu:hover {
+    color: #1b6b93;
+    opacity: 1;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 0.4rem;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 1.05rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    font-style: italic;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.5;
+  }
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+  svg text {
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+  }
+  .equiv-text {
+    font-size: 13px;
+    fill: #0e7c4a;
+    font-weight: 600;
+  }
+  .label-right {
+    font-size: 24px;
+    font-weight: 600;
+    fill: #1a1a2e;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="nav-menu" rel="noopener noreferrer" aria-label="Volver al índice de materiales">Índice de materiales</a>
+
+<h1>Periodicidad espectral en tiempo discreto</h1>
+<p class="subtitle">Al muestrear una señal continua con frecuencia F<sub>s</sub>, el espectro se hace periódico. Frecuencias separadas por F<sub>s</sub> (ó 1, ó 2π) resultan indistinguibles: aliasing.</p>
+
+<svg viewBox="0 0 1100 700" width="1100" height="700">
+  <defs>
+    <marker id="arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#1a1a2e" stroke="none"/>
+    </marker>
+    <pattern id="hatch-orange" patternUnits="userSpaceOnUse" width="12" height="12" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#c78a1e" stroke-width="1.5" opacity="0.5"/>
+    </pattern>
+    <pattern id="hatch-red" patternUnits="userSpaceOnUse" width="12" height="12" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#b5302a" stroke-width="1.5" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!--
+    Layout:
+    - Left margin: 60px
+    - 3 equal bands, W = 200px each, total 600px
+    - Bands: 60..260 (orange), 260..460 (main left), 460..660 (main right), 660..860 (red)
+    - Wait — that's 4 segments. The main band is -Fs/2 to Fs/2 = 400px centered.
+    - Actually: orange=replica left, main=center, red=replica right. Each = 1 period = Fs.
+    - Main band spans from -Fs/2 to +Fs/2. That's one full period width.
+    - So W_period = 200px. Half-period = 100px from center.
+
+    Let me redo:
+    - Center at x=460
+    - Half-period = 150px → main band from 310 to 610 (width 300)
+    - Orange band: 10 to 310 (width 300)
+    - Red band: 610 to 910 (width 300)
+    - Axis from x=5 to x=925
+    - Formulas start at x=940
+  -->
+
+  <!-- ================================================================ -->
+  <!-- ROW 1: Frequency F                                                -->
+  <!-- ================================================================ -->
+  <g transform="translate(0, 20)">
+    <!-- Axis -->
+    <line x1="5" y1="80" x2="930" y2="80" stroke="#1a1a2e" stroke-width="1.2" marker-end="url(#arrowR)"/>
+
+    <!-- Orange band (left replica) -->
+    <rect x="60" y="56" width="250" height="24" fill="#f5a623" fill-opacity="0.35" stroke="#d4881f" stroke-width="1.2" rx="2"/>
+    <rect x="60" y="56" width="250" height="24" fill="url(#hatch-orange)" rx="2"/>
+
+    <!-- Main band left half -->
+    <rect x="310" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+    <!-- Main band right half -->
+    <rect x="435" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+
+    <!-- Red band (right replica) -->
+    <rect x="560" y="56" width="250" height="24" fill="#e74c3c" fill-opacity="0.3" stroke="#c0392b" stroke-width="1.2" rx="2"/>
+    <rect x="560" y="56" width="250" height="24" fill="url(#hatch-red)" rx="2"/>
+
+    <!-- Ellipsis -->
+    <text x="40" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+    <text x="830" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+
+    <!-- Center tick (0) -->
+    <line x1="435" y1="72" x2="435" y2="94" stroke="#1a1a2e" stroke-width="1.5"/>
+
+    <!-- Boundary ticks -->
+    <line x1="310" y1="76" x2="310" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="560" y1="76" x2="560" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="60" y1="76" x2="60" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="810" y1="76" x2="810" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+
+    <!-- Tick labels -->
+    <text x="310" y="112" font-size="15" text-anchor="middle" fill="#1a1a2e">−<tspan font-style="italic">F</tspan><tspan font-size="11" baseline-shift="-25%">s</tspan>/2</text>
+    <text x="560" y="112" font-size="15" text-anchor="middle" fill="#1a1a2e"><tspan font-style="italic">F</tspan><tspan font-size="11" baseline-shift="-25%">s</tspan>/2</text>
+    <text x="60" y="112" font-size="13" text-anchor="middle" fill="#1a1a2e">−(<tspan font-style="italic">F</tspan><tspan font-size="10" baseline-shift="-25%">s</tspan>/2 + <tspan font-style="italic">F</tspan><tspan font-size="10" baseline-shift="-25%">s</tspan>)</text>
+    <text x="810" y="112" font-size="13" text-anchor="middle" fill="#1a1a2e"><tspan font-style="italic">F</tspan><tspan font-size="10" baseline-shift="-25%">s</tspan>/2 + <tspan font-style="italic">F</tspan><tspan font-size="10" baseline-shift="-25%">s</tspan></text>
+
+    <!-- Right axis label -->
+    <text x="960" y="88" class="label-right">F</text>
+  </g>
+
+  <!-- ================================================================ -->
+  <!-- ROW 2: f = F / Fs                                                 -->
+  <!-- ================================================================ -->
+  <g transform="translate(0, 230)">
+    <!-- Axis -->
+    <line x1="5" y1="80" x2="930" y2="80" stroke="#1a1a2e" stroke-width="1.2" marker-end="url(#arrowR)"/>
+
+    <!-- Orange band -->
+    <rect x="60" y="56" width="250" height="24" fill="#f5a623" fill-opacity="0.35" stroke="#d4881f" stroke-width="1.2" rx="2"/>
+    <rect x="60" y="56" width="250" height="24" fill="url(#hatch-orange)" rx="2"/>
+
+    <!-- Main band -->
+    <rect x="310" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+    <rect x="435" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+
+    <!-- Red band -->
+    <rect x="560" y="56" width="250" height="24" fill="#e74c3c" fill-opacity="0.3" stroke="#c0392b" stroke-width="1.2" rx="2"/>
+    <rect x="560" y="56" width="250" height="24" fill="url(#hatch-red)" rx="2"/>
+
+    <!-- Ellipsis -->
+    <text x="40" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+    <text x="830" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+
+    <!-- Center tick -->
+    <line x1="435" y1="72" x2="435" y2="94" stroke="#1a1a2e" stroke-width="1.5"/>
+
+    <!-- Boundary ticks -->
+    <line x1="310" y1="76" x2="310" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="560" y1="76" x2="560" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="60" y1="76" x2="60" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="810" y1="76" x2="810" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+
+    <!-- Tick labels -->
+    <text x="310" y="110" font-size="16" text-anchor="middle" fill="#1a1a2e">−½</text>
+    <text x="560" y="110" font-size="16" text-anchor="middle" fill="#1a1a2e">½</text>
+    <text x="60" y="110" font-size="14" text-anchor="middle" fill="#1a1a2e">−(½ + 1)</text>
+    <text x="810" y="110" font-size="14" text-anchor="middle" fill="#1a1a2e">½ + 1</text>
+
+    <!-- Green equivalences -->
+    <text x="60" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="60" y="150" class="equiv-text" text-anchor="middle">−½</text>
+
+    <text x="310" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="310" y="150" class="equiv-text" text-anchor="middle">½</text>
+
+    <text x="560" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="560" y="150" class="equiv-text" text-anchor="middle">−½</text>
+
+    <text x="810" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="810" y="150" class="equiv-text" text-anchor="middle">½</text>
+
+    <!-- Right label + formula -->
+    <text x="960" y="76" class="label-right" font-size="24">f</text>
+    <text x="982" y="76" font-size="18" fill="#1a1a2e"> = </text>
+    <text x="1010" y="68" font-size="16" fill="#1a1a2e" font-style="italic">F</text>
+    <line x1="1003" y1="74" x2="1028" y2="74" stroke="#1a1a2e" stroke-width="1.2"/>
+    <text x="1006" y="92" font-size="16" fill="#1a1a2e" font-style="italic">F<tspan font-size="11" baseline-shift="-25%">s</tspan></text>
+  </g>
+
+  <!-- ================================================================ -->
+  <!-- ROW 3: ω = 2πf = 2πF/Fs                                          -->
+  <!-- ================================================================ -->
+  <g transform="translate(0, 450)">
+    <!-- Axis -->
+    <line x1="5" y1="80" x2="930" y2="80" stroke="#1a1a2e" stroke-width="1.2" marker-end="url(#arrowR)"/>
+
+    <!-- Orange band -->
+    <rect x="60" y="56" width="250" height="24" fill="#f5a623" fill-opacity="0.35" stroke="#d4881f" stroke-width="1.2" rx="2"/>
+    <rect x="60" y="56" width="250" height="24" fill="url(#hatch-orange)" rx="2"/>
+
+    <!-- Main band -->
+    <rect x="310" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+    <rect x="435" y="56" width="125" height="24" fill="#f0f0f0" stroke="#888" stroke-width="1.2" rx="2"/>
+
+    <!-- Red band -->
+    <rect x="560" y="56" width="250" height="24" fill="#e74c3c" fill-opacity="0.3" stroke="#c0392b" stroke-width="1.2" rx="2"/>
+    <rect x="560" y="56" width="250" height="24" fill="url(#hatch-red)" rx="2"/>
+
+    <!-- Ellipsis -->
+    <text x="40" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+    <text x="830" y="73" font-size="20" fill="#555" text-anchor="middle">⋯</text>
+
+    <!-- Center tick -->
+    <line x1="435" y1="72" x2="435" y2="94" stroke="#1a1a2e" stroke-width="1.5"/>
+
+    <!-- Boundary ticks -->
+    <line x1="310" y1="76" x2="310" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="560" y1="76" x2="560" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="60" y1="76" x2="60" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+    <line x1="810" y1="76" x2="810" y2="92" stroke="#1a1a2e" stroke-width="1"/>
+
+    <!-- Tick labels -->
+    <text x="310" y="110" font-size="16" text-anchor="middle" fill="#1a1a2e">−π</text>
+    <text x="560" y="110" font-size="16" text-anchor="middle" fill="#1a1a2e">π</text>
+    <text x="60" y="110" font-size="14" text-anchor="middle" fill="#1a1a2e">−(π + 2π)</text>
+    <text x="810" y="110" font-size="14" text-anchor="middle" fill="#1a1a2e">π + 2π</text>
+
+    <!-- Green equivalences -->
+    <text x="60" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="60" y="150" class="equiv-text" text-anchor="middle">−π</text>
+
+    <text x="310" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="310" y="150" class="equiv-text" text-anchor="middle">π</text>
+
+    <text x="560" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="560" y="150" class="equiv-text" text-anchor="middle">−π</text>
+
+    <text x="810" y="132" class="equiv-text" text-anchor="middle">≡</text>
+    <text x="810" y="150" class="equiv-text" text-anchor="middle">π</text>
+
+    <!-- Right label + formula -->
+    <text x="960" y="68" class="label-right" font-size="24">ω</text>
+    <text x="988" y="68" font-size="16" fill="#1a1a2e"> = 2π<tspan font-style="italic">f</tspan></text>
+
+    <text x="968" y="100" font-size="16" fill="#1a1a2e">= 2π </text>
+    <text x="1018" y="92" font-size="15" fill="#1a1a2e" font-style="italic">F</text>
+    <line x1="1012" y1="97" x2="1036" y2="97" stroke="#1a1a2e" stroke-width="1.2"/>
+    <text x="1014" y="114" font-size="15" fill="#1a1a2e" font-style="italic">F<tspan font-size="11" baseline-shift="-25%">s</tspan></text>
+  </g>
+
+  <!-- ================================================================ -->
+  <!-- Connecting dashed lines between rows                              -->
+  <!-- ================================================================ -->
+  <g transform="translate(435, 144)">
+    <line x1="0" y1="0" x2="0" y2="66" stroke="#aaa" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="12" y="40" font-size="13" fill="#999" font-style="italic">÷ F<tspan font-size="9" baseline-shift="-25%">s</tspan></text>
+  </g>
+
+  <g transform="translate(435, 362)">
+    <line x1="0" y1="0" x2="0" y2="68" stroke="#aaa" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="12" y="40" font-size="13" fill="#999" font-style="italic">× 2π</text>
+  </g>
+
+</svg>
+
+<footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7;">
+  © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+</footer>
+
+</body>
+</html>

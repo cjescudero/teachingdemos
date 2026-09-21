@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Series de Fourier – Suma de señales senoidales</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #1a1a2e;
+    --muted: #555;
+    --soft: #888;
+    --line: #e0e0e0;
+    --panel: #f8f9fa;
+    --panel-alt: #eef4f8;
+    --accent: #1b6b93;
+    --green: #0e7c4a;
+    --orange: #c78a1e;
+    --red: #c0392b;
+    --purple: #7a5dbd;
+  }
+
+  body {
+    background: #fff;
+    color: var(--ink);
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1.1rem 1rem 2rem;
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--soft);
+    text-decoration: none;
+    opacity: 0.85;
+    z-index: 100;
+    transition: color 0.2s, opacity 0.2s;
+  }
+
+  .nav-menu:hover {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  .page {
+    width: min(1180px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.85rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--muted);
+    text-align: center;
+    max-width: 760px;
+    line-height: 1.55;
+    margin-bottom: 1.25rem;
+  }
+
+  .layout {
+    width: 100%;
+    display: block;
+  }
+
+  .stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .panel h2,
+  .panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .panel h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .panel-note {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin-bottom: 0.9rem;
+  }
+
+  .preset-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  button {
+    font: inherit;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 0.48rem 0.82rem;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.2s ease, background 0.2s ease;
+  }
+
+  button:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+  }
+
+  .preset-button { background: var(--accent); }
+  .add-wave { background: var(--green); }
+  .reset-button { background: var(--purple); }
+
+  .plot-wrap {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .plot-block h3 {
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .plot-caption {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .plot-formula {
+    text-align: center;
+    color: var(--accent);
+    font-style: italic;
+    font-size: 0.98rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .wave-expression {
+    font-size: 0.9rem;
+    color: var(--wave-color);
+    font-style: italic;
+    margin-bottom: 0.35rem;
+  }
+
+  canvas {
+    width: 100%;
+    height: 220px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    display: block;
+  }
+
+  .controls-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+  }
+
+  .controls-top label {
+    font-weight: 600;
+  }
+
+  .controls-top input[type="number"] {
+    width: 72px;
+    padding: 0.38rem 0.45rem;
+    border: 1px solid #c8d2da;
+    border-radius: 6px;
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+  }
+
+  .wave-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .wave-card {
+    --wave-color: var(--accent);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.8rem;
+  }
+
+  .wave-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.7rem;
+    color: var(--wave-color);
+  }
+
+  .slider-group {
+    display: grid;
+    gap: 0.2rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .slider-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.92rem;
+    color: var(--wave-color);
+  }
+
+  .slider-group span {
+    color: var(--wave-color);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slider-group input[type="range"] {
+    width: 100%;
+  }
+
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    body {
+      padding-top: 2.25rem;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+    }
+
+    canvas {
+      height: 190px;
+    }
+  }
+</style>
+</head>
+<body>
+<a href="index.html" class="nav-menu" rel="noopener noreferrer" aria-label="Volver al índice de materiales">Índice de materiales</a>
+
+<main class="page">
+  <h1>Series de Fourier: suma de señales senoidales</h1>
+  <p class="subtitle">
+    Una señal periódica puede aproximarse como suma de senoidales. Ajusta amplitud, frecuencia y fase de cada componente, o carga series armónicas típicas para observar cómo aparece la señal resultante.
+  </p>
+
+  <div class="layout">
+    <section class="stack">
+      <div class="panel">
+        <h2>Presets de señales</h2>
+        <p class="panel-note">Cada preset crea una aproximación mediante armónicos. Después puedes modificar cualquier componente manualmente.</p>
+        <div class="preset-bar">
+          <button id="triangleWaveBtn" class="preset-button">Onda triangular</button>
+          <button id="squareWaveBtn" class="preset-button">Onda cuadrada</button>
+          <button id="sawtoothWaveBtn" class="preset-button">Onda sierra</button>
+          <button id="pulseWaveBtn" class="preset-button">Pulso</button>
+          <button id="defaultWaveBtn" class="reset-button">Reset</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="plot-wrap">
+          <div class="plot-block">
+            <h3>Señal compuesta</h3>
+            <div class="plot-caption">Resultado de sumar todas las componentes visibles.</div>
+            <div class="plot-formula">x(t) = Σ A<sub>k</sub> sin(ω<sub>k</sub>t + φ<sub>k</sub>)</div>
+            <canvas id="resultCanvas"></canvas>
+          </div>
+          <div class="plot-block">
+            <h3>Ondas individuales</h3>
+            <div class="plot-caption">Cada senoide se representa en su propia banda para comparar su contribución.</div>
+            <canvas id="wavesCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Controles de ondas</h2>
+        <p class="panel-note">Puedes usar entre 1 y 20 componentes. Las frecuencias se muestran como múltiplos enteros del armónico fundamental.</p>
+        <div class="controls-top">
+          <label for="numWavesInput">Número de ondas</label>
+          <input type="number" id="numWavesInput" min="1" max="20" value="2">
+          <button id="updateWavesBtn" class="add-wave">Actualizar</button>
+        </div>
+        <div id="waveControlsContainer" class="wave-controls-grid"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7;">
+  © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+</footer>
+
+<script>
+const resultCanvas = document.getElementById('resultCanvas');
+const wavesCanvas = document.getElementById('wavesCanvas');
+const resultCtx = resultCanvas.getContext('2d');
+const wavesCtx = wavesCanvas.getContext('2d');
+
+const defaultWaves = [
+  { amplitude: 1.0, frequency: 1, phase: 0, color: '#c0392b' },
+  { amplitude: 0.5, frequency: 3, phase: 0, color: '#1b6b93' }
+];
+
+let waves = cloneWaves(defaultWaves);
+let currentSignalMode = 'default';
+
+const colors = [
+  '#c0392b',
+  '#1b6b93',
+  '#0e7c4a',
+  '#7a5dbd',
+  '#c78a1e',
+  '#c2622d',
+  '#3d6b99',
+  '#5e7d57',
+  '#8f4c66',
+  '#6f5c9f'
+];
+
+function cloneWaves(source) {
+  return JSON.parse(JSON.stringify(source));
+}
+
+function resizeCanvas() {
+  [resultCanvas, wavesCanvas].forEach((canvas) => {
+    const ratio = window.devicePixelRatio || 1;
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
+    canvas.width = Math.round(displayWidth * ratio);
+    canvas.height = Math.round(displayHeight * ratio);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  });
+  drawWaves();
+}
+
+function calculateScaleFactor(list, canvasHeight) {
+  let maxAmplitudeSum = 0;
+  list.forEach((wave) => {
+    maxAmplitudeSum += Math.abs(wave.amplitude);
+  });
+  const margin = 0.12;
+  const availableHeight = canvasHeight * (1 - 2 * margin);
+  return maxAmplitudeSum > 0 ? availableHeight / (2 * maxAmplitudeSum) : canvasHeight / 4;
+}
+
+function drawAxes(ctx, canvas, rows = 1) {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  ctx.clearRect(0, 0, width, height);
+  ctx.strokeStyle = '#e6e6e6';
+  ctx.lineWidth = 1;
+
+  for (let i = 1; i < 10; i++) {
+    const x = (width * i) / 10;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+
+  for (let row = 0; row < rows; row++) {
+    const midY = ((row * 2) + 1) * height / (rows * 2);
+    ctx.beginPath();
+    ctx.moveTo(0, midY);
+    ctx.lineTo(width, midY);
+    ctx.stroke();
+  }
+}
+
+function drawSineWave(ctx, wave, midY, scaleFactor) {
+  const width = ctx.canvas.clientWidth;
+  const amplitude = wave.amplitude * scaleFactor;
+  ctx.beginPath();
+  ctx.strokeStyle = wave.color;
+  ctx.lineWidth = 2;
+
+  for (let x = 0; x <= width; x++) {
+    const normalizedX = x / width;
+    const t = normalizedX * Math.PI * 8;
+    const y = midY - amplitude * Math.sin(wave.frequency * t + wave.phase);
+    if (x === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  ctx.stroke();
+}
+
+function drawCompositeSineWave(ctx, waveList, midY, color, scaleFactor) {
+  const width = ctx.canvas.clientWidth;
+  const totalPeriods = 100;
+  const visiblePeriods = 4;
+  const numPoints = width * 10;
+  const points = new Array(numPoints);
+
+  for (let i = 0; i < numPoints; i++) {
+    const normalizedX = i / numPoints;
+    const t = normalizedX * Math.PI * 2 * totalPeriods;
+    let sum = 0;
+    for (let j = 0; j < waveList.length; j++) {
+      const wave = waveList[j];
+      sum += wave.amplitude * Math.sin(wave.frequency * t + wave.phase);
+    }
+    points[i] = sum;
+  }
+
+  const startIndex = Math.floor(numPoints / 2);
+  const pointsPerPeriod = numPoints / totalPeriods;
+  const pointsToShow = pointsPerPeriod * visiblePeriods;
+
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.2;
+
+  for (let x = 0; x <= width; x++) {
+    const index = Math.min(numPoints - 1, startIndex + Math.floor(x * pointsToShow / width));
+    const y = midY - points[index] * scaleFactor;
+    if (x === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  ctx.stroke();
+}
+
+function drawWaves() {
+  const resultHeight = resultCanvas.clientHeight;
+  const wavesHeight = wavesCanvas.clientHeight;
+
+  drawAxes(resultCtx, resultCanvas, 1);
+  drawAxes(wavesCtx, wavesCanvas, Math.max(1, waves.length));
+
+  const resultScaleFactor = calculateScaleFactor(waves, resultHeight);
+  const wavesScaleFactor = calculateScaleFactor([{ amplitude: 1 }], wavesHeight / Math.max(1, waves.length));
+  const resultMidY = resultHeight / 2;
+  const bandHeight = wavesHeight / Math.max(1, waves.length);
+
+  waves.forEach((wave, index) => {
+    const waveMidY = bandHeight * index + bandHeight / 2;
+    drawSineWave(wavesCtx, wave, waveMidY, wavesScaleFactor);
+  });
+
+  drawCompositeSineWave(resultCtx, waves, resultMidY, '#1a1a2e', resultScaleFactor);
+}
+
+function createWaveControls(waveIndex) {
+  const wave = waves[waveIndex];
+  const waveControl = document.createElement('div');
+  waveControl.className = 'wave-card';
+  waveControl.style.setProperty('--wave-color', wave.color);
+  waveControl.innerHTML = `
+    <h3>Onda ${waveIndex + 1}</h3>
+    <div class="wave-expression" id="expression-${waveIndex}"></div>
+    <div class="slider-group">
+      <label>Amplitud <span id="amplitude-value-${waveIndex}">${wave.amplitude.toFixed(2)}</span></label>
+      <input type="range" id="amplitude-${waveIndex}" min="-2" max="2" step="0.01" value="${wave.amplitude}">
+    </div>
+    <div class="slider-group">
+      <label>Frecuencia <span id="frequency-value-${waveIndex}">${wave.frequency}</span></label>
+      <input type="range" id="frequency-${waveIndex}" min="1" max="20" step="1" value="${wave.frequency}">
+    </div>
+    <div class="slider-group">
+      <label>Fase <span id="phase-value-${waveIndex}">${wave.phase.toFixed(2)}</span></label>
+      <input type="range" id="phase-${waveIndex}" min="0" max="${2 * Math.PI}" step="0.1" value="${wave.phase}">
+    </div>
+  `;
+
+  document.getElementById('waveControlsContainer').appendChild(waveControl);
+  updateWaveExpression(waveIndex);
+  applyWaveSliderColors(waveIndex);
+
+  document.getElementById(`amplitude-${waveIndex}`).addEventListener('input', (event) => {
+    currentSignalMode = 'custom';
+    waves[waveIndex].amplitude = parseFloat(event.target.value);
+    document.getElementById(`amplitude-value-${waveIndex}`).textContent = waves[waveIndex].amplitude.toFixed(2);
+    updateWaveExpression(waveIndex);
+    drawWaves();
+  });
+
+  document.getElementById(`frequency-${waveIndex}`).addEventListener('input', (event) => {
+    currentSignalMode = 'custom';
+    waves[waveIndex].frequency = parseInt(event.target.value, 10);
+    document.getElementById(`frequency-value-${waveIndex}`).textContent = waves[waveIndex].frequency;
+    updateWaveExpression(waveIndex);
+    drawWaves();
+  });
+
+  document.getElementById(`phase-${waveIndex}`).addEventListener('input', (event) => {
+    currentSignalMode = 'custom';
+    waves[waveIndex].phase = parseFloat(event.target.value);
+    document.getElementById(`phase-value-${waveIndex}`).textContent = waves[waveIndex].phase.toFixed(2);
+    updateWaveExpression(waveIndex);
+    drawWaves();
+  });
+}
+
+function updateWaveExpression(waveIndex) {
+  const expression = document.getElementById(`expression-${waveIndex}`);
+  if (!expression) return;
+  const wave = waves[waveIndex];
+  expression.innerHTML = `x<sub>${waveIndex + 1}</sub>(t) = ${wave.amplitude.toFixed(2)} sin(${wave.frequency}ω<sub>0</sub>t + ${wave.phase.toFixed(2)})`;
+}
+
+function applyWaveSliderColors(waveIndex) {
+  const wave = waves[waveIndex];
+  ['amplitude', 'frequency', 'phase'].forEach((name) => {
+    const slider = document.getElementById(`${name}-${waveIndex}`);
+    if (slider) slider.style.accentColor = wave.color;
+  });
+}
+
+function generateWaveControls() {
+  const container = document.getElementById('waveControlsContainer');
+  container.innerHTML = '';
+  waves.forEach((_, index) => createWaveControls(index));
+}
+
+function updateNumberOfWaves() {
+  const input = document.getElementById('numWavesInput');
+  const numWaves = parseInt(input.value, 10);
+  if (Number.isNaN(numWaves) || numWaves < 1) {
+    input.value = waves.length;
+    return;
+  }
+
+  const target = Math.min(20, numWaves);
+  input.value = target;
+
+  const presetBuilders = {
+    default: createDefaultPreset,
+    square: createSquarePreset,
+    triangle: createTrianglePreset,
+    sawtooth: createSawtoothPreset,
+    pulse: createPulsePreset
+  };
+
+  if (presetBuilders[currentSignalMode]) {
+    setWaves(presetBuilders[currentSignalMode](target), false);
+    return;
+  }
+
+  if (target < waves.length) {
+    waves = waves.slice(0, target);
+  } else if (target > waves.length) {
+    const currentLength = waves.length;
+    for (let i = currentLength; i < target; i++) {
+      waves.push({
+        amplitude: 0.3,
+        frequency: i + 1,
+        phase: 0,
+        color: colors[i % colors.length]
+      });
+    }
+  }
+
+  generateWaveControls();
+  drawWaves();
+}
+
+function setWaves(nextWaves, updateMode = true) {
+  waves = cloneWaves(nextWaves);
+  document.getElementById('numWavesInput').value = waves.length;
+  if (updateMode && !nextWaves._mode) currentSignalMode = 'custom';
+  if (nextWaves._mode) currentSignalMode = nextWaves._mode;
+  generateWaveControls();
+  drawWaves();
+}
+
+function withMode(waveList, mode) {
+  waveList._mode = mode;
+  return waveList;
+}
+
+function createDefaultPreset(count = defaultWaves.length) {
+  const preset = [];
+  for (let i = 0; i < count; i++) {
+    if (i < defaultWaves.length) {
+      preset.push({
+        ...defaultWaves[i],
+        color: colors[i % colors.length]
+      });
+    } else {
+      preset.push({
+        amplitude: 0.3,
+        frequency: i + 1,
+        phase: 0,
+        color: colors[i % colors.length]
+      });
+    }
+  }
+  return withMode(preset, 'default');
+}
+
+function createSquarePreset(count = 10) {
+  const preset = [];
+  for (let k = 1; preset.length < count && k <= 39; k += 2) {
+    preset.push({
+      amplitude: 4 / (k * Math.PI),
+      frequency: k,
+      phase: 0,
+      color: colors[Math.floor((k - 1) / 2) % colors.length]
+    });
+  }
+  return withMode(preset, 'square');
+}
+
+function createTrianglePreset(count = 10) {
+  const preset = [];
+  for (let k = 1; preset.length < count && k <= 39; k += 2) {
+    const sign = Math.floor(k / 2) % 2 === 0 ? 1 : -1;
+    preset.push({
+      amplitude: sign * (8 / (Math.PI * Math.PI * k * k)),
+      frequency: k,
+      phase: 0,
+      color: colors[Math.floor((k - 1) / 2) % colors.length]
+    });
+  }
+  return withMode(preset, 'triangle');
+}
+
+function createSawtoothPreset(count = 16) {
+  const preset = [];
+  for (let k = 1; k <= count; k++) {
+    preset.push({
+      amplitude: (2 / Math.PI) * (((k + 1) % 2 === 0) ? 1 : -1) / k,
+      frequency: k,
+      phase: 0,
+      color: colors[(k - 1) % colors.length]
+    });
+  }
+  return withMode(preset, 'sawtooth');
+}
+
+function createPulsePreset(count = 16) {
+  const preset = [];
+  const dutyCycle = 0.2;
+  for (let k = 1; k <= count; k++) {
+    preset.push({
+      amplitude: (2 * Math.sin(k * Math.PI * dutyCycle)) / (k * Math.PI),
+      frequency: k,
+      phase: Math.PI / 2,
+      color: colors[(k - 1) % colors.length]
+    });
+  }
+  return withMode(preset, 'pulse');
+}
+
+document.getElementById('updateWavesBtn').addEventListener('click', updateNumberOfWaves);
+document.getElementById('numWavesInput').addEventListener('keyup', (event) => {
+  if (event.key === 'Enter') updateNumberOfWaves();
+});
+
+document.getElementById('squareWaveBtn').addEventListener('click', () => setWaves(createSquarePreset()));
+document.getElementById('triangleWaveBtn').addEventListener('click', () => setWaves(createTrianglePreset()));
+document.getElementById('sawtoothWaveBtn').addEventListener('click', () => setWaves(createSawtoothPreset()));
+document.getElementById('pulseWaveBtn').addEventListener('click', () => setWaves(createPulsePreset()));
+document.getElementById('defaultWaveBtn').addEventListener('click', () => setWaves(createDefaultPreset()));
+
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('DOMContentLoaded', () => {
+  generateWaveControls();
+  resizeCanvas();
+  window.setTimeout(drawWaves, 80);
+});
+</script>
+</body>
+</html>

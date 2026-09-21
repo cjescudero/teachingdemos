@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Periodicidad del espectro y bins de la DFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #1a1a2e;
+    --muted: #555;
+    --soft: #7a7a86;
+    --line: #dde3e7;
+    --panel: #f8f9fa;
+    --panel-alt: #eef4f8;
+    --accent: #1b6b93;
+    --accent-soft: rgba(27, 107, 147, 0.1);
+    --green: #0e7c4a;
+    --green-soft: rgba(14, 124, 74, 0.1);
+    --orange: #c78a1e;
+    --orange-soft: rgba(199, 138, 30, 0.12);
+    --red: #c0392b;
+    --red-soft: rgba(192, 57, 43, 0.12);
+    --purple: #7a5dbd;
+    --purple-soft: rgba(122, 93, 189, 0.12);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top right, rgba(27, 107, 147, 0.06), transparent 28%),
+      linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+    color: var(--ink);
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+    min-height: 100vh;
+    padding: 1rem 1rem 2.5rem;
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--soft);
+    text-decoration: none;
+    opacity: 0.9;
+    z-index: 20;
+    transition: color 0.2s, opacity 0.2s;
+  }
+
+  .nav-menu:hover {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  .page {
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.9rem, 3vw, 2.5rem);
+    font-weight: 700;
+    text-align: center;
+    margin-top: 0.8rem;
+  }
+
+  .subtitle {
+    max-width: 860px;
+    margin: 0 auto;
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  .formula-band {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .formula-card,
+  .panel,
+  .control-panel,
+  .insight-card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 10px 35px rgba(26, 26, 46, 0.05);
+  }
+
+  .formula-card {
+    padding: 0.9rem 1rem;
+    min-height: 86px;
+  }
+
+  .formula-card .eyebrow {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.73rem;
+    letter-spacing: 0.04em;
+    color: var(--soft);
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+
+  .formula-card .formula {
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .control-panel {
+    padding: 1rem 1.1rem;
+    position: sticky;
+    top: 0.75rem;
+    z-index: 18;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+    align-items: end;
+  }
+
+  .control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .control label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .control input[type="range"],
+  .control select {
+    width: 100%;
+    accent-color: var(--accent);
+    font: inherit;
+  }
+
+  .control select {
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #c8d2da;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .control .value {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.95rem;
+    min-height: 1.2rem;
+  }
+
+  .status-strip {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 0.9rem;
+  }
+
+  .status-box {
+    padding: 0.95rem 1rem;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,249,250,0.98));
+    border: 1px solid var(--line);
+  }
+
+  .status-box strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.08rem;
+    font-weight: 600;
+  }
+
+  .status-box p {
+    margin-top: 0.3rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .status-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-content: flex-start;
+  }
+
+  .badge {
+    padding: 0.58rem 0.72rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    border: 1px solid transparent;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .badge.green {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+
+  .badge.orange {
+    background: var(--orange-soft);
+    color: #9b6713;
+  }
+
+  .badge.purple {
+    background: var(--purple-soft);
+    color: var(--purple);
+  }
+
+  .viz-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .panel {
+    padding: 0.95rem;
+  }
+
+  .panel-wide {
+    grid-column: 1 / -1;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.65rem;
+    align-items: baseline;
+  }
+
+  .panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .panel-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  canvas {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #fff 0%, #fbfcfd 100%);
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .insight-card {
+    padding: 0.95rem 1rem;
+  }
+
+  .insight-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.08rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .insight-card p,
+  .insight-card li {
+    color: var(--muted);
+    line-height: 1.48;
+    font-size: 0.97rem;
+  }
+
+  .insight-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    margin-top: 0.15rem;
+  }
+
+  .insight-card li::before {
+    content: '• ';
+    color: var(--accent);
+  }
+
+  @media (max-width: 980px) {
+    .formula-band,
+    .controls-grid,
+    .status-strip,
+    .viz-grid,
+    .insight-grid,
+    .panel-note {
+      text-align: left;
+    }
+
+    .panel-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="nav-menu" aria-label="Volver al índice de materiales">Índice de materiales</a>
+
+<main class="page">
+  <header>
+    <h1>Periodicidad del espectro y bins de la DFT</h1>
+    <p class="subtitle">
+      Una misma narrativa visual conecta cuatro ideas: una señal limitada en el tiempo tiene transformada continua,
+      el muestreo temporal hace periódico el espectro discreto, la frecuencia normalizada vive en una circunferencia de período 1
+      y la DFT toma <i>N</i> muestras fijas de ese espectro periódico.
+    </p>
+  </header>
+
+  <section class="formula-band" aria-label="Fórmulas clave">
+    <article class="formula-card">
+      <span class="eyebrow">Tiempo discreto</span>
+      <div class="formula"><i>x</i>[<i>n</i>] = <i>x</i><sub>a</sub>(<i>nT</i><sub>s</sub>)</div>
+    </article>
+    <article class="formula-card">
+      <span class="eyebrow">Periodicidad</span>
+      <div class="formula"><i>X</i>(e<sup>jω</sup>) periódica con período 2π, y en <i>F</i> las réplicas se separan por <i>F</i><sub>s</sub></div>
+    </article>
+    <article class="formula-card">
+      <span class="eyebrow">DFT</span>
+      <div class="formula"><i>X</i>[<i>k</i>] = <i>X</i>(e<sup>j2πk/N</sup>), &ensp; <i>F</i><sub>k</sub> = <i>kF</i><sub>s</sub>/<i>N</i>, &ensp; <i>X</i>[<i>k</i> + <i>N</i>] = <i>X</i>[<i>k</i>]</div>
+    </article>
+  </section>
+
+  <section class="control-panel">
+    <div class="controls-grid">
+      <div class="control">
+        <label for="nSelect">Número de bins N</label>
+        <select id="nSelect">
+          <option value="8">8</option>
+          <option value="16">16</option>
+          <option value="32" selected>32</option>
+          <option value="64">64</option>
+        </select>
+        <div class="value" id="nValue"></div>
+      </div>
+      <div class="control">
+        <label for="fsSlider">Frecuencia de muestreo F<sub>s</sub></label>
+        <input id="fsSlider" type="range" min="4" max="18" step="0.1" value="10">
+        <div class="value" id="fsValue"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="status-strip">
+    <div class="status-box">
+      <strong id="mainStatusTitle"></strong>
+      <p id="mainStatusBody"></p>
+    </div>
+    <div class="status-badges" id="statusBadges"></div>
+  </section>
+
+  <section class="viz-grid">
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">1. Señal continua limitada en el tiempo</div>
+        <div class="panel-note">La curva es continua en <i>t</i>; no aparecen bins todavía.</div>
+      </div>
+      <canvas id="timeCanvas" width="520" height="240" aria-label="Señal continua en el tiempo"></canvas>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">2. FT continua |X<sub>a</sub>(F)|</div>
+        <div class="panel-note">El espectro asociado a la señal continua no se presenta como periódico.</div>
+      </div>
+      <canvas id="continuousSpectrumCanvas" width="520" height="240" aria-label="Transformada de Fourier continua"></canvas>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">3. Muestreo temporal x[n] = x<sub>a</sub>(nT<sub>s</sub>)</div>
+        <div class="panel-note">Las muestras quedan fijadas cada T<sub>s</sub> = 1 / F<sub>s</sub>.</div>
+      </div>
+      <canvas id="sampledTimeCanvas" width="520" height="240" aria-label="Señal muestreada en el tiempo"></canvas>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">4. DTFT continua de la secuencia discreta</div>
+        <div class="panel-note">La transformada sigue siendo continua en frecuencia, pero con la misma forma de 2 repetida cada F<sub>s</sub>.</div>
+      </div>
+      <canvas id="periodicSpectrumCanvas" width="520" height="240" aria-label="Espectro periódico en tiempo discreto"></canvas>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">5. Extensión periódica temporal del bloque N</div>
+        <div class="panel-note">Para pasar a la DFT, repetimos en el tiempo discreto un único bloque de N muestras.</div>
+      </div>
+      <canvas id="periodicTimeCanvas" width="520" height="240" aria-label="Señal discreta periódica en el tiempo"></canvas>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div class="panel-title">6. Espectro discreto periódico de la DFT</div>
+        <div class="panel-note">La señal periódica en tiempo produce líneas discretas en frecuencia, repetidas cada F<sub>s</sub>.</div>
+      </div>
+      <canvas id="discreteSpectrumCanvas" width="520" height="240" aria-label="Espectro discreto periódico de la DFT"></canvas>
+    </article>
+
+    <article class="panel panel-wide">
+      <div class="panel-header">
+        <div class="panel-title">7. Primer período de la DFT: k = 0 … N−1 ↔ [0, F<sub>s</sub>)</div>
+        <div class="panel-note" id="binsPanelNote"></div>
+      </div>
+      <canvas id="binsCanvas" width="1080" height="330" aria-label="Bins de la DFT"></canvas>
+    </article>
+
+    <article class="panel panel-wide">
+      <div class="panel-header">
+        <div class="panel-title">8. Espectro centrado: reordenación tipo fftshift</div>
+        <div class="panel-note">Las primeras N/2 muestras y las restantes conservan su identidad, pero ahora aparecen alrededor de 0.</div>
+      </div>
+      <canvas id="centeredBinsCanvas" width="1080" height="330" aria-label="Espectro centrado de la DFT"></canvas>
+    </article>
+  </section>
+
+  <section class="insight-grid">
+    <article class="insight-card">
+      <h2>Qué cambia al muestrear</h2>
+      <p>
+        La flecha importante es esta: pasar de <i>x</i><sub>a</sub>(<i>t</i>) a <i>x</i>[<i>n</i>] no discretiza solo el tiempo;
+        también hace que la DTFT repita la misma forma espectral en intervalos de <i>F</i><sub>s</sub>. Después, la DFT selecciona
+        únicamente las líneas del primer período.
+      </p>
+    </article>
+
+    <article class="insight-card">
+      <h2>Periodicidad equivalente</h2>
+      <ul>
+        <li><span id="equivFText"></span></li>
+        <li><span id="equivfText"></span></li>
+        <li><span id="equivOmegaText"></span></li>
+      </ul>
+    </article>
+
+    <article class="insight-card">
+      <h2>Lectura de bins</h2>
+      <p id="binReadingText"></p>
+    </article>
+  </section>
+
+  <footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7; text-align: center;">
+    © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+  </footer>
+</main>
+
+<script>
+const state = {
+  N: 32,
+  F0: 1.3,
+  Fs: 10,
+  phase: 0
+};
+
+const controls = {
+  nSelect: document.getElementById('nSelect'),
+  fsSlider: document.getElementById('fsSlider')
+};
+
+const ui = {
+  nValue: document.getElementById('nValue'),
+  fsValue: document.getElementById('fsValue'),
+  mainStatusTitle: document.getElementById('mainStatusTitle'),
+  mainStatusBody: document.getElementById('mainStatusBody'),
+  statusBadges: document.getElementById('statusBadges'),
+  binsPanelNote: document.getElementById('binsPanelNote'),
+  equivFText: document.getElementById('equivFText'),
+  equivfText: document.getElementById('equivfText'),
+  equivOmegaText: document.getElementById('equivOmegaText'),
+  binReadingText: document.getElementById('binReadingText')
+};
+
+const canvases = {
+  time: document.getElementById('timeCanvas'),
+  continuousSpectrum: document.getElementById('continuousSpectrumCanvas'),
+  sampledTime: document.getElementById('sampledTimeCanvas'),
+  periodicSpectrum: document.getElementById('periodicSpectrumCanvas'),
+  periodicTime: document.getElementById('periodicTimeCanvas'),
+  discreteSpectrum: document.getElementById('discreteSpectrumCanvas'),
+  bins: document.getElementById('binsCanvas'),
+  centeredBins: document.getElementById('centeredBinsCanvas')
+};
+
+const contexts = {};
+for (const [key, canvas] of Object.entries(canvases)) {
+  contexts[key] = canvas.getContext('2d');
+}
+
+const COL = {
+  ink: '#1a1a2e',
+  muted: '#555',
+  soft: '#888',
+  line: '#d9e0e5',
+  accent: '#1b6b93',
+  accentFill: 'rgba(27, 107, 147, 0.10)',
+  accentSoftLine: 'rgba(27, 107, 147, 0.55)',
+  green: '#0e7c4a',
+  greenFill: 'rgba(14, 124, 74, 0.10)',
+  orange: '#c78a1e',
+  orangeFill: 'rgba(199, 138, 30, 0.12)',
+  red: '#c0392b',
+  redFill: 'rgba(192, 57, 43, 0.12)',
+  purple: '#7a5dbd',
+  purpleFill: 'rgba(122, 93, 189, 0.10)',
+  grayFill: 'rgba(90, 90, 90, 0.08)'
+};
+
+function fmt(value, digits = 2) {
+  return Number(value).toFixed(digits);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function gaussian(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z);
+}
+
+function dtftMagnitudeFromSamples(samples, Fs, F) {
+  let re = 0;
+  let im = 0;
+  for (let n = 0; n < samples.length; n += 1) {
+    const angle = -2 * Math.PI * F * n / Fs;
+    re += samples[n] * Math.cos(angle);
+    im += samples[n] * Math.sin(angle);
+  }
+  return Math.sqrt(re * re + im * im) / Math.max(samples.length, 1);
+}
+
+function getDerived() {
+  const N = state.N;
+  const Fs = state.Fs;
+  const F0 = state.F0;
+  const f0 = F0 / Fs;
+  const deltaF = Fs / N;
+  const omega0 = 2 * Math.PI * f0;
+  const binFloat = f0 * N;
+  const kNearest = Math.round(binFloat);
+  const kLow = Math.floor(binFloat);
+  const kHigh = Math.min(N - 1, kLow + 1);
+  const aligned = Math.abs(binFloat - kNearest) < 1e-6;
+  const sigmaF = 0.42;
+  const sigmaT = 0.24;
+  const nyquist = Fs / 2;
+  const continuousAxisLimit = 3.4;
+  const periodicAxisLimit = 22;
+  const replicaIndexMax = Math.ceil(periodicAxisLimit / Fs) + 1;
+  const periodSamples = [];
+  for (let n = 0; n < N; n += 1) {
+    const t = (n - (N - 1) / 2) / Fs;
+    const env = Math.exp(-0.5 * Math.pow(t / sigmaT, 2));
+    periodSamples.push(env * Math.cos(2 * Math.PI * F0 * t + 0.15));
+  }
+  const dftMagnitudes = [];
+  let dtftPeak = 0;
+  let analogPeriodicPeak = 0;
+  for (let i = 0; i <= 480; i += 1) {
+    const F = (i / 480) * Fs;
+    dtftPeak = Math.max(dtftPeak, dtftMagnitudeFromSamples(periodSamples, Fs, F));
+  }
+  for (let i = 0; i <= 800; i += 1) {
+    const F = lerp(-periodicAxisLimit, periodicAxisLimit, i / 800);
+    let mag = 0;
+    for (let m = -replicaIndexMax; m <= replicaIndexMax; m += 1) {
+      mag += gaussian(F - m * Fs, F0, sigmaF) + gaussian(F - m * Fs, -F0, sigmaF);
+    }
+    analogPeriodicPeak = Math.max(analogPeriodicPeak, mag);
+  }
+  for (let k = 0; k < N; k += 1) {
+    dftMagnitudes.push(dtftMagnitudeFromSamples(periodSamples, Fs, k * deltaF));
+  }
+  return {
+    N, Fs, f0, F0, deltaF, omega0, binFloat, kNearest, kLow, kHigh, aligned,
+    sigmaF, sigmaT, nyquist, continuousAxisLimit, periodicAxisLimit, replicaIndexMax,
+    periodSamples, dftMagnitudes, dtftPeak, analogPeriodicPeak
+  };
+}
+
+function signalValue(t, derived) {
+  const env = Math.exp(-0.5 * Math.pow(t / derived.sigmaT, 2));
+  return env * Math.cos(2 * Math.PI * derived.F0 * t + 0.15);
+}
+
+function continuousSpectrumValue(F, derived) {
+  return gaussian(F, derived.F0, derived.sigmaF) + gaussian(F, -derived.F0, derived.sigmaF);
+}
+
+function periodicSpectrumValue(F, derived) {
+  return dtftMagnitudeFromSamples(derived.periodSamples, derived.Fs, F);
+}
+
+function periodicAnalogSpectrumValue(F, derived) {
+  let sum = 0;
+  for (let m = -derived.replicaIndexMax; m <= derived.replicaIndexMax; m += 1) {
+    sum += continuousSpectrumValue(F - m * derived.Fs, derived);
+  }
+  return sum;
+}
+
+function sampleSetLine(ctx, dash = []) {
+  ctx.setLineDash(dash);
+}
+
+function clearCanvas(ctx, canvas) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, width = 1.2) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const size = 7;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - size * Math.cos(angle - 0.4), y2 - size * Math.sin(angle - 0.4));
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - size * Math.cos(angle + 0.4), y2 - size * Math.sin(angle + 0.4));
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawAxis(ctx, x, y, w, label, minLabel, maxLabel) {
+  drawArrow(ctx, x, y, x + w, y, COL.ink, 1.2);
+  ctx.save();
+  ctx.fillStyle = COL.ink;
+  ctx.font = 'italic 18px "STIX Two Text", serif';
+  ctx.fillText(label, x + w + 12, y + 6);
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.textAlign = 'center';
+  if (minLabel) ctx.fillText(minLabel, x, y + 20);
+  if (maxLabel) ctx.fillText(maxLabel, x + w, y + 20);
+  ctx.restore();
+}
+
+function drawGridLines(ctx, x, y, w, h) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(140, 140, 150, 0.14)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i += 1) {
+    const yy = y + (h * i) / 4;
+    ctx.beginPath();
+    ctx.moveTo(x, yy);
+    ctx.lineTo(x + w, yy);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function mapLinear(value, inMin, inMax, outMin, outMax) {
+  return outMin + ((value - inMin) / (inMax - inMin)) * (outMax - outMin);
+}
+
+function drawTimeContinuous(derived, pulse) {
+  const ctx = contexts.time;
+  const canvas = canvases.time;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 32, top: 26, bottom: 38 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const tMin = -0.9;
+  const tMax = 0.9;
+  const amp = h * 0.36;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 't', '−0.9', '0.9');
+
+  ctx.save();
+  ctx.strokeStyle = COL.soft;
+  ctx.lineWidth = 1;
+  sampleSetLine(ctx, [6, 5]);
+  ctx.beginPath();
+  for (let i = 0; i <= 300; i += 1) {
+    const t = lerp(tMin, tMax, i / 300);
+    const env = Math.exp(-0.5 * Math.pow(t / derived.sigmaT, 2));
+    const x = mapLinear(t, tMin, tMax, x0, x0 + w);
+    const yTop = y0 - env * amp;
+    const yBottom = y0 + env * amp;
+    if (i === 0) {
+      ctx.moveTo(x, yTop);
+    } else {
+      ctx.lineTo(x, yTop);
+    }
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  for (let i = 0; i <= 300; i += 1) {
+    const t = lerp(tMin, tMax, i / 300);
+    const env = Math.exp(-0.5 * Math.pow(t / derived.sigmaT, 2));
+    const x = mapLinear(t, tMin, tMax, x0, x0 + w);
+    const yBottom = y0 + env * amp;
+    if (i === 0) {
+      ctx.moveTo(x, yBottom);
+    } else {
+      ctx.lineTo(x, yBottom);
+    }
+  }
+  ctx.stroke();
+  sampleSetLine(ctx, []);
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = COL.accent;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  for (let i = 0; i <= 420; i += 1) {
+    const t = lerp(tMin, tMax, i / 420);
+    const x = mapLinear(t, tMin, tMax, x0, x0 + w);
+    const y = y0 - signalValue(t, derived) * amp;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = COL.accent;
+  ctx.font = 'italic 14px "STIX Two Text", serif';
+  ctx.fillText('xₐ(t)', x0 + 10, margin.top + 12);
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillStyle = COL.muted;
+  ctx.fillText('ventana temporal → espectro continuo', x0 + 72, margin.top + 12);
+  ctx.restore();
+}
+
+function drawContinuousSpectrum(derived, pulse) {
+  const ctx = contexts.continuousSpectrum;
+  const canvas = canvases.continuousSpectrum;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 34, top: 26, bottom: 38 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const FMin = -derived.continuousAxisLimit;
+  const FMax = derived.continuousAxisLimit;
+  const scale = h * 0.72;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 'F', '−F', '+F');
+
+  ctx.save();
+  ctx.strokeStyle = COL.accent;
+  ctx.lineWidth = 2.3;
+  ctx.beginPath();
+  for (let i = 0; i <= 500; i += 1) {
+    const F = lerp(FMin, FMax, i / 500);
+    const mag = continuousSpectrumValue(F, derived);
+    const x = mapLinear(F, FMin, FMax, x0, x0 + w);
+    const y = y0 - mag * scale;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  const plusX = mapLinear(derived.F0, FMin, FMax, x0, x0 + w);
+  const minusX = mapLinear(-derived.F0, FMin, FMax, x0, x0 + w);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(27, 107, 147, 0.55)';
+  ctx.lineWidth = 1.2;
+  sampleSetLine(ctx, [4, 4]);
+  [plusX, minusX].forEach((x) => {
+    ctx.beginPath();
+    ctx.moveTo(x, margin.top + 5);
+    ctx.lineTo(x, y0);
+    ctx.stroke();
+  });
+  sampleSetLine(ctx, []);
+  ctx.fillStyle = COL.accent;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('+F₀', plusX, margin.top + 14);
+  ctx.fillText('−F₀', minusX, margin.top + 14);
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = COL.muted;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillText('No periódica', x0 + 10, margin.top + 12);
+  ctx.restore();
+}
+
+function drawSampledTime(derived, pulse) {
+  const ctx = contexts.sampledTime;
+  const canvas = canvases.sampledTime;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 32, top: 26, bottom: 38 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const tMin = -0.9;
+  const tMax = 0.9;
+  const amp = h * 0.36;
+  const Ts = 1 / derived.Fs;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 'nTₛ', '−0.9', '0.9');
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(27, 107, 147, 0.28)';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for (let i = 0; i <= 380; i += 1) {
+    const t = lerp(tMin, tMax, i / 380);
+    const x = mapLinear(t, tMin, tMax, x0, x0 + w);
+    const y = y0 - signalValue(t, derived) * amp;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  for (let n = Math.ceil(tMin / Ts); n <= Math.floor(tMax / Ts); n += 1) {
+    const t = n * Ts;
+    const val = signalValue(t, derived);
+    const x = mapLinear(t, tMin, tMax, x0, x0 + w);
+    const y = y0 - val * amp;
+    ctx.strokeStyle = COL.orange;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    const r = 3.6 + 1.2 * pulse;
+    ctx.fillStyle = COL.orange;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = COL.orange;
+  ctx.font = 'italic 14px "STIX Two Text", serif';
+  ctx.fillText('x[n]', x0 + 10, margin.top + 12);
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillStyle = COL.muted;
+  ctx.fillText(`Tₛ = 1/Fₛ = ${fmt(Ts, 3)}`, x0 + 56, margin.top + 12);
+  ctx.restore();
+}
+
+function drawPeriodicSpectrum(derived, pulse) {
+  const ctx = contexts.periodicSpectrum;
+  const canvas = canvases.periodicSpectrum;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 34, top: 26, bottom: 40 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const FMin = -derived.periodicAxisLimit;
+  const FMax = derived.periodicAxisLimit;
+  const scale = h * 0.54;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 'F');
+
+  const tickValues = [-2 * derived.Fs, -derived.Fs, 0, derived.Fs, 2 * derived.Fs];
+  ctx.save();
+  tickValues.forEach((value) => {
+    if (value < FMin || value > FMax) return;
+    const xc = mapLinear(value, FMin, FMax, x0, x0 + w);
+    ctx.strokeStyle = 'rgba(120, 120, 130, 0.65)';
+    ctx.lineWidth = 1;
+    sampleSetLine(ctx, [4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(xc, margin.top + 6);
+    ctx.lineTo(xc, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+
+    ctx.fillStyle = COL.ink;
+    ctx.font = '12px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    let label = '0';
+    if (value === -2 * derived.Fs) label = '−2Fₛ';
+    else if (value === -derived.Fs) label = '−Fₛ';
+    else if (value === derived.Fs) label = 'Fₛ';
+    else if (value === 2 * derived.Fs) label = '2Fₛ';
+    ctx.fillText(label, xc, y0 + 18);
+  });
+  ctx.restore();
+
+  for (let m = -derived.replicaIndexMax; m <= derived.replicaIndexMax; m += 1) {
+    const leftEdge = m * derived.Fs - 1.2 * derived.Fs;
+    const rightEdge = m * derived.Fs + 1.2 * derived.Fs;
+    if (rightEdge < FMin || leftEdge > FMax) continue;
+    ctx.save();
+    ctx.strokeStyle = m === 0 ? COL.accent : (m < 0 ? COL.orange : COL.red);
+    ctx.globalAlpha = m === 0 ? 1 : 0.9;
+    ctx.lineWidth = m === 0 ? 2.2 : 1.8;
+    ctx.beginPath();
+    for (let i = 0; i <= 260; i += 1) {
+      const F = lerp(m * derived.Fs - 1.2 * derived.Fs, m * derived.Fs + 1.2 * derived.Fs, i / 260);
+      const mag = periodicAnalogSpectrumValue(F, derived) / derived.analogPeriodicPeak;
+      const x = mapLinear(F, FMin, FMax, x0, x0 + w);
+      const y = y0 - mag * scale;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+}
+
+function drawPeriodicTime(derived, pulse) {
+  const ctx = contexts.periodicTime;
+  const canvas = canvases.periodicTime;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 32, top: 26, bottom: 38 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const nMin = -derived.N;
+  const nMax = 2 * derived.N - 1;
+  const amp = h * 0.38;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 'n', `−${derived.N}`, `${2 * derived.N - 1}`);
+
+  const periodStartX = mapLinear(0, nMin, nMax, x0, x0 + w);
+  const periodEndX = mapLinear(derived.N, nMin, nMax, x0, x0 + w);
+  ctx.save();
+  ctx.fillStyle = COL.greenFill;
+  ctx.fillRect(periodStartX, margin.top + 12, periodEndX - periodStartX, h - 12);
+  ctx.restore();
+
+  for (let n = nMin; n <= nMax; n += 1) {
+    const wrapped = ((n % derived.N) + derived.N) % derived.N;
+    const val = derived.periodSamples[wrapped];
+    const x = mapLinear(n, nMin, nMax, x0, x0 + w);
+    const y = y0 - val * amp;
+    const inMainPeriod = n >= 0 && n < derived.N;
+    ctx.strokeStyle = inMainPeriod ? COL.green : 'rgba(27, 107, 147, 0.45)';
+    ctx.lineWidth = inMainPeriod ? 1.9 : 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    ctx.fillStyle = inMainPeriod ? COL.green : COL.accent;
+    ctx.beginPath();
+    ctx.arc(x, y, inMainPeriod ? 3.6 + 0.8 * pulse : 2.7, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  for (let p = -1; p <= 2; p += 1) {
+    const markerX = mapLinear(p * derived.N, nMin, nMax, x0, x0 + w);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(14, 124, 74, 0.45)';
+    sampleSetLine(ctx, [4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(markerX, margin.top + 6);
+    ctx.lineTo(markerX, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.fillStyle = COL.green;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillText(`xₚ[n + N] = xₚ[n], con N = ${derived.N}`, x0 + 10, margin.top + 14);
+  ctx.fillText('El bloque central es el que se repite para construir la DFT.', x0 + 10, margin.top + 32);
+  ctx.restore();
+}
+
+function drawDiscreteSpectrum(derived, pulse) {
+  const ctx = contexts.discreteSpectrum;
+  const canvas = canvases.discreteSpectrum;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 42, right: 34, top: 26, bottom: 40 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const FMin = -derived.periodicAxisLimit;
+  const FMax = derived.periodicAxisLimit;
+  const scale = h * 0.70;
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  drawAxis(ctx, x0, y0, w, 'F');
+
+  const tickValues = [-2 * derived.Fs, -derived.Fs, 0, derived.Fs, 2 * derived.Fs];
+  ctx.save();
+  tickValues.forEach((value) => {
+    if (value < FMin || value > FMax) return;
+    const xc = mapLinear(value, FMin, FMax, x0, x0 + w);
+    ctx.strokeStyle = 'rgba(120, 120, 130, 0.65)';
+    ctx.lineWidth = 1;
+    sampleSetLine(ctx, [4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(xc, margin.top + 6);
+    ctx.lineTo(xc, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+
+    ctx.fillStyle = COL.ink;
+    ctx.font = '12px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    let label = '0';
+    if (value === -2 * derived.Fs) label = '−2Fₛ';
+    else if (value === -derived.Fs) label = '−Fₛ';
+    else if (value === derived.Fs) label = 'Fₛ';
+    else if (value === 2 * derived.Fs) label = '2Fₛ';
+    ctx.fillText(label, xc, y0 + 18);
+  });
+  ctx.restore();
+
+  const firstStart = mapLinear(0, FMin, FMax, x0, x0 + w);
+  const firstEnd = mapLinear(derived.Fs, FMin, FMax, x0, x0 + w);
+  ctx.save();
+  ctx.fillStyle = COL.greenFill;
+  ctx.fillRect(firstStart, margin.top + 16, firstEnd - firstStart, h - 16);
+  ctx.restore();
+
+  for (let m = -derived.replicaIndexMax; m <= derived.replicaIndexMax; m += 1) {
+    for (let k = 0; k < derived.N; k += 1) {
+      const F = m * derived.Fs + k * derived.deltaF;
+      if (F < FMin || F > FMax) continue;
+      const x = mapLinear(F, FMin, FMax, x0, x0 + w);
+      const mag = derived.dftMagnitudes[k] / derived.dtftPeak;
+      const y = y0 - mag * scale;
+      const isMainReplica = m === 0;
+      const isSelected = derived.aligned ? k === clamp(derived.kNearest, 0, derived.N - 1) : (k === derived.kLow || k === derived.kHigh);
+      ctx.strokeStyle = isSelected ? COL.red : (isMainReplica ? COL.green : 'rgba(27, 107, 147, 0.52)');
+      ctx.lineWidth = isSelected ? 2.1 : (isMainReplica ? 1.8 : 1.1);
+      ctx.beginPath();
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.beginPath();
+      ctx.arc(x, y, isSelected ? 3.5 + 0.7 * pulse : 2.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+
+  ctx.save();
+  ctx.fillStyle = COL.green;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillText('Las líneas discretas aparecen en Fₖ = kFₛ/N y se repiten cada Fₛ.', x0 + 10, margin.top + 14);
+  ctx.fillText('La franja verde es el primer período que luego aislamos en la gráfica 7.', x0 + 10, margin.top + 32);
+  ctx.restore();
+}
+
+function standardBinData(derived) {
+  const data = [];
+  for (let k = 0; k < derived.N; k += 1) {
+    const F = k * derived.deltaF;
+    data.push({ k, F, xValue: F });
+  }
+  return data;
+}
+
+function centeredBinData(derived) {
+  const data = [];
+  for (let k = 0; k < derived.N; k += 1) {
+    const F = k < derived.N / 2 ? k * derived.deltaF : (k - derived.N) * derived.deltaF;
+    data.push({ k, F, xValue: F });
+  }
+  data.sort((a, b) => a.F - b.F);
+  return data;
+}
+
+function drawDashedEnvelope(ctx, derived, domainMin, domainMax, x0, y0, w, scale, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.2;
+  sampleSetLine(ctx, [7, 5]);
+  ctx.beginPath();
+  for (let i = 0; i <= 600; i += 1) {
+    const F = lerp(domainMin, domainMax, i / 600);
+    const mag = periodicSpectrumValue(F, derived) / derived.dtftPeak;
+    const x = mapLinear(F, domainMin, domainMax, x0, x0 + w);
+    const y = y0 - mag * scale;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  sampleSetLine(ctx, []);
+  ctx.restore();
+}
+
+function drawBins(derived, pulse) {
+  const ctx = contexts.bins;
+  const canvas = canvases.bins;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 54, right: 38, top: 26, bottom: 64 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const domainMin = 0;
+  const domainMax = derived.Fs;
+  const scale = h * 0.56;
+  const bins = standardBinData(derived);
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  const halfX = mapLinear(derived.Fs / 2, domainMin, domainMax, x0, x0 + w);
+  ctx.save();
+  ctx.fillStyle = COL.accentFill;
+  ctx.fillRect(x0, margin.top + 14, halfX - x0, h - 14);
+  ctx.fillStyle = COL.orangeFill;
+  ctx.fillRect(halfX, margin.top + 14, x0 + w - halfX, h - 14);
+  ctx.restore();
+  drawAxis(ctx, x0, y0, w, 'F');
+  ctx.save();
+  ctx.fillStyle = COL.ink;
+  ctx.font = '12px "STIX Two Text", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('0', x0, y0 + 38);
+  ctx.fillText('Fₛ/2', halfX, y0 + 38);
+  ctx.fillText('Fₛ', x0 + w, y0 + 38);
+  ctx.restore();
+
+  drawDashedEnvelope(ctx, derived, domainMin, domainMax, x0, y0, w, scale, COL.purple);
+
+  ctx.save();
+  bins.forEach((bin, index) => {
+    const x = mapLinear(bin.xValue, domainMin, domainMax, x0, x0 + w);
+    const mag = derived.dftMagnitudes[bin.k] / derived.dtftPeak;
+    const y = y0 - mag * scale;
+    const isDC = bin.k === 0;
+    const isNyquist = derived.N % 2 === 0 && bin.k === derived.N / 2;
+    const kNearest = clamp(derived.kNearest, 0, derived.N - 1);
+    const isSelected = derived.aligned ? bin.k === kNearest : (bin.k === derived.kLow || bin.k === derived.kHigh);
+    const stemWidth = isSelected ? 4.5 : 2.2;
+    const halfColor = bin.k < derived.N / 2 ? COL.accent : COL.orange;
+    ctx.strokeStyle = isSelected ? COL.red : (isDC ? COL.green : (isNyquist ? COL.orange : halfColor));
+    ctx.lineWidth = stemWidth;
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.beginPath();
+    ctx.arc(x, y, isSelected ? 4.3 + 1.2 * pulse : 3.1, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(140, 140, 150, 0.22)';
+    ctx.lineWidth = 1;
+    sampleSetLine(ctx, [2, 4]);
+    ctx.beginPath();
+    ctx.moveTo(x, margin.top + 8);
+    ctx.lineTo(x, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+
+    if (index === 0 || index === bins.length - 1 || isDC || isNyquist || isSelected) {
+      ctx.save();
+      ctx.fillStyle = COL.ink;
+      ctx.font = '12px "STIX Two Text", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`k=${bin.k}`, x, y0 + 18);
+      ctx.restore();
+    }
+  });
+  ctx.restore();
+
+  const actualPositiveX = mapLinear(derived.F0, domainMin, domainMax, x0, x0 + w);
+  if (actualPositiveX >= x0 && actualPositiveX <= x0 + w) {
+    ctx.save();
+    ctx.strokeStyle = COL.red;
+    ctx.lineWidth = 1.3;
+    sampleSetLine(ctx, [5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(actualPositiveX, margin.top + 6);
+    ctx.lineTo(actualPositiveX, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+    ctx.fillStyle = COL.red;
+    ctx.font = 'italic 13px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('+F₀', actualPositiveX, margin.top + 14);
+    ctx.restore();
+  }
+
+  const actualNegativeF = derived.Fs - derived.F0;
+  const actualNegativeX = mapLinear(actualNegativeF, domainMin, domainMax, x0, x0 + w);
+  if (actualNegativeX >= x0 && actualNegativeX <= x0 + w) {
+    ctx.save();
+    ctx.strokeStyle = COL.orange;
+    ctx.lineWidth = 1.3;
+    sampleSetLine(ctx, [5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(actualNegativeX, margin.top + 6);
+    ctx.lineTo(actualNegativeX, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+    ctx.fillStyle = COL.orange;
+    ctx.font = 'italic 13px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Fₛ − F₀', actualNegativeX, margin.top + 14);
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.fillStyle = COL.muted;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillText('Solo se muestra el primer período de la DFT: k = 0 … N−1, equivalente a F en [0, Fₛ).', x0 + 10, margin.top + 16);
+  ctx.fillText(`ΔF = Fₛ / N = ${fmt(derived.deltaF, 3)}`, x0 + 10, margin.top + 34);
+  ctx.restore();
+
+  drawInsetPeriodicity(ctx, canvas.width - 210, 18, 174, 86, pulse);
+}
+
+function drawCenteredBins(derived, pulse) {
+  const ctx = contexts.centeredBins;
+  const canvas = canvases.centeredBins;
+  clearCanvas(ctx, canvas);
+
+  const margin = { left: 54, right: 38, top: 26, bottom: 64 };
+  const x0 = margin.left;
+  const y0 = canvas.height - margin.bottom;
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+  const domainMin = -derived.Fs / 2;
+  const domainMax = derived.Fs / 2;
+  const scale = h * 0.56;
+  const bins = centeredBinData(derived);
+
+  drawGridLines(ctx, x0, margin.top, w, h);
+  const zeroX = mapLinear(0, domainMin, domainMax, x0, x0 + w);
+  ctx.save();
+  ctx.fillStyle = COL.orangeFill;
+  ctx.fillRect(x0, margin.top + 14, zeroX - x0, h - 14);
+  ctx.fillStyle = COL.accentFill;
+  ctx.fillRect(zeroX, margin.top + 14, x0 + w - zeroX, h - 14);
+  ctx.restore();
+  drawAxis(ctx, x0, y0, w, 'F');
+  ctx.save();
+  ctx.fillStyle = COL.ink;
+  ctx.font = '12px "STIX Two Text", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('−Fₛ/2', x0, y0 + 38);
+  ctx.fillText('0', zeroX, y0 + 38);
+  ctx.fillText('+Fₛ/2', x0 + w, y0 + 38);
+  ctx.restore();
+
+  drawDashedEnvelope(ctx, derived, domainMin, domainMax, x0, y0, w, scale, COL.purple);
+
+  ctx.save();
+  bins.forEach((bin, index) => {
+    const x = mapLinear(bin.xValue, domainMin, domainMax, x0, x0 + w);
+    const mag = derived.dftMagnitudes[bin.k] / derived.dtftPeak;
+    const y = y0 - mag * scale;
+    const isDC = bin.k === 0;
+    const isNyquist = derived.N % 2 === 0 && bin.k === derived.N / 2;
+    const kNearest = clamp(derived.kNearest, 0, derived.N - 1);
+    const isSelected = derived.aligned ? bin.k === kNearest : (bin.k === derived.kLow || bin.k === derived.kHigh);
+    const halfColor = bin.k < derived.N / 2 ? COL.accent : COL.orange;
+
+    ctx.strokeStyle = isSelected ? COL.red : (isDC ? COL.green : (isNyquist ? COL.orange : halfColor));
+    ctx.lineWidth = isSelected ? 4.5 : 2.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.beginPath();
+    ctx.arc(x, y, isSelected ? 4.3 + 1.2 * pulse : 3.1, 0, 2 * Math.PI);
+    ctx.fill();
+
+    if (index === 0 || index === bins.length - 1 || isDC || isNyquist || isSelected) {
+      ctx.save();
+      ctx.fillStyle = COL.ink;
+      ctx.font = '12px "STIX Two Text", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`k=${bin.k}`, x, y0 + 18);
+      ctx.restore();
+    }
+  });
+  ctx.restore();
+
+  const actualPositiveX = mapLinear(derived.F0, domainMin, domainMax, x0, x0 + w);
+  if (actualPositiveX >= x0 && actualPositiveX <= x0 + w) {
+    ctx.save();
+    ctx.strokeStyle = COL.red;
+    ctx.lineWidth = 1.3;
+    sampleSetLine(ctx, [5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(actualPositiveX, margin.top + 6);
+    ctx.lineTo(actualPositiveX, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+    ctx.fillStyle = COL.red;
+    ctx.font = 'italic 13px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('+F₀', actualPositiveX, margin.top + 14);
+    ctx.restore();
+  }
+
+  const actualNegativeX = mapLinear(-derived.F0, domainMin, domainMax, x0, x0 + w);
+  if (actualNegativeX >= x0 && actualNegativeX <= x0 + w) {
+    ctx.save();
+    ctx.strokeStyle = COL.orange;
+    ctx.lineWidth = 1.3;
+    sampleSetLine(ctx, [5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(actualNegativeX, margin.top + 6);
+    ctx.lineTo(actualNegativeX, y0);
+    ctx.stroke();
+    sampleSetLine(ctx, []);
+    ctx.fillStyle = COL.orange;
+    ctx.font = 'italic 13px "STIX Two Text", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('−F₀', actualNegativeX, margin.top + 14);
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.fillStyle = COL.muted;
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillText('La mitad azul es k = 0 … N/2−1; la mitad naranja es k = N/2 … N−1 tras centrar el espectro.', x0 + 10, margin.top + 16);
+  ctx.restore();
+}
+
+function drawInsetPeriodicity(ctx, x, y, w, h, pulse) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  ctx.strokeStyle = 'rgba(122, 93, 189, 0.35)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  roundedRectPath(ctx, x, y, w, h, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = COL.purple;
+  ctx.font = '600 12px "Fira Code", monospace';
+  ctx.fillText('X[k + N] = X[k]', x + 12, y + 18);
+
+  const baseY = y + h - 18;
+  ctx.strokeStyle = COL.purple;
+  ctx.lineWidth = 2.8;
+  const x1 = x + 32;
+  const x2 = x + 120;
+  [x1, x2].forEach((barX) => {
+    ctx.beginPath();
+    ctx.moveTo(barX, baseY);
+    ctx.lineTo(barX, baseY - 28 - 6 * pulse);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(barX, baseY - 28 - 6 * pulse, 4, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+  ctx.fillText('k', x1 - 6, baseY + 14);
+  ctx.fillText('k+N', x2 - 12, baseY + 14);
+  drawArrow(ctx, x1 + 12, baseY - 16, x2 - 18, baseY - 16, COL.purple, 1.2);
+  ctx.restore();
+}
+
+function roundedRectPath(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+}
+
+function refreshText(derived) {
+  ui.nValue.textContent = `${derived.N} muestras de la DTFT por período`;
+  ui.fsValue.innerHTML = `Fₛ = ${fmt(derived.Fs, 2)} &nbsp;→&nbsp; Tₛ = ${fmt(1 / derived.Fs, 3)} &nbsp;→&nbsp; f₀ = F₀/Fₛ = ${fmt(derived.f0, 4)}`;
+
+  const toneBinExact = derived.binFloat;
+  const rounded = Math.round(toneBinExact);
+  const positiveBin = clamp(rounded, 0, Math.floor(derived.N / 2));
+  const wrappedNegative = positiveBin === 0 ? 0 : derived.N - positiveBin;
+
+  if (derived.aligned) {
+    ui.mainStatusTitle.textContent = `Tono alineado con el bin k = ${positiveBin}`;
+    ui.mainStatusBody.innerHTML = `La señal continua permanece fija en <i>F</i><sub>0</sub> = ${fmt(derived.F0, 3)}.
+      La frecuencia del tono cumple además <i>F</i><sub>0</sub> = ${positiveBin}·Δ<i>F</i>. En esta situación,
+      el tono cae exactamente sobre una de las muestras que toma la DFT: <i>X</i>[${positiveBin}] = <i>X</i>(e<sup>j2π·${positiveBin}/${derived.N}</sup>).`;
+  } else {
+    ui.mainStatusTitle.textContent = `Tono entre bins: ${derived.kLow} y ${derived.kHigh}`;
+    ui.mainStatusBody.innerHTML = `La señal analógica no cambia al mover <i>F</i><sub>s</sub>: cambian la densidad de muestras,
+      la separación entre réplicas y las posiciones de muestreo de la DFT. La DFT sigue muestreando posiciones fijas separadas por Δ<i>F</i> = ${fmt(derived.deltaF, 3)}.
+      El tono no elige un bin libre; cae entre las muestras del espectro periódico y por eso la lectura debe hacerse respecto a esos puntos fijos.`;
+  }
+
+  const badges = [
+    { text: `ΔF = ${fmt(derived.deltaF, 3)}`, className: 'badge' },
+    { text: `ω₀ = 2πf₀ = ${fmt(derived.omega0 / Math.PI, 3)}π`, className: 'badge green' },
+    { text: `k flotante = f₀·N = ${fmt(derived.binFloat, 3)}`, className: 'badge orange' },
+    { text: derived.N % 2 === 0 ? `Nyquist: k = N/2 = ${derived.N / 2}` : 'N impar: sin bin Nyquist exacto', className: 'badge purple' }
+  ];
+  ui.statusBadges.innerHTML = badges
+    .map((badge) => `<span class="${badge.className}">${badge.text}</span>`)
+    .join('');
+
+  ui.equivFText.innerHTML = `<i>F</i> ≡ <i>F</i> ± m<i>F</i><sub>s</sub>`;
+  ui.equivfText.innerHTML = `<i>f</i> ≡ <i>f</i> ± m`;
+  ui.equivOmegaText.innerHTML = `ω ≡ ω ± 2πm`;
+
+  ui.binsPanelNote.textContent = 'La envolvente aparece en punteado y las primeras N/2 muestras se distinguen visualmente de las restantes.';
+
+  const negativeText = `la copia negativa aparece envuelta cerca de Fₛ − F₀, en el bin k = ${wrappedNegative}`;
+  const nyquistText = derived.N % 2 === 0
+    ? `Si N es par, k = N/2 = ${derived.N / 2} es el bin de Nyquist.`
+    : 'Con este N no hay bin de Nyquist exacto.';
+
+  ui.binReadingText.innerHTML = `Cada barra representa una muestra del espectro periódico en una frecuencia fija <i>F</i><sub>k</sub> = <i>kF</i><sub>s</sub>/<i>N</i>.
+    El bin <i>k</i> = 0 es DC. Para el tono positivo, la referencia más próxima es <i>k</i> = ${positiveBin}; ${negativeText}. ${nyquistText}`;
+}
+
+function renderFrame(timeMs) {
+  const derived = state.derived;
+  const pulse = 0.5 + 0.5 * Math.sin(timeMs / 700);
+  state.phase = timeMs;
+
+  drawTimeContinuous(derived, pulse);
+  drawContinuousSpectrum(derived, pulse);
+  drawSampledTime(derived, pulse);
+  drawPeriodicSpectrum(derived, pulse);
+  drawPeriodicTime(derived, pulse);
+  drawDiscreteSpectrum(derived, pulse);
+  drawBins(derived, pulse);
+  drawCenteredBins(derived, pulse);
+  refreshText(derived);
+
+  requestAnimationFrame(renderFrame);
+}
+
+function syncFromControls() {
+  state.N = Number(controls.nSelect.value);
+  state.Fs = Number(controls.fsSlider.value);
+  state.derived = getDerived();
+}
+
+controls.nSelect.addEventListener('change', syncFromControls);
+controls.fsSlider.addEventListener('input', syncFromControls);
+
+syncFromControls();
+requestAnimationFrame(renderFrame);
+</script>
+</body>
+</html>

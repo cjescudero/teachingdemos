@@ -1,83 +1,59 @@
 # Teaching Demos
 
-This repository contains interactive web demonstrations for teaching signal processing and machine learning concepts.
+Portal de demostraciones interactivas para docencia. La navegación se organiza en tres niveles: **portada → índice del apartado → demostración**.
 
-## Available Demos
+**Sitio de GitHub Pages:** [Teaching Demos](https://cjescudero.github.io/teachingdemos/).
 
-### 1. Fourier Transform Demonstration (`fourier-demo.html`)
-An interactive visualization of the Fourier Transform principles. This demo helps students understand how different signals can be decomposed into their frequency components through visual representation.
+## Apartados
 
-**Live Demo**: [https://cjescudero.github.io/teachingdemos/fourier-demo.html](https://cjescudero.github.io/teachingdemos/fourier-demo.html)
+- **[Teoría de la Información](teoria-de-la-informacion/index.html):** conserva el índice de TI_GCED y sus seis recursos sobre circunferencia unidad, periodicidad espectral, aliasing, cuantificación, series de Fourier y bins de la DFT. Incorpora la demostración de polos, ceros y respuesta en frecuencia.
+- **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador de embeddings y recuperación RAG.
+- **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico, canales y coexistencia entre tecnologías inalámbricas (`EspectroyRedes.html`).
 
-### 2. Poles, Zeros and Fourier Transform (`poles-zeros-fourier.html`)
-An interactive demonstration showing the relationship between poles, zeros, and the Fourier Transform in signal processing. This visualization helps students understand how the placement of poles and zeros affects frequency response.
+## Estructura
 
-**Live Demo**: [https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html](https://cjescudero.github.io/teachingdemos/poles-zeros-fourier.html)
+```text
+index.html                       Portada de temas
+assets/site.css                  Estilos de la portada y los nuevos índices
+teoria-de-la-informacion/         Índice TI_GCED y siete demos
+inteligencia-artificial/         Índice y simulador RAG
+redes-inalambricas/               Índice y laboratorio de espectro doméstico
+```
 
-### 3. RAG (Retrieval-Augmented Generation) Simulator (`rag-html-simple.html`)
-A simple simulator that demonstrates the concept of embeddings and retrieval-augmented generation in natural language processing. This tool helps visualize how semantic similarity works in vector spaces for information retrieval.
+Cada apartado tiene su propio `index.html`. Las demos mantienen su HTML, CSS y JavaScript autocontenidos. En la raíz solo se conserva `index.html`, la portada general.
 
-**Live Demo**: [https://cjescudero.github.io/teachingdemos/rag-html-simple.html](https://cjescudero.github.io/teachingdemos/rag-html-simple.html)
+## Desarrollo local
 
-## Usage
+No se necesita instalación ni compilación. Abre `index.html` en el navegador o sirve la raíz con Python 3:
 
-These demos are standalone HTML files that can be opened directly in any modern web browser. No server or additional installation is required.
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1
+```
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/teachingdemos.git
-   ```
+Visita <http://127.0.0.1:8000/>. Para comprobar la ruta de proyecto que utiliza Pages, ejecuta el servidor desde el directorio padre y visita `/teachingdemos/`.
 
-2. Open any of the HTML files in your web browser to start using the demonstrations.
+Se requiere JavaScript. Las fuentes de Google y las bibliotecas p5.js y math.js del simulador de polos y ceros se cargan desde servicios externos; estas bibliotecas requieren conexión a internet.
 
-3. Interacting with the demos:
-   - **Fourier Transform Demo**: Use the sliders to adjust frequency components and observe how they affect the composite signal. Click on the graph to add custom points.
-   - **RAG Simulator**: Enter text in the input field to see how embeddings are generated and how similar documents are retrieved based on semantic similarity.
-   - **Poles and Zeros Demo**: Drag poles and zeros on the complex plane to see how they affect the frequency response in real-time.
+## Publicación en GitHub Pages
 
-4. For optimal performance:
-   - Use a modern browser (Chrome, Firefox, Safari, or Edge)
-   - Enable JavaScript in your browser settings
-   - For the best experience, view on a desktop or laptop computer with a screen width of at least 1024px
+1. Revisa `git status --short --branch` y `git diff --check`. Comprueba siempre la portada y todos los índices; actualiza los afectados junto con el README.
+2. Consulta el estado remoto con `git fetch origin`, revisa cualquier divergencia y crea un commit con los archivos revisados, incluidos los nuevos. Envía el commit a la rama publicada (por ejemplo, `git push origin main` si Pages usa `main`).
+3. En GitHub, abre **Settings → Pages → Build and deployment**.
+4. Selecciona **Deploy from a branch**, la rama correspondiente y **/(root)**.
+5. Guarda y espera a que finalice la publicación; comprueba el enlace del sitio indicado arriba.
 
-## Online Access
+Los cambios locales y los commits sin enviar no aparecen en GitHub Pages. Después del envío, confirma que el despliegue finaliza correctamente y comprueba en la web pública la portada, los índices y las demos modificadas. Un `push` correcto no garantiza por sí solo que Pages se haya actualizado.
 
-All demos are also available online through GitHub Pages. You can access them directly using the links in the "Available Demos" section above without needing to download or clone the repository.
+Los enlaces internos son relativos para funcionar bajo `/teachingdemos/`. No se necesita un generador de sitio ni un proceso de compilación. Esta reorganización no modifica la configuración ni el contenido del sitio original TI_GCED.
 
-## Technologies Used
+## Comprobaciones y contribuciones
 
-- HTML5
-- CSS3
-- JavaScript
-- p5.js (for visualizations)
-- math.js (for mathematical operations)
+Antes de enviar cambios, ejecuta `git diff --check`. Recorre portada, índices y demos, comprueba enlaces de regreso, y revisa la consola del navegador. Prueba los controles de las demos modificadas y la presentación de los índices en móvil, escritorio y con teclado. No hay una suite automatizada de pruebas instalada.
 
-## License
+Añade cada nueva demo al índice de su apartado. Describe en la solicitud de cambios el comportamiento modificado, el navegador y las comprobaciones realizadas; adjunta capturas si hay cambios visuales.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Procedencia y licencia
 
-MIT License
+Los seis recursos y el índice de Teoría de la Información se importaron de [TI_GCED](https://github.com/cjescudero/TI_GCED), revisión `cdfb2023ed7bb4c68bf3472a6b24a259681d5b4b`. El repositorio y sitio originales permanecen independientes. Se conserva la presentación y el orden del índice, añadiendo polos y ceros y el regreso a la portada; los enlaces de navegación y licencia se adaptan a su nueva ubicación.
 
-Copyright (c) 2025 Carlos J. Escudero
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-## Contributing
-
-Contributions to improve existing demos or add new ones are welcome. Please feel free to submit a pull request or open an issue to discuss potential improvements.
+Copyright © 2025–2026 Carlos J. Escudero. Distribuido bajo la [licencia MIT](LICENSE).

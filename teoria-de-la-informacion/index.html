@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TI_GCED — Material de apoyo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #ffffff;
+      color: #1a1a2e;
+      font-family: 'STIX Two Text', 'Times New Roman', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2.5rem 1rem;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 1.05rem;
+      color: #555;
+      margin-bottom: 1rem;
+      font-style: italic;
+      text-align: center;
+      max-width: 720px;
+      line-height: 1.5;
+    }
+    .hint {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      max-width: 560px;
+    }
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-width: 560px;
+      width: 100%;
+    }
+    .card {
+      display: block;
+      padding: 1.25rem 1.5rem;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      background: #eef4f8;
+      border-color: #c5dbe6;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #1a1a2e;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+    .card-file {
+      font-size: 0.85rem;
+      color: #1b6b93;
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="hint"><a href="../index.html">← Todos los temas</a></p>
+  <h1>TI_GCED</h1>
+  <p class="subtitle">
+    Material de apoyo de la asignatura Teoría de la Información (TI) del Grado de Ciencia e Ingeniería de Datos (GCED) de la Facultad de Informática (FIC) de la Universidade da Coruña (UDC).
+  </p>
+
+  <p class="hint">Los enlaces se abren en la misma pestaña. <span aria-hidden="true">📐 esquema (estático) · 🎬 animación (interactiva)</span></p>
+  <nav class="cards" aria-label="Recursos disponibles">
+    <a href="circunferencia.html" class="card">
+      <div class="card-title">📐 Periodicidad en la circunferencia unidad</div>
+      <div class="card-desc">Diagramas para comprender la periodicidad asociada a los ángulos/frecuencias en la circunferencia unidad, para <i>f</i> (período 1) y ω (período 2π).</div>
+      <div class="card-file">circunferencia.html</div>
+    </a>
+    <a href="aliasing.html" class="card">
+      <div class="card-title">📐 Periodicidad espectral en tiempo discreto</div>
+      <div class="card-desc">Diagrama que muestra las equivalencias <i>F</i>, <i>f</i> = <i>F</i>/<i>F</i><sub>s</sub> y ω = 2π<i>f</i>.</div>
+      <div class="card-file">aliasing.html</div>
+    </a>
+    <a href="aliasing_animacion.html" class="card">
+      <div class="card-title">🎬 Aliasing al muestrear</div>
+      <div class="card-desc">Animación interactiva para variar <i>F</i><sub>s</sub> / <i>F</i><sub>max</sub> y ver réplicas espectrales y solapamiento.</div>
+      <div class="card-file">aliasing_animacion.html</div>
+    </a>
+    <a href="cuantizacion.html" class="card">
+      <div class="card-title">🎬 Ruido de cuantificación</div>
+      <div class="card-desc">Señal analógica vs. cuantificada y error de cuantificación. Control del número de bits <i>N</i> (relación señal-ruido ≈ <i>N</i>×6 dB).</div>
+      <div class="card-file">cuantizacion.html</div>
+    </a>
+    <a href="fourier.html" class="card">
+      <div class="card-title">🎬 Series de Fourier por suma de senoidales</div>
+      <div class="card-desc">Demostración interactiva para combinar armónicos, ajustar amplitud, frecuencia y fase, y cargar aproximaciones de onda cuadrada, triangular, sierra o pulso.</div>
+      <div class="card-file">fourier.html</div>
+    </a>
+    <a href="dft_bins_animacion.html" class="card">
+      <div class="card-title">🎬 Periodicidad de la DFT y bins de frecuencia</div>
+      <div class="card-desc">Animación integrada para relacionar señal continua, muestreo temporal, periodicidad espectral en tiempo discreto y significado de cada bin <i>k</i> de la DFT.</div>
+      <div class="card-file">dft_bins_animacion.html</div>
+    </a>
+    <a href="poles-zeros-fourier.html" class="card">
+      <div class="card-title">🎬 Polos, ceros y transformada de Fourier</div>
+      <div class="card-desc">Explora cómo la posición de polos y ceros en el plano complejo modifica la respuesta en frecuencia.</div>
+      <div class="card-file">poles-zeros-fourier.html</div>
+    </a>
+  </nav>
+
+  <footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7;">
+    © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+  </footer>
+
+</body>
+</html>

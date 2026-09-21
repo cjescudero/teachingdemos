@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruido de cuantificación</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    color: #1a1a2e;
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem 1rem;
+    min-height: 100vh;
+  }
+  .nav-menu {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.8rem;
+    color: #888;
+    text-decoration: none;
+    opacity: 0.85;
+    z-index: 100;
+    transition: color 0.2s, opacity 0.2s;
+  }
+  .nav-menu:hover {
+    color: #1b6b93;
+    opacity: 1;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1rem;
+    text-align: center;
+    max-width: 640px;
+    line-height: 1.5;
+  }
+  canvas {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    max-width: 100%;
+  }
+  .controls {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.05rem;
+  }
+  .slider-row label {
+    font-weight: 600;
+    min-width: 140px;
+    text-align: right;
+  }
+  .slider-row input[type=range] {
+    width: 280px;
+    accent-color: #1b6b93;
+  }
+  .slider-row .val {
+    min-width: 60px;
+    font-style: italic;
+    color: #1b6b93;
+    font-size: 1.1rem;
+  }
+  .info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-align: center;
+    max-width: 520px;
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="nav-menu" rel="noopener noreferrer" aria-label="Volver al índice de materiales">Índice de materiales</a>
+
+<h1>Ruido de cuantificación</h1>
+<p class="subtitle">
+  La cuantificación aproxima la señal analógica a un conjunto discreto de niveles. La diferencia entre la señal original y la cuantificada es el <strong>ruido de cuantificación</strong>.
+</p>
+
+<canvas id="c" width="900" height="680"></canvas>
+
+<div class="controls">
+  <div class="slider-row">
+    <label>Número de bits <i>N</i>:</label>
+    <input type="range" id="bitsSlider" min="1" max="16" step="1" value="5"/>
+    <span class="val" id="bitsVal">5</span>
+  </div>
+  <p class="info" id="snrInfo">Relación señal-ruido aproximada: 48 dB (≈ <i>N</i>×6 dB). CD audio: 16 bits → ~96 dB.</p>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Layout: two panels with generous gap
+const margin = { top: 50, right: 50, bottom: 36, left: 60 };
+const gap = 50;                           // wide gap to avoid overlap
+const panelH = (H - margin.top - margin.bottom - gap) / 2;
+const plotTop = margin.top;
+const plotBottom1 = plotTop + panelH;
+const plotTop2 = plotBottom1 + gap;
+const plotBottom2 = plotTop2 + panelH;
+const plotLeft = margin.left;
+const plotRight = W - margin.right;
+const plotW = plotRight - plotLeft;
+
+const COL_BLACK = '#1a1a2e';
+const COL_BLUE = '#1b6b93';
+const COL_RED = '#c0392b';
+const COL_GREEN = '#0e7c4a';
+
+let numBits = 5;
+
+// ── Fixed sampling grid ──
+const NUM_SAMPLES = 80;          // fixed number of samples (Ts constant)
+
+// ── Analog signal strictly in [0, 1] ──
+// Pre-compute a raw waveform, then normalise.
+const N_RENDER = 1200;           // rendering resolution (smooth curve)
+const rawWave = new Float64Array(N_RENDER + 1);
+let rawMin = Infinity, rawMax = -Infinity;
+for (let i = 0; i <= N_RENDER; i++) {
+  const x = 2 * Math.PI * i / N_RENDER;
+  const v = Math.sin(x) + 0.35 * Math.sin(3 * x - 0.8) + 0.15 * Math.sin(5 * x + 1);
+  rawWave[i] = v;
+  if (v < rawMin) rawMin = v;
+  if (v > rawMax) rawMax = v;
+}
+const SIG_MARGIN = 0.02;
+function analogSignal(t) {
+  const idx = t * N_RENDER;
+  const i0 = Math.floor(idx);
+  const i1 = Math.min(i0 + 1, N_RENDER);
+  const frac = idx - i0;
+  const raw = rawWave[i0] * (1 - frac) + rawWave[i1] * frac;
+  return SIG_MARGIN + (1 - 2 * SIG_MARGIN) * (raw - rawMin) / (rawMax - rawMin);
+}
+
+// Quantize value in [0, 1] to 2^N levels (mid-riser uniform)
+function quantize(x, n) {
+  const L = 1 << n;
+  const step = 1 / L;
+  const idx = Math.max(0, Math.min(L - 1, Math.floor(x / step)));
+  return (idx + 0.5) * step;
+}
+
+// Pre-compute sample values (fixed grid, recomputed on bits change)
+let sampleQ = [];   // quantized value per sample
+let sampleE = [];   // quantization error per sample: e_q[n] = x_q[n] - x[n]
+function computeSamples() {
+  sampleQ = [];
+  sampleE = [];
+  for (let s = 0; s < NUM_SAMPLES; s++) {
+    const t = (s + 0.5) / NUM_SAMPLES;   // sample at centre of interval
+    const a = analogSignal(t);
+    const q = quantize(a, numBits);
+    sampleQ.push(q);
+    sampleE.push(q - a);                 // always in [−½Δ, +½Δ)
+  }
+}
+
+// Map value in [0,1] to pixel Y inside a panel
+function valToY(v, top, bot) {
+  return bot - v * (bot - top);
+}
+
+// Draw a zero-order-hold staircase from an array of per-sample values
+function drawStaircase(values, yMap, color, lw) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  for (let s = 0; s < NUM_SAMPLES; s++) {
+    const xL = plotLeft + (s / NUM_SAMPLES) * plotW;
+    const xR = plotLeft + ((s + 1) / NUM_SAMPLES) * plotW;
+    const y = yMap(values[s]);
+    if (s === 0) {
+      ctx.moveTo(xL, y);
+    } else {
+      ctx.lineTo(xL, y);   // vertical step
+    }
+    ctx.lineTo(xR, y);     // horizontal hold
+  }
+  ctx.stroke();
+}
+
+// ────────── PANEL 1: señal + cuantificada ──────────
+function drawPanel1() {
+  // Grid
+  ctx.strokeStyle = '#eee';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([4, 4]);
+  for (let v = 0; v <= 1; v += 0.25) {
+    const y = valToY(v, plotTop, plotBottom1);
+    ctx.beginPath();
+    ctx.moveTo(plotLeft, y);
+    ctx.lineTo(plotRight, y);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Quantized (red, staircase with FIXED sample width)
+  drawStaircase(sampleQ, v => valToY(v, plotTop, plotBottom1), COL_RED, 2);
+
+  // Analog (blue, smooth)
+  ctx.strokeStyle = COL_BLUE;
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  for (let i = 0; i <= N_RENDER; i++) {
+    const t = i / N_RENDER;
+    const px = plotLeft + t * plotW;
+    const py = valToY(analogSignal(t), plotTop, plotBottom1);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Axis
+  ctx.strokeStyle = COL_BLACK;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(plotLeft, plotTop);
+  ctx.lineTo(plotLeft, plotBottom1);
+  ctx.lineTo(plotRight, plotBottom1);
+  ctx.stroke();
+
+  // Y labels
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillStyle = COL_BLACK;
+  ctx.textAlign = 'right';
+  ctx.fillText('1', plotLeft - 8, plotTop + 5);
+  ctx.fillText('0', plotLeft - 8, plotBottom1 + 5);
+}
+
+// ────────── PANEL 2: error de cuantificación ──────────
+function drawPanel2() {
+  const L = 1 << numBits;
+  const delta = 1 / L;
+  const halfDelta = delta / 2;
+  const yCenter = plotTop2 + panelH / 2;
+
+  // Scale: map ±halfDelta → ±80 % of half-panel
+  const errScale = (panelH / 2) * 0.80 / halfDelta;
+  const yPlus  = yCenter - panelH / 2 * 0.80;
+  const yMinus = yCenter + panelH / 2 * 0.80;
+
+  // Reference lines: 0, +½Δ, −½Δ
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(plotLeft, yPlus);  ctx.lineTo(plotRight, yPlus);
+  ctx.moveTo(plotLeft, yMinus); ctx.lineTo(plotRight, yMinus);
+  ctx.moveTo(plotLeft, yCenter); ctx.lineTo(plotRight, yCenter);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Continuous quantization error: e_q(t) = x_q(t) - x(t)
+  ctx.strokeStyle = COL_GREEN;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for (let i = 0; i <= N_RENDER; i++) {
+    const t = i / N_RENDER;
+    const x = analogSignal(t);
+    const xq = quantize(x, numBits);
+    const e = xq - x;
+    const px = plotLeft + t * plotW;
+    const py = yCenter - e * errScale;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Axis
+  ctx.strokeStyle = COL_BLACK;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(plotLeft, plotTop2);
+  ctx.lineTo(plotLeft, plotBottom2);
+  ctx.lineTo(plotRight, plotBottom2);
+  ctx.stroke();
+
+  // Y labels
+  ctx.font = '13px "STIX Two Text", serif';
+  ctx.fillStyle = COL_BLACK;
+  ctx.textAlign = 'right';
+  ctx.fillText('+½Δ', plotLeft - 8, yPlus + 5);
+  ctx.fillText('0',    plotLeft - 8, yCenter + 5);
+  ctx.fillText('−½Δ',  plotLeft - 8, yMinus + 5);
+
+  // Numerical Δ
+  ctx.textAlign = 'left';
+  ctx.font = '12px "STIX Two Text", serif';
+  ctx.fillStyle = '#666';
+  ctx.fillText('Δ = 1/' + L + ' ≈ ' + delta.toPrecision(3), plotLeft + 4, plotTop2 + 14);
+}
+
+// ────────── Labels & legend ──────────
+function drawLabels() {
+  ctx.save();
+  ctx.font = '600 14px "Playfair Display", serif';
+  ctx.fillStyle = '#444';
+  ctx.textAlign = 'left';
+  ctx.fillText('Señal analógica (azul) y señal cuantificada (rojo)', plotLeft, plotTop - 18);
+  drawErrorFormula(plotLeft, plotTop2 - 14);
+  ctx.restore();
+
+  // X axis label
+  ctx.font = 'italic 14px "STIX Two Text", serif';
+  ctx.fillStyle = COL_BLACK;
+  ctx.textAlign = 'center';
+  ctx.fillText('n  (muestras)', (plotLeft + plotRight) / 2, plotBottom2 + 28);
+
+  // Legend (inside panel 1, top-right corner, with background)
+  const legX = plotRight - 12;
+  const legY = plotTop + 12;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillRect(legX - 116, legY - 10, 122, 42);
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(legX - 116, legY - 10, 122, 42);
+
+  ctx.font = '12px "STIX Two Text", serif';
+  ctx.textAlign = 'left';
+
+  ctx.strokeStyle = COL_BLUE;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(legX - 110, legY);
+  ctx.lineTo(legX - 86, legY);
+  ctx.stroke();
+  ctx.fillStyle = COL_BLUE;
+  ctx.fillText('Analógica', legX - 82, legY + 4);
+
+  ctx.strokeStyle = COL_RED;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(legX - 110, legY + 18);
+  ctx.lineTo(legX - 86, legY + 18);
+  ctx.stroke();
+  ctx.fillStyle = COL_RED;
+  ctx.fillText('Cuantificada', legX - 82, legY + 22);
+}
+
+// Draw e_q[n] and x_q[n] with a true subscript style on canvas
+function drawErrorFormula(x, y) {
+  const mainFont = '600 14px "Playfair Display", serif';
+  const subFont = '600 10px "Playfair Display", serif';
+  let cx = x;
+  const subYOffset = 3;
+
+  ctx.font = mainFont;
+  ctx.fillStyle = '#444';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
+  function drawText(text) {
+    ctx.fillText(text, cx, y);
+    cx += ctx.measureText(text).width;
+  }
+
+  function drawWithSub(base, sub) {
+    ctx.fillText(base, cx, y);
+    cx += ctx.measureText(base).width;
+    ctx.save();
+    ctx.font = subFont;
+    ctx.fillText(sub, cx, y + subYOffset);
+    cx += ctx.measureText(sub).width;
+    ctx.restore();
+  }
+
+  drawText('Error de cuantificación ');
+  drawWithSub('e', 'q');
+  drawText('[n] = ');
+  drawWithSub('x', 'q');
+  drawText('[n] − x[n]');
+}
+
+// ────────── Main ──────────
+function draw() {
+  computeSamples();
+  ctx.clearRect(0, 0, W, H);
+  drawPanel1();
+  drawPanel2();
+  drawLabels();
+}
+
+function updateSnr() {
+  const snrApprox = numBits * 6;
+  const el = document.getElementById('snrInfo');
+  if (el) {
+    el.innerHTML = 'Relación señal-ruido: ≈ <strong>' + snrApprox + ' dB</strong> '
+      + '(SNR ≈ <i>N</i> × 6 dB). Ejemplo: CD audio → 16 bits → ~96 dB.';
+  }
+}
+
+const slider = document.getElementById('bitsSlider');
+const bitsValLabel = document.getElementById('bitsVal');
+
+slider.addEventListener('input', () => {
+  numBits = parseInt(slider.value, 10);
+  bitsValLabel.textContent = numBits;
+  updateSnr();
+  draw();
+});
+
+updateSnr();
+draw();
+</script>
+
+<footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7;">
+  © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aliasing – Animación interactiva</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    color: #1a1a2e;
+    font-family: 'STIX Two Text', 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    min-height: 100vh;
+  }
+  .nav-menu {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.8rem;
+    color: #888;
+    text-decoration: none;
+    opacity: 0.85;
+    z-index: 100;
+    transition: color 0.2s, opacity 0.2s;
+  }
+  .nav-menu:hover {
+    color: #1b6b93;
+    opacity: 1;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    text-align: center;
+  }
+  .top-eq {
+    font-size: 1.05rem;
+    color: #333;
+    margin-bottom: 0.6rem;
+    text-align: center;
+  }
+  .mid-eq {
+    font-size: 1.05rem;
+    color: #333;
+    margin: 0.4rem 0 0.8rem;
+    text-align: center;
+  }
+  canvas {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    max-width: 100%;
+  }
+  .mini-spectrum {
+    margin-bottom: 0.75rem;
+  }
+  .controls {
+    margin-top: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.05rem;
+  }
+  .slider-row label {
+    font-weight: 600;
+    min-width: 200px;
+    text-align: right;
+  }
+  .slider-row input[type=range] {
+    width: 340px;
+    accent-color: #1b6b93;
+  }
+  .slider-row .val {
+    min-width: 80px;
+    font-style: italic;
+    color: #1b6b93;
+    font-size: 1.1rem;
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="nav-menu" rel="noopener noreferrer" aria-label="Volver al índice de materiales">Índice de materiales</a>
+
+<h1>Aliasing al muestrear</h1>
+<div class="top-eq"><i>x<sub>a</sub></i>(<i>t</i>) = <i>A</i> cos(2π<i>Ft</i> + θ)</div>
+
+<canvas id="cTop" class="mini-spectrum" width="900" height="155"></canvas>
+
+<div class="controls">
+  <div class="slider-row">
+    <label><i>F<sub>s</sub></i> / <i>F<sub>max</sub></i> =</label>
+    <input type="range" id="fsSlider" min="1.0" max="5.0" step="0.05" value="3.0"/>
+    <span class="val" id="fsVal">3.00</span>
+  </div>
+</div>
+
+<div class="mid-eq"><i>x</i>[<i>n</i>] = <i>x<sub>a</sub></i>(<i>nT<sub>s</sub></i>) = <i>A</i> cos(2π<i>fn</i> + θ), &ensp; <i>F<sub>s</sub></i> = 1/<i>T<sub>s</sub></i>, &ensp; <i>f</i> = <i>F</i>/<i>F<sub>s</sub></i></div>
+<canvas id="c" width="900" height="390"></canvas>
+
+<script>
+const topCanvas = document.getElementById('cTop');
+const topCtx = topCanvas.getContext('2d');
+const WTop = topCanvas.width, HTop = topCanvas.height;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Layout
+const topLabelY = 14;       // "Señal discreta" label area
+const fAxisY = 345;          // f result axis (bottom)
+const dividerY = 205;       // separator between top and bottom
+const bottomLabelY = 220;   // "Muestreo" label area
+const axisY = 140;           // F axis (top)
+const centerX = W / 2;
+const axisLeft = 50;
+const axisRight = W - 50;
+const triHeight = 120;
+const Fmax_px = 80;
+
+const fAxisLeft = centerX - 200;
+const fAxisRight = centerX + 200;
+// Align ±1/2 with ±Fs/2 for the initial setting Fs/Fmax = 3
+const fHalfMark = (3 * Fmax_px) / 2;
+const fTriHeight = 120;      // Keep same visual amplitude scale as top spectrum
+
+let fsRatio = 3.0;
+
+const COL_BLACK = '#1a1a2e';
+const COL_BLUE = '#1b6b93';
+const COL_RED = '#c0392b';
+const COL_RED_LIGHT = 'rgba(192, 57, 43, 0.12)';
+const COL_ORANGE = '#c78a1e';
+const COL_ORANGE_LIGHT = 'rgba(199, 138, 30, 0.12)';
+const COL_CYAN = '#5bafd6';
+const COL_GRAY = '#888';
+const COL_GREEN = '#0e7c4a';
+
+function getFsPx() { return fsRatio * Fmax_px; }
+
+function drawTopPreview() {
+  const axisYP = 130;
+  const centerXP = WTop / 2;
+  const leftP = 50;
+  const rightP = WTop - 50;
+
+  topCtx.clearRect(0, 0, WTop, HTop);
+
+  // Axis F without numeric frequency marks
+  topCtx.strokeStyle = COL_BLACK;
+  topCtx.lineWidth = 1.2;
+  topCtx.beginPath();
+  topCtx.moveTo(leftP - 10, axisYP);
+  topCtx.lineTo(rightP + 10, axisYP);
+  topCtx.stroke();
+
+  const a = Math.atan2(0, rightP + 10 - (leftP - 10));
+  const s = 7;
+  topCtx.beginPath();
+  topCtx.moveTo(rightP + 10, axisYP);
+  topCtx.lineTo(rightP + 10 - s * Math.cos(a - 0.4), axisYP - s * Math.sin(a - 0.4));
+  topCtx.moveTo(rightP + 10, axisYP);
+  topCtx.lineTo(rightP + 10 - s * Math.cos(a + 0.4), axisYP - s * Math.sin(a + 0.4));
+  topCtx.stroke();
+
+  topCtx.fillStyle = 'rgba(27,107,147,0.08)';
+  topCtx.beginPath();
+  topCtx.moveTo(centerXP - Fmax_px, axisYP);
+  topCtx.lineTo(centerXP, axisYP - triHeight);
+  topCtx.lineTo(centerXP + Fmax_px, axisYP);
+  topCtx.closePath();
+  topCtx.fill();
+
+  topCtx.strokeStyle = COL_BLUE;
+  topCtx.lineWidth = 2;
+  topCtx.beginPath();
+  topCtx.moveTo(centerXP - Fmax_px, axisYP);
+  topCtx.lineTo(centerXP, axisYP - triHeight);
+  topCtx.lineTo(centerXP + Fmax_px, axisYP);
+  topCtx.stroke();
+
+  topCtx.font = 'italic 20px "STIX Two Text", serif';
+  topCtx.fillStyle = COL_BLACK;
+  topCtx.textAlign = 'left';
+  topCtx.fillText('F', rightP + 14, axisYP + 7);
+}
+
+function drawArrow(x1, y1, x2, y2, color, lw) {
+  ctx.strokeStyle = color; ctx.lineWidth = lw || 1.2;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1), s = 7;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - s * Math.cos(a - 0.4), y2 - s * Math.sin(a - 0.4));
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - s * Math.cos(a + 0.4), y2 - s * Math.sin(a + 0.4));
+  ctx.stroke();
+}
+
+function drawTriangle(cx, baseY, halfW, peakH, color, alpha, dashed) {
+  ctx.save(); ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.setLineDash(dashed ? [7, 5] : []);
+  ctx.beginPath();
+  ctx.moveTo(cx - halfW, baseY); ctx.lineTo(cx, baseY - peakH); ctx.lineTo(cx + halfW, baseY);
+  ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+}
+
+function drawFilledTri(cx, baseY, halfW, peakH, fill, alpha) {
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.moveTo(cx - halfW, baseY); ctx.lineTo(cx, baseY - peakH); ctx.lineTo(cx + halfW, baseY);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+
+// --- Section labels ---
+function drawSectionLabels() {
+  // Top section label
+  ctx.save();
+  ctx.font = '600 15px "Playfair Display", serif';
+  ctx.fillStyle = '#444';
+  ctx.textAlign = 'left';
+  ctx.fillText('Efecto del muestreo: réplicas espectrales en frecuencia continua F', 20, topLabelY + 14);
+
+  // Divider line
+  ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(20, dividerY); ctx.lineTo(W - 20, dividerY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Bottom section label
+  ctx.font = '600 15px "Playfair Display", serif';
+  ctx.fillStyle = '#444';
+  ctx.fillText('Espectro de la señal discreta resultante', 20, bottomLabelY + 14);
+
+  ctx.restore();
+}
+
+// --- Bands on F axis ---
+function drawBands() {
+  const Fs = getFsPx(), half = Fs / 2, bH = 18, bY = axisY - bH / 2 - 2;
+  ctx.save(); ctx.globalAlpha = 0.5;
+
+  // Main
+  const mL = Math.max(centerX - half, axisLeft), mR = Math.min(centerX + half, axisRight);
+  if (mR > mL) {
+    ctx.fillStyle = '#f0f0f0'; ctx.strokeStyle = COL_GRAY; ctx.lineWidth = 1;
+    ctx.fillRect(mL, bY, mR - mL, bH); ctx.strokeRect(mL, bY, mR - mL, bH);
+  }
+
+  // Orange left
+  const oL = Math.max(centerX - half - Fs, axisLeft), oR = Math.min(centerX - half, axisRight);
+  if (oR > oL) {
+    ctx.fillStyle = COL_ORANGE_LIGHT; ctx.fillRect(oL, bY, oR - oL, bH);
+    ctx.strokeStyle = COL_ORANGE; ctx.lineWidth = 1; ctx.strokeRect(oL, bY, oR - oL, bH);
+    ctx.beginPath();
+    for (let x = oL; x < oR; x += 10) { ctx.moveTo(x, bY); ctx.lineTo(Math.min(x + 12, oR), bY + bH); }
+    ctx.globalAlpha = 0.2; ctx.stroke(); ctx.globalAlpha = 0.5;
+  }
+
+  // Red right
+  const rL = Math.max(centerX + half, axisLeft), rR = Math.min(centerX + half + Fs, axisRight);
+  if (rR > rL) {
+    ctx.fillStyle = COL_RED_LIGHT; ctx.fillRect(rL, bY, rR - rL, bH);
+    ctx.strokeStyle = COL_RED; ctx.lineWidth = 1; ctx.strokeRect(rL, bY, rR - rL, bH);
+    ctx.beginPath();
+    for (let x = rL; x < rR; x += 10) { ctx.moveTo(x, bY); ctx.lineTo(Math.min(x + 12, rR), bY + bH); }
+    ctx.globalAlpha = 0.2; ctx.stroke(); ctx.globalAlpha = 0.5;
+  }
+
+  ctx.restore();
+}
+
+// --- F axis ---
+function drawFAxis() {
+  const Fs = getFsPx(), half = Fs / 2;
+  drawArrow(axisLeft - 10, axisY, axisRight + 10, axisY, COL_BLACK, 1.2);
+
+  // Visual references for Nyquist limits: -Fs/2 and Fs/2
+  ctx.save();
+  ctx.strokeStyle = 'rgba(27, 107, 147, 0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([4, 4]);
+  const refTop = axisY - triHeight - 10;
+  const refBottom = axisY + 8;
+  if (centerX - half > axisLeft + 2 && centerX - half < axisRight - 2) {
+    ctx.beginPath();
+    ctx.moveTo(centerX - half, refTop);
+    ctx.lineTo(centerX - half, refBottom);
+    ctx.stroke();
+  }
+  if (centerX + half > axisLeft + 2 && centerX + half < axisRight - 2) {
+    ctx.beginPath();
+    ctx.moveTo(centerX + half, refTop);
+    ctx.lineTo(centerX + half, refBottom);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  ctx.strokeStyle = COL_BLACK; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(centerX, axisY - 6); ctx.lineTo(centerX, axisY + 8); ctx.stroke();
+
+  ctx.font = '13px "STIX Two Text", serif'; ctx.fillStyle = COL_BLACK; ctx.textAlign = 'center';
+
+  const ticks = [
+    { x: centerX - half }, { x: centerX + half },
+    { x: centerX - Fs }, { x: centerX + Fs },
+    { x: centerX - half - Fs }, { x: centerX + half + Fs },
+  ];
+  ctx.lineWidth = 1;
+  for (const t of ticks) {
+    if (t.x > axisLeft + 5 && t.x < axisRight - 5) {
+      ctx.beginPath(); ctx.moveTo(t.x, axisY - 4); ctx.lineTo(t.x, axisY + 6); ctx.stroke();
+    }
+  }
+
+  if (centerX - half > axisLeft + 15) ctx.fillText('−Fs/2', centerX - half, axisY + 22);
+  if (centerX + half < axisRight - 15) ctx.fillText('Fs/2', centerX + half, axisY + 22);
+  ctx.font = '13px "STIX Two Text", serif';
+  if (centerX - Fs > axisLeft + 15) ctx.fillText('−Fs', centerX - Fs, axisY + 22);
+  if (centerX + Fs < axisRight - 15) ctx.fillText('Fs', centerX + Fs, axisY + 22);
+  ctx.font = '11px "STIX Two Text", serif';
+  if (centerX - half - Fs > axisLeft + 15) ctx.fillText('−(Fs/2+Fs)', centerX - half - Fs, axisY + 22);
+  if (centerX + half + Fs < axisRight - 15) ctx.fillText('Fs/2+Fs', centerX + half + Fs, axisY + 22);
+
+  ctx.font = 'italic 20px "STIX Two Text", serif'; ctx.textAlign = 'left';
+  ctx.fillText('F', axisRight + 14, axisY + 7);
+
+  ctx.font = '18px serif'; ctx.textAlign = 'center';
+  ctx.fillText('⋯', axisLeft - 2, axisY + 2);
+  ctx.fillText('⋯', axisRight + 4, axisY + 2);
+}
+
+// --- f axis ---
+function drawFNormAxis() {
+  // Visual hint: the discrete-time spectrum is periodic beyond [-1/2, 1/2]
+  const shadeTop = fAxisY - fTriHeight - 18;
+  const shadeBottom = fAxisY + 14;
+  const leftShadeL = Math.max(20, fAxisLeft - 36);
+  const leftShadeR = centerX - fHalfMark;
+  const rightShadeL = centerX + fHalfMark;
+  const rightShadeR = Math.min(W - 20, fAxisRight + 36);
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(120, 120, 120, 0.10)';
+  if (leftShadeR > leftShadeL) ctx.fillRect(leftShadeL, shadeTop, leftShadeR - leftShadeL, shadeBottom - shadeTop);
+  if (rightShadeR > rightShadeL) ctx.fillRect(rightShadeL, shadeTop, rightShadeR - rightShadeL, shadeBottom - shadeTop);
+
+  // Light hatch from the ±1/2 limits outward, clipped to shaded zones
+  ctx.strokeStyle = 'rgba(90, 90, 90, 0.22)';
+  ctx.lineWidth = 1;
+  if (leftShadeR > leftShadeL) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(leftShadeL, shadeTop, leftShadeR - leftShadeL, shadeBottom - shadeTop);
+    ctx.clip();
+    for (let x = leftShadeR; x >= leftShadeL - 18; x -= 10) {
+      ctx.beginPath();
+      ctx.moveTo(x, shadeTop);
+      ctx.lineTo(x - 18, shadeBottom);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (rightShadeR > rightShadeL) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(rightShadeL, shadeTop, rightShadeR - rightShadeL, shadeBottom - shadeTop);
+    ctx.clip();
+    for (let x = rightShadeL; x <= rightShadeR + 18; x += 10) {
+      ctx.beginPath();
+      ctx.moveTo(x, shadeTop);
+      ctx.lineTo(x + 18, shadeBottom);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+
+  drawArrow(fAxisLeft - 20, fAxisY, fAxisRight + 20, fAxisY, COL_BLACK, 1);
+
+  // Visual references for normalised Nyquist limits: -1/2 and 1/2
+  ctx.save();
+  ctx.strokeStyle = 'rgba(27, 107, 147, 0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([4, 4]);
+  const refTop = fAxisY - fTriHeight - 10;
+  const refBottom = fAxisY + 8;
+  ctx.beginPath();
+  ctx.moveTo(centerX - fHalfMark, refTop);
+  ctx.lineTo(centerX - fHalfMark, refBottom);
+  ctx.moveTo(centerX + fHalfMark, refTop);
+  ctx.lineTo(centerX + fHalfMark, refBottom);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  ctx.strokeStyle = COL_BLACK; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(centerX, fAxisY - 5); ctx.lineTo(centerX, fAxisY + 5); ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(centerX - fHalfMark, fAxisY - 4); ctx.lineTo(centerX - fHalfMark, fAxisY + 4);
+  ctx.moveTo(centerX + fHalfMark, fAxisY - 4); ctx.lineTo(centerX + fHalfMark, fAxisY + 4);
+  ctx.stroke();
+
+  ctx.font = '14px "STIX Two Text", serif'; ctx.fillStyle = COL_BLACK; ctx.textAlign = 'center';
+  ctx.fillText('−1/2', centerX - fHalfMark, fAxisY - 12);
+  ctx.fillText('1/2', centerX + fHalfMark, fAxisY - 12);
+
+  ctx.font = 'italic 16px "STIX Two Text", serif'; ctx.textAlign = 'left';
+  ctx.fillText('f = F/Fs', fAxisRight + 24, fAxisY + 5);
+
+}
+
+// --- Mapping lines ---
+function drawMappingLines() {
+  ctx.save(); ctx.globalAlpha = 0.35;
+  ctx.setLineDash([5, 4]); ctx.lineWidth = 1;
+  const Fs = getFsPx(), half = Fs / 2;
+
+  ctx.strokeStyle = COL_CYAN;
+  if (centerX - half > axisLeft) {
+    ctx.beginPath(); ctx.moveTo(centerX - half, axisY + 8); ctx.lineTo(centerX - fHalfMark, fAxisY - 25); ctx.stroke();
+  }
+  if (centerX + half < axisRight) {
+    ctx.beginPath(); ctx.moveTo(centerX + half, axisY + 8); ctx.lineTo(centerX + fHalfMark, fAxisY - 25); ctx.stroke();
+  }
+
+  ctx.setLineDash([]); ctx.restore();
+}
+
+// --- Spectra on F axis ---
+function drawOrigSpectrum() {
+  drawFilledTri(centerX, axisY, Fmax_px, triHeight, 'rgba(27,107,147,0.08)', 1);
+  drawTriangle(centerX, axisY, Fmax_px, triHeight, COL_BLUE, 1, false);
+}
+
+function drawReplica(offset, color, fill, alpha) {
+  const cx = centerX + offset * getFsPx();
+  if (cx - Fmax_px > axisRight + 20 || cx + Fmax_px < axisLeft - 20) return;
+  drawFilledTri(cx, axisY, Fmax_px, triHeight, fill, alpha * 0.5);
+  drawTriangle(cx, axisY, Fmax_px, triHeight, color, alpha, true);
+}
+
+// --- Result spectrum on f axis (sum of all periodic replicas) ---
+function drawResultSpectrum() {
+  ctx.save();
+  const Fs = getFsPx(), half = Fs / 2;
+  const hasAliasing = Fmax_px > half;
+
+  // Half-width of each spectral replica in normalised frequency f
+  const fw = 1 / fsRatio;                   // = Fmax / Fs
+  const pixPerF = 2 * fHalfMark;            // 1 unit of f  →  pixels
+
+  // Triangle amplitude at normalised frequency f for copy centred at c
+  function tri(f, c, w) {
+    const d = Math.abs(f - c);
+    return d < w ? 1 - d / w : 0;
+  }
+  // Sum over periodic replicas  k = −5 … +5
+  function sumSpec(f) {
+    let s = 0;
+    for (let k = -5; k <= 5; k++) s += tri(f, k, fw);
+    return s;
+  }
+
+  // --- Sample the sum in [−½, ½] ---
+  const N = 500;
+  const pts = [];
+  let vMax = 0;
+  for (let i = 0; i <= N; i++) {
+    const f = -0.5 + i / N;
+    const v = sumSpec(f);
+    pts.push({ x: centerX + f * pixPerF, y: fAxisY - v * fTriHeight });
+    if (v > vMax) vMax = v;
+  }
+
+  if (!hasAliasing) {
+    /* ---------- SIN ALIASING ---------- */
+    // Filled area
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, fAxisY);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(pts[N].x, fAxisY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(14, 124, 74, 0.10)';
+    ctx.fill();
+    // Contour
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      if (i === 0) ctx.moveTo(pts[i].x, pts[i].y);
+      else ctx.lineTo(pts[i].x, pts[i].y);
+    }
+    ctx.strokeStyle = COL_GREEN;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.font = '14px "STIX Two Text", serif';
+    ctx.fillStyle = COL_GREEN;
+    ctx.textAlign = 'center';
+    ctx.fillText('✓ Sin aliasing (Fs ≥ 2Fmax)', centerX, fAxisY - fTriHeight - 8);
+
+  } else {
+    /* ---------- CON ALIASING ---------- */
+    const fmax_px = fw * pixPerF;  // pixel half-width of each replica triangle
+
+    // 1. Faint individual components (clipped to visible f range)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(centerX - fHalfMark - 2, fAxisY - fTriHeight - 30,
+             fHalfMark * 2 + 4, fTriHeight + 32);
+    ctx.clip();
+
+    // Original (blue)
+    drawFilledTri(centerX, fAxisY, fmax_px, fTriHeight,
+                  'rgba(27,107,147,0.06)', 0.5);
+    drawTriangle(centerX, fAxisY, fmax_px, fTriHeight,
+                 COL_BLUE, 0.35, false);
+    // Replica k = +1 (red)
+    drawFilledTri(centerX + pixPerF, fAxisY, fmax_px, fTriHeight,
+                  'rgba(192,57,43,0.06)', 0.4);
+    drawTriangle(centerX + pixPerF, fAxisY, fmax_px, fTriHeight,
+                 COL_RED, 0.3, true);
+    // Replica k = −1 (orange)
+    drawFilledTri(centerX - pixPerF, fAxisY, fmax_px, fTriHeight,
+                  'rgba(199,138,30,0.06)', 0.4);
+    drawTriangle(centerX - pixPerF, fAxisY, fmax_px, fTriHeight,
+                 COL_ORANGE, 0.3, true);
+
+    ctx.restore();  // remove clip
+
+    // 2. Light overlap-zone shading
+    const overlapStart_f = 1 - fw;
+    if (overlapStart_f < 0.5) {
+      ctx.save();
+      ctx.globalAlpha = 0.10;
+      ctx.fillStyle = '#ff0000';
+      const oR1 = centerX + overlapStart_f * pixPerF;
+      const oR2 = centerX + fHalfMark;
+      ctx.fillRect(oR1, fAxisY - fTriHeight, oR2 - oR1, fTriHeight);
+      const oL1 = centerX - fHalfMark;
+      const oL2 = centerX - overlapStart_f * pixPerF;
+      ctx.fillRect(oL1, fAxisY - fTriHeight, oL2 - oL1, fTriHeight);
+      ctx.restore();
+    }
+
+    // 3. Sum contour (bold, on top of everything)
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, fAxisY);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(pts[N].x, fAxisY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(139, 0, 80, 0.08)';
+    ctx.fill();
+
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      if (i === 0) ctx.moveTo(pts[i].x, pts[i].y);
+      else ctx.lineTo(pts[i].x, pts[i].y);
+    }
+    ctx.strokeStyle = '#8b0050';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // 4. Label
+    ctx.font = 'bold 14px "STIX Two Text", serif';
+    ctx.fillStyle = COL_RED;
+    ctx.textAlign = 'center';
+    ctx.fillText('¡ALIASING! (Fs < 2Fmax)', centerX, fAxisY - vMax * fTriHeight - 8);
+
+    // 5. Small legend for the sum line
+    ctx.font = '12px "STIX Two Text", serif';
+    ctx.textAlign = 'right';
+    ctx.strokeStyle = '#8b0050'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(centerX + fHalfMark - 80, fAxisY - fTriHeight - 22);
+    ctx.lineTo(centerX + fHalfMark - 50, fAxisY - fTriHeight - 22);
+    ctx.stroke();
+    ctx.fillStyle = '#8b0050';
+    ctx.textAlign = 'left';
+    ctx.fillText('Σ réplicas', centerX + fHalfMark - 46, fAxisY - fTriHeight - 17);
+  }
+
+  ctx.restore();
+}
+
+// --- Overlap warning on F axis ---
+function drawOverlapWarning() {
+  const Fs = getFsPx(), half = Fs / 2;
+  if (Fmax_px > half) {
+    const ov = Fmax_px - half;
+    ctx.save(); ctx.globalAlpha = 0.2; ctx.fillStyle = '#ff0000';
+    ctx.fillRect(centerX - half - ov, axisY - triHeight, ov * 2, triHeight);
+    ctx.fillRect(centerX + half - ov, axisY - triHeight, ov * 2, triHeight);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = '13px "STIX Two Text", serif'; ctx.fillStyle = COL_RED; ctx.textAlign = 'center';
+    ctx.fillText('Solapamiento entre réplicas', centerX, axisY + 40);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.font = '13px "STIX Two Text", serif'; ctx.fillStyle = COL_GREEN; ctx.textAlign = 'center';
+    ctx.fillText('Fs > 2Fmax → Sin solapamiento entre réplicas', centerX, axisY + 40);
+    ctx.restore();
+  }
+}
+
+// --- Main draw ---
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  drawSectionLabels();
+
+  // Top: sampling effect
+  drawFAxis();
+  drawBands();
+  drawMappingLines();
+  drawOrigSpectrum();
+  drawReplica(1, COL_RED, COL_RED_LIGHT, 0.8);
+  drawReplica(-1, COL_ORANGE, COL_ORANGE_LIGHT, 0.8);
+  drawReplica(2, COL_RED, COL_RED_LIGHT, 0.35);
+  drawReplica(-2, COL_ORANGE, COL_ORANGE_LIGHT, 0.35);
+  drawOverlapWarning();
+
+  // Bottom: result
+  drawFNormAxis();
+  drawResultSpectrum();
+}
+
+// --- Slider ---
+const slider = document.getElementById('fsSlider');
+const fsValLabel = document.getElementById('fsVal');
+
+slider.addEventListener('input', () => {
+  fsRatio = parseFloat(slider.value);
+  fsValLabel.textContent = fsRatio.toFixed(2);
+  draw();
+});
+
+// Initial draw
+drawTopPreview();
+draw();
+</script>
+
+<footer style="margin-top: 3rem; font-size: 0.9em; opacity: 0.7;">
+  © 2026 Carlos J. Escudero — <a href="../LICENSE">MIT License</a>
+</footer>
+
+</body>
+</html>

@@ -7,7 +7,7 @@ Portal de demostraciones interactivas para docencia. La navegación se organiza 
 ## Apartados
 
 - **[Teoría de la Información](teoria-de-la-informacion/index.html):** conserva el índice de TI_GCED y sus seis recursos sobre circunferencia unidad, periodicidad espectral, aliasing, cuantificación, series de Fourier y bins de la DFT. Incorpora la demostración de polos, ceros y respuesta en frecuencia.
-- **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador de embeddings y recuperación RAG; vídeo demostrativo sobre la ventana de contexto.
+- **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador interactivo de RAG y vídeos sobre la ventana de contexto y el concepto de RAG.
 - **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico, canales y coexistencia entre tecnologías inalámbricas (`EspectroyRedes.html`).
 
 ## Estructura
@@ -16,7 +16,7 @@ Portal de demostraciones interactivas para docencia. La navegación se organiza 
 index.html                       Portada de temas
 assets/site.css                  Estilos de la portada y los nuevos índices
 teoria-de-la-informacion/         Índice TI_GCED y siete demos
-inteligencia-artificial/         Índice, simulador RAG y vídeo de ventana de contexto
+inteligencia-artificial/         Índice, simulador interactivo y vídeos de IA
 redes-inalambricas/               Índice y laboratorio de espectro doméstico
 ```
 

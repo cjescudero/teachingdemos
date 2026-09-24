@@ -6,7 +6,7 @@ This static teaching portal uses **home → topic index → demo**:
 
 - `index.html`: topic cards only.
 - `teoria-de-la-informacion/`: preserved TI_GCED index, six imported resources, and poles/zeros.
-- `inteligencia-artificial/`: index and RAG simulator.
+- `inteligencia-artificial/`: index, RAG simulator, and context-window video page with its MP4 asset.
 - `redes-inalambricas/`: index and `EspectroyRedes.html`.
 - `assets/site.css`: shared home and new topic-index styles.
 

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QAM, ruido y regiones de decisión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#1B2A4A; --muted:#5B6782; --line:#C9D0DC;
+  --sym:#1F3FD6; --err:#D2352B; --ok:#1C7C54; --warn:#A96A12;
+  --ok-bg:#E3F3EB; --warn-bg:#FBF0DC; --err-bg:#FBE5E3;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151D; --surface:#191F2B; --ink:#E3E8F2; --muted:#95A0B8; --line:#2F3849;
+    --sym:#7D95FF; --err:#FF6B5E; --ok:#4CC38A; --warn:#E3B04B;
+    --ok-bg:#16301F; --warn-bg:#35290F; --err-bg:#3A1917;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151D; --surface:#191F2B; --ink:#E3E8F2; --muted:#95A0B8; --line:#2F3849;
+  --sym:#7D95FF; --err:#FF6B5E; --ok:#4CC38A; --warn:#E3B04B;
+  --ok-bg:#16301F; --warn-bg:#35290F; --err-bg:#3A1917;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.breadcrumb{max-width:1180px;margin:0 auto;padding:18px 20px 0;font-size:.9rem}
+.breadcrumb a{color:var(--sym);text-decoration:underline;text-underline-offset:3px}
+.breadcrumb a:focus-visible{outline:2px solid var(--sym);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 40px}
+header{max-width:62ch;margin-bottom:22px}
+h1{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:600;
+  font-size:clamp(1.8rem,3.6vw,2.6rem);line-height:1.1;margin:0 0 10px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(290px,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.plot-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.plot-title{font-family:Newsreader,Georgia,serif;font-size:1.35rem;font-weight:600}
+.plot-title small{font-family:"Public Sans",system-ui,sans-serif;font-size:.9rem;font-weight:500;color:var(--muted);margin-left:6px}
+#constWrap{position:relative;width:100%;aspect-ratio:1/1}
+canvas{display:block;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sw.dash{width:18px;height:0;border-radius:0;border-top:2px dashed var(--muted)}
+.sw.ring{background:var(--surface);border:2px solid var(--ink)}
+
+.tour{margin-top:14px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.caption{min-height:4.5em}
+.caption .step{font-size:.85rem;color:var(--muted);margin-bottom:2px}
+.caption p{margin:0;max-width:60ch}
+.progress{display:flex;gap:4px;margin-top:8px}
+.progress i{flex:1;height:3px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--sym)}
+
+button{font:inherit;cursor:pointer;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:500}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--sym);outline-offset:2px}
+.primary{background:var(--sym);border-color:var(--sym);color:#fff;white-space:nowrap}
+:root[data-theme="dark"] .primary{color:#0E1424}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .primary{color:#0E1424}}
+.primary:hover{filter:brightness(1.08);border-color:var(--sym)}
+
+.side{display:flex;flex-direction:column;gap:16px}
+.ctl h2{font-size:1rem;font-weight:600;margin:0 0 8px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{padding:8px 4px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.snr-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.snr-val{font-family:Newsreader,Georgia,serif;font-size:1.9rem;font-weight:600;font-variant-numeric:tabular-nums}
+.snr-val small{font-size:1rem;font-family:"Public Sans",system-ui,sans-serif;color:var(--muted);margin-left:4px}
+input[type=range]{width:100%;accent-color:var(--sym)}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:.85rem;color:var(--muted);align-items:center}
+.presets button{padding:4px 10px;font-size:.85rem}
+
+.verdict{border-radius:8px;padding:12px 14px;border-left:4px solid}
+.verdict b{display:block;font-size:1.05rem}
+.verdict p{margin:2px 0 0;font-size:.92rem}
+.v-ok{background:var(--ok-bg);border-color:var(--ok)} .v-ok b{color:var(--ok)}
+.v-warn{background:var(--warn-bg);border-color:var(--warn)} .v-warn b{color:var(--warn)}
+.v-bad{background:var(--err-bg);border-color:var(--err)} .v-bad b{color:var(--err)}
+
+dl.stats{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;font-size:.92rem}
+dl.stats dt{color:var(--muted)}
+dl.stats dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.ratio{margin-top:10px;font-size:.88rem;color:var(--muted)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--sym);transition:width .2s}
+
+#serWrap{width:100%;aspect-ratio:16/10}
+.note{font-size:.82rem;color:var(--muted);margin:14px 0 0;max-width:70ch}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<nav class="breadcrumb" aria-label="Ruta de navegación"><a href="index.html">← Redes inalámbricas</a><span aria-hidden="true"> · </span><a href="../index.html">Portada principal</a></nav>
+<div class="wrap">
+  <header>
+    <h1>Cuándo deja de funcionar una 16-QAM</h1>
+    <p>Cada punto es un símbolo recibido con ruido. El receptor decide qué símbolo se envió según la región (cuadrícula discontinua) en la que cae. Mientras cada nube quede dentro de su región, la decisión es correcta.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Constelación">
+      <div class="plot-head">
+        <div class="plot-title" id="plotTitle">16-QAM, SNR = 30 dB</div>
+        <button id="clearBtn" type="button">Vaciar puntos</button>
+      </div>
+      <div id="constWrap"><canvas id="constCanvas" role="img" aria-label="Diagrama de constelación con puntos recibidos"></canvas></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--sym)"></i>Decidido bien</span>
+        <span><i class="sw" style="background:var(--err)"></i>Error: cae en la región de otro símbolo</span>
+        <span><i class="sw ring"></i>Símbolo enviado</span>
+        <span><i class="sw dash"></i>Frontera de decisión</span>
+      </div>
+
+      <div class="tour">
+        <button id="tourBtn" class="primary" type="button">Reproducir recorrido</button>
+        <div class="caption" aria-live="polite">
+          <div class="step" id="stepLbl">Recorrido guiado en 7 pasos</div>
+          <p id="captionTxt">Pulsa para ver cómo empeora la recepción al bajar la SNR y al aumentar el número de puntos con la misma potencia.</p>
+          <div class="progress" id="progress"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="panel ctl">
+        <h2>Número de puntos</h2>
+        <div class="seg" id="seg">
+          <button type="button" data-m="4">4-QAM</button>
+          <button type="button" data-m="16" aria-pressed="true">16-QAM</button>
+          <button type="button" data-m="64">64-QAM</button>
+          <button type="button" data-m="256">256-QAM</button>
+        </div>
+
+        <h2 style="margin-top:18px">Relación señal/ruido</h2>
+        <div class="snr-row">
+          <label for="snr" class="snr-val"><span id="snrTxt">30.0</span><small>dB</small></label>
+        </div>
+        <input id="snr" type="range" min="0" max="35" step="0.5" value="30" aria-label="SNR en dB">
+        <div class="presets">Como en la figura:
+          <button type="button" data-p="30">30 dB</button>
+          <button type="button" data-p="20">20 dB</button>
+          <button type="button" data-p="10">10 dB</button>
+        </div>
+      </div>
+
+      <div class="verdict v-ok" id="verdict" aria-live="polite">
+        <b id="vTitle">La transmisión es fiable</b>
+        <p id="vText">Todas las nubes quedan dentro de su región de decisión.</p>
+      </div>
+
+      <div class="panel">
+        <dl class="stats">
+          <dt>Distancia del símbolo a su frontera</dt><dd id="sD">1.00</dd>
+          <dt>Desviación típica del ruido (σ)</dt><dd id="sS">0.03</dd>
+          <dt>Símbolos enviados</dt><dd id="sN">0</dd>
+          <dt>Errores</dt><dd id="sE">0</dd>
+          <dt>Tasa de error medida</dt><dd id="sM">—</dd>
+          <dt>Tasa de error teórica</dt><dd id="sT">—</dd>
+        </dl>
+        <div class="ratio">Margen frente al ruido (distancia / σ): <b id="sR">31.6</b>. Por debajo de ~3 empiezan los errores.
+          <div class="bar"><i id="rBar" style="width:100%"></i></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="font-weight:600;margin-bottom:6px">Tasa de error de símbolo frente a SNR</div>
+        <div id="serWrap"><canvas id="serCanvas" role="img" aria-label="Curvas de tasa de error de símbolo frente a SNR para 4, 16, 64 y 256-QAM"></canvas></div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="note">Todas las constelaciones tienen la misma potencia media que la 16-QAM de la figura (niveles ±1, ±3). La SNR se define como en la figura: potencia de ruido por dimensión σ² = 1/SNR, referida a la amplitud unidad. Con esta referencia, E<sub>s</sub>/N<sub>0</sub> ≈ SNR + 7 dB. Se considera válida una transmisión con tasa de error por debajo de 10⁻², que un código corrector puede limpiar.</p>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const cc = $('constCanvas'), cx = cc.getContext('2d');
+  const sc = $('serCanvas'), sx = sc.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let dpr = window.devicePixelRatio || 1;
+
+  // ---------- colors ----------
+  let col = {};
+  function readColors(){
+    const s = getComputedStyle(document.documentElement);
+    ['bg','surface','ink','muted','line','sym','err','ok','warn'].forEach(k=>col[k]=s.getPropertyValue('--'+k).trim());
+  }
+  readColors();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+
+  // ---------- math ----------
+  function erfc(x){
+    const z=Math.abs(x), t=1/(1+0.5*z);
+    const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));
+    return x>=0 ? r : 2-r;
+  }
+  const Q = x => 0.5*erfc(x/Math.SQRT2);
+  const scaleFor = M => Math.sqrt(10/(2*(M-1)/3)); // same mean power as 16-QAM with levels ±1,±3
+  const sigmaFor = snrDb => Math.sqrt(1/Math.pow(10,snrDb/10));
+  function serTheory(M, snrDb){
+    const n=Math.sqrt(M), d=scaleFor(M), s=sigmaFor(snrDb);
+    const p=2*(1-1/n)*Q(d/s);
+    return 1-(1-p)*(1-p);
+  }
+  function gauss(){
+    let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  }
+
+  // ---------- state ----------
+  const MAX = 1400;
+  const st = { M:16, snr:30, sent:0, err:0, buf:new Array(MAX), head:0, count:0, acc:0 };
+  function levels(M){ const n=Math.sqrt(M), s=scaleFor(M); return Array.from({length:n},(_,k)=>(2*k-(n-1))*s); }
+  let lv = levels(16);
+  function decide(v){ const n=Math.sqrt(st.M), s=scaleFor(st.M);
+    let k=Math.round((v/s+(n-1))/2); return k<0?0:k>n-1?n-1:k; }
+  function resetStats(){ st.sent=0; st.err=0; }
+  function clearPts(){ st.head=0; st.count=0; }
+
+  function emit(n, now){
+    const N=lv.length, sg=sigmaFor(st.snr);
+    for(let j=0;j<n;j++){
+      const i=(Math.random()*N)|0, q=(Math.random()*N)|0;
+      const tx=lv[i], ty=lv[q];
+      const x=tx+sg*gauss(), y=ty+sg*gauss();
+      const ok = decide(x)===i && decide(y)===q;
+      st.buf[st.head]={x,y,tx,ty,ok,t:now};
+      st.head=(st.head+1)%MAX; if(st.count<MAX)st.count++;
+      st.sent++; if(!ok)st.err++;
+    }
+  }
+
+  // ---------- canvas sizing ----------
+  function fit(canvas){
+    const r=canvas.getBoundingClientRect();
+    dpr=window.devicePixelRatio||1;
+    canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr);
+  }
+  const ro=new ResizeObserver(()=>{fit(cc);fit(sc);drawSER();});
+  ro.observe($('constWrap')); ro.observe($('serWrap'));
+
+  // ---------- constellation drawing ----------
+  function drawConst(now){
+    const W=cc.width/dpr, H=cc.height/dpr; if(!W)return;
+    cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
+    const L=34,R=8,T=8,B=28, pw=W-L-R, ph=H-T-B, rg=4.4;
+    const X=v=>L+(v+rg)/(2*rg)*pw, Y=v=>T+(rg-v)/(2*rg)*ph;
+
+    cx.font='12px "Public Sans", system-ui, sans-serif'; cx.fillStyle=col.muted;
+    cx.textAlign='center'; cx.textBaseline='top';
+    for(let v=-4;v<=4;v++){ cx.fillText(v, X(v), T+ph+8); }
+    cx.textAlign='right'; cx.textBaseline='middle';
+    for(let v=-4;v<=4;v++){ cx.fillText(v, L-8, Y(v)); }
+    cx.strokeStyle=col.line; cx.lineWidth=1;
+    cx.beginPath();
+    for(let v=-4;v<=4;v++){ cx.moveTo(X(v),T+ph); cx.lineTo(X(v),T+ph+4); cx.moveTo(L-4,Y(v)); cx.lineTo(L,Y(v)); }
+    cx.stroke();
+
+    cx.save(); cx.beginPath(); cx.rect(L,T,pw,ph); cx.clip();
+
+    // decision boundaries
+    const n=lv.length, s=scaleFor(st.M);
+    cx.setLineDash([5,4]); cx.strokeStyle=col.muted; cx.globalAlpha=.7; cx.lineWidth=1;
+    cx.beginPath();
+    for(let k=0;k<n-1;k++){ const b=(lv[k]+lv[k+1])/2;
+      cx.moveTo(X(b),T); cx.lineTo(X(b),T+ph); cx.moveTo(L,Y(b)); cx.lineTo(L+pw,Y(b)); }
+    cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
+
+    // points
+    const r=2+1.4*s, a=r*0.866, h=r*0.5;
+    const star=(p)=>{ const px=X(p.x), py=Y(p.y);
+      cx.moveTo(px,py-r); cx.lineTo(px,py+r);
+      cx.moveTo(px-a,py-h); cx.lineTo(px+a,py+h);
+      cx.moveTo(px-a,py+h); cx.lineTo(px+a,py-h); };
+    cx.lineWidth=1.1;
+    cx.strokeStyle=col.sym; cx.beginPath();
+    for(let j=0;j<st.count;j++){ const p=st.buf[j]; if(p.ok)star(p); }
+    cx.stroke();
+    cx.strokeStyle=col.err; cx.lineWidth=1.4; cx.beginPath();
+    for(let j=0;j<st.count;j++){ const p=st.buf[j]; if(!p.ok)star(p); }
+    cx.stroke();
+    // recent errors: line back to the symbol actually sent
+    for(let j=0;j<st.count;j++){ const p=st.buf[j]; if(p.ok)continue;
+      const age=(now-p.t)/1000; if(age>1.2)continue;
+      cx.globalAlpha=Math.max(0,.8*(1-age/1.2)); cx.strokeStyle=col.err; cx.lineWidth=1;
+      cx.beginPath(); cx.moveTo(X(p.tx),Y(p.ty)); cx.lineTo(X(p.x),Y(p.y)); cx.stroke(); }
+    cx.globalAlpha=1;
+
+    // ideal symbols
+    const rr=Math.max(2.2,3.6*Math.min(1,s*1.4));
+    cx.fillStyle=col.surface; cx.strokeStyle=col.ink; cx.lineWidth=1.6;
+    for(const i of lv)for(const q of lv){ cx.beginPath(); cx.arc(X(i),Y(q),rr,0,Math.PI*2); cx.fill(); cx.stroke(); }
+    cx.restore();
+    cx.strokeStyle=col.ink; cx.lineWidth=1; cx.strokeRect(L+.5,T+.5,pw-1,ph-1);
+  }
+
+  // ---------- SER chart ----------
+  const Ms=[4,16,64,256];
+  function drawSER(){
+    const W=sc.width/dpr, H=sc.height/dpr; if(!W)return;
+    sx.setTransform(dpr,0,0,dpr,0,0); sx.clearRect(0,0,W,H);
+    const L=44,R=10,T=8,B=30, pw=W-L-R, ph=H-T-B;
+    const X=v=>L+v/35*pw, Y=v=>{ const lg=Math.log10(Math.max(v,1e-6)); return T+(-lg/6)*ph; };
+    sx.font='11px "Public Sans", system-ui, sans-serif'; sx.fillStyle=col.muted;
+    sx.strokeStyle=col.line; sx.lineWidth=1;
+    sx.textAlign='right'; sx.textBaseline='middle';
+    for(let e=0;e<=6;e+=2){ const y=T+e/6*ph; sx.beginPath(); sx.moveTo(L,y); sx.lineTo(L+pw,y); sx.stroke();
+      sx.fillText(e===0?'1':'10⁻'+['','','²','','⁴','','⁶'][e], L-6, y); }
+    sx.textAlign='center'; sx.textBaseline='top';
+    for(let v=0;v<=35;v+=5){ sx.fillText(v, X(v), T+ph+6); }
+    sx.fillText('SNR (dB)', L+pw/2, T+ph+17);
+
+    // validity threshold
+    sx.setLineDash([4,3]); sx.strokeStyle=col.err; sx.beginPath(); sx.moveTo(L,Y(1e-2)); sx.lineTo(L+pw,Y(1e-2)); sx.stroke(); sx.setLineDash([]);
+    sx.fillStyle=col.err; sx.textAlign='right'; sx.textBaseline='bottom'; sx.fillText('límite de validez', L+pw-2, Y(1e-2)-2);
+
+    for(const M of Ms){
+      const cur=M===st.M;
+      sx.strokeStyle=cur?col.sym:col.muted; sx.globalAlpha=cur?1:.55; sx.lineWidth=cur?2.2:1.2;
+      sx.beginPath(); let started=false, lx=null;
+      for(let d=0; d<=35; d+=0.1){ const p=serTheory(M,d); if(p<1e-6){ if(lx===null)lx=d; break; }
+        const x=X(d), y=Y(p); if(!started){sx.moveTo(x,y);started=true;} else sx.lineTo(x,y); }
+      sx.stroke();
+      // label where curve reaches ~1e-5
+      let dl=0; for(let d=0; d<=35; d+=0.1){ if(serTheory(M,d)<1e-5){dl=d;break;} }
+      sx.fillStyle=cur?col.sym:col.muted; sx.textAlign='left'; sx.textBaseline='middle';
+      sx.font=(cur?'600 ':'')+'11px "Public Sans", system-ui, sans-serif';
+      if(dl>0 && X(dl)+30<L+pw) sx.fillText(M, X(dl)+4, Y(1e-5));
+      sx.font='11px "Public Sans", system-ui, sans-serif';
+    }
+    sx.globalAlpha=1;
+    // current operating point
+    const p=serTheory(st.M,st.snr);
+    sx.fillStyle=col.surface; sx.strokeStyle=col.sym; sx.lineWidth=2;
+    sx.beginPath(); sx.arc(X(st.snr),Y(p),5,0,Math.PI*2); sx.fill(); sx.stroke();
+    sx.strokeStyle=col.ink; sx.lineWidth=1; sx.strokeRect(L+.5,T+.5,pw-1,ph-1);
+  }
+
+  // ---------- UI text ----------
+  const fmt = v => v===0 ? '0' : v<1e-6 ? '< 10⁻⁶' : v>=0.01 ? (v*100).toFixed(1).replace('.',',')+' %' : v.toExponential(1).replace('.',',').replace('e-','·10⁻').replace(/⁻(\d)/,(m,d)=>'⁻'+'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+  function updateText(){
+    $('plotTitle').innerHTML = st.M+'-QAM, SNR = '+st.snr.toFixed(0)+' dB';
+    $('snrTxt').textContent = st.snr.toFixed(1).replace('.',',');
+    $('snr').value = st.snr;
+    const d=scaleFor(st.M), s=sigmaFor(st.snr), ratio=d/s;
+    $('sD').textContent=d.toFixed(2).replace('.',',');
+    $('sS').textContent=s.toFixed(3).replace('.',',');
+    $('sN').textContent=st.sent.toLocaleString('es-ES');
+    $('sE').textContent=st.err.toLocaleString('es-ES');
+    $('sM').textContent= st.sent<200 ? '—' : fmt(st.err/st.sent);
+    const th=serTheory(st.M,st.snr);
+    $('sT').textContent=fmt(th);
+    $('sR').textContent=ratio.toFixed(1).replace('.',',');
+    $('rBar').style.width=Math.min(100,ratio/6*100)+'%';
+    $('rBar').style.background = ratio>=3.8?col.ok : ratio>=2.4?col.warn : col.err;
+    const v=$('verdict');
+    if(th<1e-4){ v.className='verdict v-ok'; $('vTitle').textContent='La transmisión es fiable';
+      $('vText').textContent='Cada nube queda dentro de su región de decisión: el receptor identifica siempre el símbolo enviado.'; }
+    else if(th<1e-2){ v.className='verdict v-warn'; $('vTitle').textContent='Válida, con errores ocasionales';
+      $('vText').textContent='Algunos puntos cruzan la frontera. Son pocos y un código corrector puede recuperarlos.'; }
+    else { v.className='verdict v-bad'; $('vTitle').textContent='La transmisión no funciona';
+      $('vText').textContent='Las nubes invaden las regiones vecinas: la región donde cae un punto ya no indica qué símbolo se envió.'; }
+    document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.m===st.M ? 'true':'false'));
+  }
+
+  function setM(M){ if(M===st.M)return; st.M=M; lv=levels(M); clearPts(); resetStats(); drawSER(); updateText(); }
+  function setSNR(v){ st.snr=v; resetStats(); drawSER(); updateText(); }
+
+  // ---------- guided tour ----------
+  const steps=[
+    {M:16,snr:30,t:'16-QAM con SNR = 30 dB. Cada nube de puntos recibidos es diminuta y queda muy dentro de su región: el receptor acierta siempre.'},
+    {M:16,snr:20,t:'SNR = 20 dB. Las nubes crecen, pero siguen lejos de las fronteras. La transmisión sigue siendo fiable.'},
+    {M:16,snr:10,t:'SNR = 10 dB, el caso más ruidoso de la figura. Las nubes se acercan a las fronteras y aparece algún error aislado, pero la tasa sigue siendo aceptable.'},
+    {M:16,snr:4,t:'Si la SNR baja a 4 dB, las nubes invaden las regiones vecinas. Muchos puntos caen en la región de otro símbolo: la decisión ya no identifica lo enviado.'},
+    {M:16,snr:10,t:'Volvemos a 10 dB, donde la 16-QAM todavía funciona. Ahora mantenemos la SNR y la potencia, y aumentamos el número de puntos.'},
+    {M:64,snr:10,t:'64-QAM con la misma potencia: los puntos se aprietan y las regiones se estrechan a la mitad. Con el mismo ruido, las nubes ya no caben en sus regiones.'},
+    {M:256,snr:20,t:'Incluso con 20 dB, una 256-QAM falla: sus regiones son más pequeñas que la dispersión del ruido. Más puntos exigen más SNR.'}
+  ];
+  const prog=$('progress');
+  steps.forEach(()=>prog.appendChild(document.createElement('i')));
+  const tour={on:false, i:0, t0:0, from:30, resetDone:false};
+  const STEP_MS=6500, EASE_MS= reduce?1:1400;
+  function startStep(i,now){
+    tour.i=i; tour.t0=now; tour.from=st.snr; tour.resetDone=false;
+    setM(steps[i].M);
+    $('stepLbl').textContent='Paso '+(i+1)+' de '+steps.length;
+    $('captionTxt').textContent=steps[i].t;
+    [...prog.children].forEach((e,k)=>e.classList.toggle('on',k<=i));
+  }
+  function stopTour(msg){
+    tour.on=false; $('tourBtn').textContent='Reproducir recorrido';
+    if(msg){ $('stepLbl').textContent='Recorrido terminado'; $('captionTxt').textContent=msg; }
+  }
+  $('tourBtn').addEventListener('click',()=>{
+    if(tour.on){ stopTour(); $('stepLbl').textContent='Recorrido en pausa'; return; }
+    tour.on=true; $('tourBtn').textContent='Detener'; startStep(0,performance.now());
+  });
+  function tickTour(now){
+    if(!tour.on)return;
+    const e=now-tour.t0, s=steps[tour.i];
+    if(e<EASE_MS){ const k=e/EASE_MS, ez=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      st.snr=tour.from+(s.snr-tour.from)*ez; }
+    else { st.snr=s.snr; if(!tour.resetDone){ tour.resetDone=true; resetStats(); } }
+    if(e>STEP_MS){
+      if(tour.i<steps.length-1) startStep(tour.i+1,now);
+      else stopTour('Conclusión: una constelación es válida mientras la distancia entre puntos sea bastante mayor que el ruido. Bajar la SNR o meter más puntos en la misma potencia rompe esa condición.');
+    }
+  }
+
+  // ---------- controls ----------
+  $('snr').addEventListener('input',e=>{ if(tour.on)stopTour(); setSNR(+e.target.value); });
+  document.querySelectorAll('#seg button').forEach(b=>b.addEventListener('click',()=>{ if(tour.on)stopTour(); setM(+b.dataset.m); }));
+  document.querySelectorAll('.presets button').forEach(b=>b.addEventListener('click',()=>{ if(tour.on)stopTour(); setSNR(+b.dataset.p); }));
+  $('clearBtn').addEventListener('click',()=>{ clearPts(); resetStats(); updateText(); });
+
+  // ---------- loop ----------
+  let last=performance.now(), lastUI=0, lastSnrDrawn=null;
+  const RATE=650; // symbols per second
+  function frame(now){
+    const dt=Math.min(.1,(now-last)/1000); last=now;
+    tickTour(now);
+    st.acc+=RATE*dt; const n=Math.floor(st.acc); st.acc-=n; emit(n,now);
+    drawConst(now);
+    if(lastSnrDrawn!==st.snr){ drawSER(); lastSnrDrawn=st.snr; }
+    if(now-lastUI>150){ updateText(); lastUI=now; }
+    requestAnimationFrame(frame);
+  }
+  fit(cc); fit(sc); updateText(); drawSER();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

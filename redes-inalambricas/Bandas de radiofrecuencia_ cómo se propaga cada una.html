@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bandas de radiofrecuencia: cómo se propaga cada una</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EBF0; --panel:#F6F8FA; --ink:#15233B; --muted:#56647B; --rule:#C6CFDA;
+  --ok:#23915A; --lim:#C98410; --no:#B83A2E; --sat:#2F6FC9;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1724; --panel:#162234; --ink:#E4EAF2; --muted:#9AA8BC; --rule:#2B3A50;
+    --ok:#46C282; --lim:#E6A93A; --no:#E0675A; --sat:#6FA3F0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1724; --panel:#162234; --ink:#E4EAF2; --muted:#9AA8BC; --rule:#2B3A50;
+  --ok:#46C282; --lim:#E6A93A; --no:#E0675A; --sat:#6FA3F0;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
+  font-variant-numeric:tabular-nums}
+.breadcrumb{max-width:1320px;margin:0 auto;padding:18px 20px 0;font-size:.9rem}
+.breadcrumb a{color:var(--sat);text-decoration:underline;text-underline-offset:3px}
+.breadcrumb a:focus-visible{outline:3px solid var(--sat);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding:28px 20px 48px}
+header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 32px;align-items:end;margin-bottom:22px}
+h1{font-size:clamp(28px,4.2vw,50px);line-height:1.02;margin:0;font-weight:800;font-stretch:72%;letter-spacing:-.01em}
+.lead{margin:10px 0 0;color:var(--muted);max-width:62ch}
+.course{color:var(--muted);font-size:14px;text-align:right}
+
+/* Selector */
+.selector{position:relative}
+.bands{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.band{appearance:none;border:0;background:var(--panel);color:var(--ink);cursor:pointer;
+  padding:10px 8px 9px;text-align:left;border-top:5px solid var(--c);font:inherit;
+  display:flex;flex-direction:column;gap:1px;min-height:74px;transition:background .15s}
+.band:hover{background:color-mix(in srgb,var(--c) 10%,var(--panel))}
+.band[aria-pressed="true"]{background:var(--c);color:#fff}
+.band b{font-size:21px;font-stretch:88%;font-weight:750;line-height:1.1}
+.band span{font-size:12.5px;opacity:.85}
+.band:focus-visible,.seg button:focus-visible,.tog:focus-visible,.matrix tr:focus-visible{outline:3px solid var(--sat);outline-offset:2px}
+.trend{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:10px 0 18px;font-size:13.5px;color:var(--muted)}
+.trend .r{text-align:right}
+.trend .bar{width:min(34vw,380px);height:2px;background:linear-gradient(90deg,#B3261E,#D98A0B,#3F9A3A,#2176C7,#7A3DB8);position:relative}
+.trend .bar::after{content:"";position:absolute;right:-2px;top:-5px;border-left:9px solid #7A3DB8;border-top:6px solid transparent;border-bottom:6px solid transparent}
+
+/* Main */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+.stage{background:#0A1128;position:relative}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--rule)}
+.seg{display:inline-flex;border:1px solid var(--rule)}
+.seg button,.tog{appearance:none;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.tog{border:1px solid var(--rule)}
+.tog[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.toolbar .hint{margin-left:auto;font-size:13px;color:var(--muted)}
+.canvas-scroll{overflow-x:auto}
+canvas{display:block;width:100%;min-width:760px;aspect-ratio:1200/640;height:auto}
+
+.info{background:var(--panel);padding:20px 20px 18px;border-top:5px solid var(--c,#999)}
+.info h2{margin:0;font-size:46px;line-height:1;font-weight:800;font-stretch:80%;color:var(--c)}
+.info .full{margin:4px 0 14px;color:var(--muted);font-size:14.5px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0 0 14px;font-size:14.5px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.mech{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:0;list-style:none}
+.mech li{font-size:13px;padding:3px 9px;border:1px solid var(--c);color:var(--ink)}
+.info p{margin:0 0 10px;font-size:15px}
+.cond{border-left:3px solid var(--c);padding:2px 0 2px 10px;color:var(--ink)}
+.info h3{font-size:14px;font-weight:700;margin:16px 0 6px}
+.dest{list-style:none;padding:0;margin:0;font-size:14px}
+.dest li{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--rule)}
+.dest li strong{font-weight:650}
+.dest li small{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+.sym{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#fff;font-size:12px;font-weight:800;line-height:1}
+.s-ok{background:var(--ok)} .s-lim{background:var(--lim)} .s-no{background:var(--no)} .s-sat{background:var(--sat)}
+.uses{font-size:14px;color:var(--muted)}
+
+/* Matrix */
+.summary{margin-top:34px}
+.summary h2{font-size:26px;font-stretch:80%;font-weight:800;margin:0 0 4px}
+.summary > p{margin:0 0 14px;color:var(--muted);max-width:70ch}
+.table-scroll{overflow-x:auto;background:var(--panel)}
+.matrix{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+.matrix th,.matrix td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--rule)}
+.matrix thead th{font-weight:650;font-size:13px;color:var(--muted);vertical-align:bottom}
+.matrix tbody th{text-align:left;font-weight:750;border-left:5px solid var(--c);white-space:nowrap}
+.matrix tbody th small{font-weight:400;color:var(--muted);margin-left:6px}
+.matrix tbody tr{cursor:pointer}
+.matrix tbody tr:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.matrix tbody tr.sel{background:color-mix(in srgb,var(--c) 14%,transparent)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.foot{margin-top:18px;font-size:13px;color:var(--muted)}
+
+@media (max-width:1040px){
+  .main{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .wrap{padding:18px 12px 36px}
+  header{grid-template-columns:1fr}
+  .course{text-align:left}
+  .bands{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .trend{grid-template-columns:1fr;gap:4px}
+  .trend .r{text-align:left}
+  .trend .bar{width:100%}
+  .toolbar .hint{display:none}
+}
+@media (prefers-reduced-motion: reduce){ .band{transition:none} }
+</style>
+</head>
+<body>
+<nav class="breadcrumb" aria-label="Ruta de navegación"><a href="index.html">← Redes inalámbricas</a><span aria-hidden="true"> · </span><a href="../index.html">Portada principal</a></nav>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Nueve bandas, nueve formas de viajar</h1>
+      <p class="lead">Elige una banda y observa por dónde va la señal: pegada al suelo, rebotando en la ionosfera, en línea recta hacia un satélite o absorbida por la propia atmósfera. Cambia entre día y noche y añade lluvia para ver qué se altera.</p>
+    </div>
+    <div class="course">RMSF<br>Espectro radioeléctrico</div>
+  </header>
+
+  <div class="selector">
+    <div class="bands" id="bands" role="group" aria-label="Banda de frecuencia"></div>
+    <div class="trend" aria-hidden="true">
+      <div>Frecuencia baja: sigue la curvatura, gran alcance, antenas enormes, poca capacidad</div>
+      <div class="bar"></div>
+      <div class="r">Frecuencia alta: línea recta, atraviesa la ionosfera, antenas pequeñas, mucha capacidad, absorción atmosférica</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stage">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Momento del día">
+          <button id="bDay" aria-pressed="true">Día</button>
+          <button id="bNight" aria-pressed="false">Noche</button>
+        </div>
+        <button class="tog" id="bRain" aria-pressed="false">Lluvia</button>
+        <button class="tog" id="bPlay" aria-pressed="false">Pausar</button>
+        <span class="hint">Flechas ← → para cambiar de banda</span>
+      </div>
+      <div class="canvas-scroll"><canvas id="cv" role="img" aria-label="Animación de la propagación de la banda seleccionada"></canvas></div>
+    </div>
+
+    <aside class="info" id="info" aria-live="polite">
+      <h2 id="iName">VLF</h2>
+      <p class="full" id="iFull"></p>
+      <dl class="facts">
+        <dt>Frecuencia</dt><dd id="iF"></dd>
+        <dt>Longitud de onda</dt><dd id="iL"></dd>
+        <dt>Antenas</dt><dd id="iA"></dd>
+      </dl>
+      <ul class="mech" id="iMech"></ul>
+      <p id="iDesc"></p>
+      <p class="cond" id="iCond"></p>
+      <h3>¿Hasta dónde llega?</h3>
+      <ul class="dest" id="iDest"></ul>
+      <h3>Usos típicos</h3>
+      <p class="uses" id="iUses"></p>
+    </aside>
+  </div>
+
+  <section class="summary">
+    <h2>Todas las bandas de un vistazo</h2>
+    <p>La tabla sigue los controles de arriba (día o noche, con o sin lluvia). Pulsa una fila para verla en la animación.</p>
+    <div class="table-scroll">
+      <table class="matrix" id="matrix">
+        <thead><tr>
+          <th scope="col" style="text-align:left">Banda</th>
+          <th scope="col">Local<br>~10 km</th>
+          <th scope="col">Tras el horizonte<br>~150 km</th>
+          <th scope="col">Lejano<br>~2.000 km</th>
+          <th scope="col">Intercontinental<br>&gt; 4.000 km</th>
+          <th scope="col">Bajo el agua</th>
+          <th scope="col">Espacio<br>(satélite)</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><i class="sym s-ok">✓</i> Llega bien</span>
+      <span><i class="sym s-lim">~</i> Llega con limitaciones</span>
+      <span><i class="sym s-no">✕</i> No llega</span>
+      <span><i class="sym s-sat">S</i> Solo a través de un satélite</span>
+    </div>
+    <p class="foot">La escena no está a escala: la altura de las capas atmosféricas, el tamaño de las antenas y la profundidad del mar están exagerados para que se vean. Alturas reales aproximadas: troposfera 0–12 km, capa D 60–90 km, capa E 90–150 km, capa F 150–500 km.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Datos de las bandas ---------- */
+const BANDS = [
+ {id:"VLF",n:4,full:"Very Low Frequency",f:"3 – 30 kHz",lam:"100 – 10 km",color:"#B3261E",
+  ant:{type:"mastHat",h:70},antTxt:"Enormes: mástiles de cientos de metros y kilómetros de cable",
+  mech:["Onda de superficie","Guía de ondas Tierra–ionosfera","Penetra en el agua"],
+  desc:"Las ondas son tan largas que siguen la curvatura de la Tierra y rebotan entre el suelo y la parte baja de la ionosfera como si viajaran por un tubo. Se atenúan muy poco y pueden dar la vuelta al planeta, pero el ancho de banda es mínimo: solo caben mensajes alfanuméricos lentos.",
+  cond:({day})=> day ? "De día el techo de la guía de ondas es la capa D, a unos 70 km." : "De noche la capa D desaparece y la reflexión sube a unos 90 km: el alcance mejora todavía más.",
+  uses:"Comunicación con submarinos, señales horarias, radiobalizas y radionavegación.",
+  st:()=>({A:"ok",B:"ok",C:"ok",D:"ok",W:"ok",S:"no"}),
+  why:()=>({A:"Onda de superficie",B:"Onda de superficie",C:"Guía de ondas Tierra–ionosfera",D:"Da la vuelta al planeta con muy poca atenuación",W:"Penetra 10–40 m en el agua de mar",S:"La ionosfera la refleja: no sale al espacio"})},
+ {id:"LF",n:5,full:"Low Frequency (onda larga)",f:"30 – 300 kHz",lam:"10 – 1 km",color:"#D0531B",
+  ant:{type:"mast",h:58},antTxt:"Mástiles de decenas a cientos de metros",
+  mech:["Onda de superficie","Onda ionosférica"],
+  desc:"La onda de superficie todavía alcanza cientos o miles de kilómetros con baja atenuación. Además, parte de la energía sube y se refleja en las capas bajas de la ionosfera y vuelve a tierra más lejos.",
+  cond:({day})=> day ? "De día la capa D absorbe parte de la onda ionosférica: el salto llega debilitado." : "De noche la capa D desaparece y la reflexión en la capa E es limpia: el alcance crece.",
+  uses:"Radiofaros y navegación marítima y aeronáutica, señales horarias, servicios meteorológicos, radiodifusión en onda larga, RFID de baja frecuencia.",
+  st:({day})=>({A:"ok",B:"ok",C:"ok",D:day?"lim":"ok",W:"lim",S:"no"}),
+  why:({day})=>({A:"Onda de superficie",B:"Onda de superficie",C:"Onda de superficie y onda ionosférica",D:day?"Solo con una onda ionosférica débil":"Onda ionosférica, dos saltos",W:"Solo unos pocos metros de profundidad",S:"La ionosfera la refleja"})},
+ {id:"MF",n:6,full:"Medium Frequency (onda media)",f:"300 kHz – 3 MHz",lam:"1 km – 100 m",color:"#D38A0A",
+  ant:{type:"mast",h:46},antTxt:"Mástiles radiantes de 50 a 200 m",
+  mech:["Onda de superficie (día)","Onda ionosférica (noche)"],
+  desc:"Es la banda en la que más se nota la diferencia entre el día y la noche. La onda de superficie cubre unos cientos de kilómetros; lo que pase más allá depende de la capa D.",
+  cond:({day})=> day ? "De día la capa D absorbe todo lo que sube: solo funciona la onda de superficie." : "De noche la capa D se desvanece y la onda rebota en las capas E y F: una emisora de onda media se oye a miles de kilómetros.",
+  uses:"Radiodifusión AM, servicios marítimos y aeronáuticos, radiobalizas y emergencias marítimas, comunicaciones cerca de la costa.",
+  st:({day})=>({A:"ok",B:"ok",C:day?"no":"ok",D:day?"no":"lim",W:"no",S:"no"}),
+  why:({day})=>({A:"Onda de superficie",B:"Onda de superficie (unos cientos de km)",C:day?"La capa D absorbe la onda ionosférica":"Reflexión en la ionosfera",D:day?"No hay onda ionosférica de día":"Segundo salto, débil",W:"Se atenúa en muy poca profundidad",S:"Absorbida o reflejada por la ionosfera"})},
+ {id:"HF",n:7,full:"High Frequency (onda corta)",f:"3 – 30 MHz",lam:"100 – 10 m",color:"#9E9A0C",
+  ant:{type:"dipole",h:34},antTxt:"Dipolos y cables de 2,5 a 25 m",
+  mech:["Onda ionosférica","Saltos múltiples","Zona de silencio"],
+  desc:"La onda de superficie muere en pocas decenas de kilómetros, pero la capa F devuelve la señal a tierra a miles de kilómetros. Encadenando saltos entre el suelo y la ionosfera se da la vuelta al mundo con potencias modestas. Entre el final de la onda de superficie y el primer salto queda una zona de silencio.",
+  cond:({day})=> day ? "De día la ionosfera está más cargada: funcionan mejor las frecuencias altas de la banda (14–30 MHz). En verano, mejor." : "De noche baja la ionización: funcionan mejor las frecuencias bajas de la banda (3–10 MHz). En invierno, mejor.",
+  uses:"Radioaficionados, radiodifusión internacional, aviación transoceánica, comunicaciones militares y de emergencia, RFID.",
+  st:()=>({A:"ok",B:"no",C:"ok",D:"ok",W:"no",S:"lim"}),
+  why:()=>({A:"Onda de superficie de corto alcance",B:"Zona de silencio: la onda de superficie ya no llega y el salto aún no ha bajado",C:"Un salto en la capa F",D:"Varios saltos suelo–ionosfera",W:"No penetra en el agua",S:"Solo rayos muy verticales, por encima de la frecuencia crítica"})},
+ {id:"VHF",n:8,full:"Very High Frequency",f:"30 – 300 MHz",lam:"10 – 1 m",color:"#3A9A3C",
+  ant:{type:"yagi",h:9},antTxt:"Dipolos y Yagis de 0,25 a 2,5 m",
+  mech:["Visión directa","Atraviesa la ionosfera"],
+  desc:"La ionosfera ya no la refleja: la atraviesa y sale al espacio. En tierra el alcance queda limitado por el horizonte radioeléctrico, algo más allá del óptico gracias a la refracción troposférica y a la difracción.",
+  cond:()=> "El día y la noche apenas influyen. Para llegar lejos hacen falta repetidores o un satélite.",
+  uses:"Radio FM (88–108 MHz), control de tráfico aéreo, ayudas al aterrizaje, radio marítima, radioaficionados, satélites meteorológicos.",
+  st:()=>({A:"ok",B:"no",C:"no",D:"sat",W:"no",S:"ok"}),
+  why:()=>({A:"Visión directa",B:"Detrás del horizonte (salvo propagación troposférica esporádica)",C:"La ionosfera no la devuelve a tierra",D:"Solo a través de satélite o repetidores",W:"No penetra en el agua",S:"Atraviesa la ionosfera"})},
+ {id:"UHF",n:9,full:"Ultra High Frequency",f:"300 MHz – 3 GHz",lam:"1 m – 10 cm",color:"#15948A",
+  ant:{type:"panel",h:8},antTxt:"De 2,5 a 25 cm: caben en un móvil",
+  mech:["Visión directa","Onda espacial troposférica","Atraviesa la ionosfera"],
+  desc:"Propagación en línea de visión. Las antenas son pequeñas, así que caben en equipos portátiles. Edificios y vegetación ya pesan, por eso se cubre el territorio con muchas celdas. Atraviesa la atmósfera sin problemas: es la banda del GPS.",
+  cond:()=> "Ni el día ni la lluvia la afectan de forma apreciable.",
+  uses:"Telefonía móvil, TDT, wifi a 2,4 GHz, Bluetooth, GPS y Galileo.",
+  st:()=>({A:"ok",B:"no",C:"no",D:"sat",W:"no",S:"ok"}),
+  why:()=>({A:"Visión directa",B:"Detrás del horizonte",C:"Sin visión directa",D:"A través de satélite o de una red de celdas",W:"No penetra en el agua",S:"Atraviesa ionosfera y troposfera (GPS, Iridium)"})},
+ {id:"SHF",n:10,full:"Super High Frequency",f:"3 – 30 GHz",lam:"10 – 1 cm",color:"#2074C4",
+  ant:{type:"dish",h:8},antTxt:"Parábolas y bocinas, de pocos cm a varios metros",
+  mech:["Visión directa","Haz muy directivo"],
+  desc:"Longitudes de onda centimétricas: las parábolas concentran la energía en haces muy estrechos. Es la banda de los radioenlaces punto a punto, los radares y la mayoría de los enlaces por satélite.",
+  cond:({rain})=> rain ? "Con lluvia, la parte alta de la banda (por encima de unos 10 GHz) sufre desvanecimiento: las gotas absorben y dispersan la señal." : "Por encima de unos 10 GHz la lluvia ya empieza a notarse. Activa la lluvia para verlo.",
+  uses:"Radar, televisión por satélite, radioenlaces fijos, wifi a 5 GHz, 5G a 3,5 GHz.",
+  st:({rain})=>({A:"ok",B:"no",C:"no",D:"sat",W:"no",S:rain?"lim":"ok"}),
+  why:({rain})=>({A:"Radioenlace con visión directa",B:"Detrás del horizonte",C:"Sin visión directa",D:"A través de satélite",W:"No penetra en el agua",S:rain?"Atenuación por lluvia en la parte alta de la banda":"Enlaces por satélite (bandas C y Ku)"})},
+ {id:"EHF",n:11,full:"Extremely High Frequency",f:"30 – 300 GHz",lam:"10 – 1 mm",color:"#4A4EC2",
+  ant:{type:"dish",h:7},antTxt:"Milimétricas: se integran en el propio chip",
+  mech:["Visión directa, corto alcance","Absorción atmosférica"],
+  desc:"Ondas milimétricas. El oxígeno (hacia 60 GHz) y el vapor de agua (hacia 22 y 183 GHz) absorben energía, y la lluvia y la niebla la atenúan aún más. Quedan ventanas utilizables (hacia 35, 94 y 140 GHz) para enlaces cortos de mucha capacidad y para satélites.",
+  cond:({rain})=> rain ? "Con lluvia el enlace se corta a los pocos cientos de metros y el enlace con el satélite se pierde." : "Sin lluvia llega a unos pocos kilómetros y al satélite, aunque atenuada.",
+  uses:"Radioastronomía, satélites (banda Ka), 5G milimétrico, radar de automóvil (77 GHz), radioenlaces cortos.",
+  st:({rain})=>({A:rain?"no":"lim",B:"no",C:"no",D:"no",W:"no",S:rain?"no":"lim"}),
+  why:({rain})=>({A:rain?"La lluvia corta el enlace":"Solo a corta distancia (pocos km)",B:"Detrás del horizonte",C:"La absorción impide alcances largos",D:"La absorción impide alcances largos",W:"No penetra en el agua",S:rain?"Bloqueada por la lluvia":"Por las ventanas atmosféricas, atenuada"})},
+ {id:"THF",n:12,full:"Tremendously High Frequency",f:"300 GHz – 3 THz",lam:"1 – 0,1 mm",color:"#7A3CB6",
+  ant:{type:"horn",h:7},antTxt:"Submilimétricas",
+  mech:["Absorbida por el vapor de agua"],
+  desc:"Banda submilimétrica, en la frontera con el infrarrojo. El vapor de agua de la troposfera la absorbe casi por completo: en tierra solo sirve a distancias de metros, y desde el suelo no se puede enlazar con el espacio. Por eso los radiotelescopios de esta banda se instalan en desiertos muy altos y secos o en satélites. No tiene atribuciones de radiocomunicación.",
+  cond:()=> "La humedad del aire es el factor decisivo: cuanto más seca y alta está la estación, mejor.",
+  uses:"Radioastronomía (radiotelescopios en altura y espaciales), espectroscopia, imagen de seguridad, investigación.",
+  st:()=>({A:"no",B:"no",C:"no",D:"no",W:"no",S:"no"}),
+  why:()=>({A:"Se absorbe en pocos metros",B:"Absorbida por la atmósfera",C:"Absorbida por la atmósfera",D:"Absorbida por la atmósfera",W:"No penetra en el agua",S:"El vapor de agua la bloquea"})}
+];
+const DEST = [["A","Local","~10 km"],["B","Tras el horizonte","~150 km"],["C","Lejano","~2.000 km"],["D","Intercontinental","> 4.000 km"],["W","Bajo el agua","submarino"],["S","Espacio","satélite"]];
+const SYM = {ok:"✓",lim:"~",no:"✕",sat:"S"};
+const STXT = {ok:"Llega",lim:"Con limitaciones",no:"No llega",sat:"Solo vía satélite"};
+
+/* ---------- Geometría ---------- */
+const W=1200,H=640,R=1800,CX=600,CY=520+R;
+const P=(th,h)=>{const r=R+h;return [CX+r*Math.sin(th),CY-r*Math.cos(th)];};
+const hOf=p=>Math.hypot(p[0]-CX,p[1]-CY)-R;
+const TX=-0.29;
+const RX={A:{th:-0.22},B:{th:-0.07},C:{th:0.0},D:{th:0.27}};
+const SEA=[0.06,0.22], SUB={th:0.14,d:21}, SAT={th:-0.05,h:430};
+const LAYERS={tropo:[0,44],D:[95,125],E:[145,170],F1:[200,225],F2:[245,295],Fn:[240,300]};
+
+function mkPath(pts,o={}){
+  const cum=[0];
+  for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  return Object.assign({pts,cum,len:cum[cum.length-1],period:2.0,phase:0,fade:null,dashed:false,w:2},o);
+}
+function pointAt(p,s){
+  s=Math.max(0,Math.min(p.len,s));
+  let i=1; while(i<p.cum.length-1 && p.cum[i]<s) i++;
+  const a=p.pts[i-1],b=p.pts[i],seg=p.cum[i]-p.cum[i-1]||1,t=(s-p.cum[i-1])/seg;
+  return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+}
+function alphaAt(p,f){
+  if(!p.fade) return 1;
+  const [a,b,e]=p.fade;
+  if(f<=a) return 1; if(f>=b) return e;
+  return 1+(e-1)*(f-a)/(b-a);
+}
+function fracAtHeight(p,h){for(let s=0;s<=p.len;s+=2){if(hOf(pointAt(p,s))>=h) return s/p.len;}return 1;}
+
+/* ---------- Construcción de la escena de cada banda ---------- */
+function build(b,day,rain){
+  const S={ground:null,paths:[],notes:[],skip:null,shadow:null};
+  const tip=P(TX,b.ant.h);
+  const note=(th,h,text,align="center")=>S.notes.push({p:P(th,h),text,align});
+  const c=b.id;
+  if(c==="VLF"){
+    const Hh=day?100:140;
+    const pts=[tip]; let th=TX, up=true;
+    while(th<0.4){th+=0.05; pts.push(P(th,up?Hh:3)); up=!up;}
+    S.paths.push(mkPath(pts,{period:2.4}));
+    S.paths.push(mkPath([tip,P(TX+0.03,Hh),P(TX+0.06,3)],{period:2.4,phase:1.2}));
+    S.ground={to:0.4,amp:26,pen:32};
+    note(-0.1,Hh+14,day?"Rebota en la capa D: guía de ondas Tierra–ionosfera":"De noche rebota más alto (~90 km)");
+    note(-0.245,Hh+40,"No sale al espacio");
+    note(SUB.th,-62,"Penetra 10–40 m en el agua");
+  } else if(c==="LF"){
+    const Hh=day?118:160;
+    S.paths.push(mkPath([tip,P(-0.145,Hh),P(0,4),P(0.135,Hh),P(0.27,4)],{period:2.2,fade:day?[0.2,1,0.3]:null}));
+    S.paths.push(mkPath([tip,P(TX+0.04,Hh),P(TX+0.08,3)],{period:2.2,phase:1.1,fade:day?[0.3,1,0.4]:null}));
+    S.ground={to:0.06,amp:20,pen:14};
+    note(-0.145,Hh+16,day?"Reflexión en capas D/E, atenuada":"Reflexión en la capa E");
+    note(SUB.th,-62,"Solo unos metros bajo el agua");
+  } else if(c==="MF"){
+    S.ground={to:-0.05,amp:18,pen:0};
+    if(day){
+      const p=mkPath([tip,P(-0.145,185),P(0,4)],{period:2.0});
+      const f=fracAtHeight(p,112); p.fade=[f-0.07,f,0]; S.paths.push(p);
+      const q=mkPath([tip,P(-0.22,185),P(-0.15,4)],{period:2.0,phase:1});
+      const g=fracAtHeight(q,112); q.fade=[g-0.08,g,0]; S.paths.push(q);
+      note(-0.19,138,"Absorbida por la capa D (de día)");
+    } else {
+      S.paths.push(mkPath([tip,P(-0.145,185),P(0,4),P(0.135,185),P(0.27,4)],{period:2.0,fade:[0.5,1,0.35]}));
+      note(-0.145,201,"De noche: reflexión en las capas E/F");
+    }
+  } else if(c==="HF"){
+    const Hh=day?262:275;
+    S.paths.push(mkPath([tip,P(-0.145,Hh),P(0,4),P(0.135,Hh),P(0.27,4)],{period:2.0}));
+    S.paths.push(mkPath([tip,P(TX+0.05,Hh+5),P(TX+0.085,760)],{period:2.0,phase:1}));
+    S.ground={to:-0.2,amp:14,pen:0};
+    S.skip={from:-0.19,to:-0.02};
+    note(-0.145,Hh+18,"Reflexión en la capa F");
+    note(-0.185,Hh+62,"Rayos muy verticales: atraviesan");
+  } else {
+    const ht=b.ant.h;
+    const d=Math.acos(R/(R+ht));
+    const G=P(TX+d,0);
+    const dx=G[0]-tip[0], dy=G[1]-tip[1], L=Math.hypot(dx,dy);
+    const far=[G[0]+dx/L*1300,G[1]+dy/L*1300];
+    const satP=P(SAT.th,SAT.h);
+    const A=P(RX.A.th,6);
+    S.shadow={G,far};
+    let fDirect=null,fHor=null,fSat=null;
+    if(c==="EHF"){fDirect=rain?[0.1,0.55,0]:[0.05,1,0.35]; fHor=[0.1,0.45,0]; fSat=rain?[0.03,0.12,0]:[0.02,0.22,0.35];}
+    if(c==="THF"){fDirect=[0.02,0.2,0]; fHor=[0.02,0.14,0]; fSat=[0.01,0.07,0];}
+    if(c==="SHF"&&rain){fSat=[0.05,0.16,0.4];}
+    S.paths.push(mkPath([tip,A],{period:1.6,fade:fDirect}));
+    S.paths.push(mkPath([tip,G,far],{period:1.6,phase:0.5,fade:fHor}));
+    S.paths.push(mkPath([tip,satP],{period:1.6,phase:0.9,fade:fSat,w:c==="SHF"||c==="EHF"?2.6:2}));
+    if(c==="VHF"||c==="UHF"||c==="SHF"){
+      S.paths.push(mkPath([satP,P(RX.D.th,6)],{period:1.6,phase:0.2,dashed:true,relay:true,fade:(c==="SHF"&&rain)?[0,0.01,0.45]:null}));
+      note(0.19,300,"Retransmitida por el satélite");
+    }
+    if(c==="VHF"){
+      S.paths.push(mkPath([G,P(TX+d+0.04,3)],{period:1.6,phase:0.7,fade:[0,1,0]}));
+    }
+    S.horizon=G; note(TX+d,-60,"Horizonte radioeléctrico");
+    if(c==="EHF") note(-0.23,70,rain?"La lluvia la bloquea":"Absorción por O₂ y H₂O");
+    else if(c==="THF") note(-0.24,62,"Absorbida por el vapor de agua");
+    else if(c==="SHF"&&rain) note(-0.23,72,"Atenuación por lluvia");
+    else note(-0.1,210,"Atraviesa la ionosfera","left");
+    if(c!=="THF") note(0.085,22,"Zona de sombra");
+  }
+  return S;
+}
+
+/* ---------- Estado ---------- */
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const state={bi:0,day:true,rain:false,playing:!reduce,t:0,scene:null,packets:[],pulses:[],cool:{},gPrev:0};
+const stars=[]; {let s=7; const rnd=()=>{s=(s*9301+49297)%233280;return s/233280;}; for(let i=0;i<160;i++) stars.push([rnd()*W,rnd()*H*0.7,rnd()]);}
+
+function statusOf(b){return b.st({day:state.day,rain:state.rain});}
+function rebuild(){
+  const b=BANDS[state.bi];
+  state.scene=build(b,state.day,state.rain);
+  state.packets=[]; state.pulses=[]; state.t=0; state.gPrev=0;
+  state.scene.paths.forEach(p=>p.next=p.phase);
+}
+
+/* ---------- Dibujo ---------- */
+let scale=1,dpr=1;
+function resize(){
+  const w=cv.clientWidth; dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(w*H/W*dpr); scale=w/W;
+  draw();
+}
+function sector(r1,r2,a0,a1){
+  ctx.beginPath(); ctx.arc(CX,CY,r2,-Math.PI/2+a0,-Math.PI/2+a1); ctx.arc(CX,CY,r1,-Math.PI/2+a1,-Math.PI/2+a0,true); ctx.closePath();
+}
+function label(text,x,y,align="center",size=12.5,color="#fff",weight=500){
+  size*=1.25;
+  ctx.font=`${weight} ${size}px Archivo, system-ui, sans-serif`;
+  ctx.textAlign=align; ctx.textBaseline="middle";
+  ctx.lineWidth=3.5; ctx.strokeStyle="rgba(5,10,25,.75)"; ctx.lineJoin="round";
+  ctx.strokeText(text,x,y); ctx.fillStyle=color; ctx.fillText(text,x,y);
+}
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+function lighten(hex){const n=parseInt(hex.slice(1),16);const f=v=>Math.min(255,Math.round(v+(255-v)*0.35));return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
+
+function drawSky(){
+  const g=ctx.createRadialGradient(CX,CY,R,CX,CY,R+560);
+  if(state.day){g.addColorStop(0,"#A7CDEC");g.addColorStop(0.1,"#6FA4D8");g.addColorStop(0.42,"#2B4C86");g.addColorStop(0.75,"#0B1330");g.addColorStop(1,"#050915");}
+  else{g.addColorStop(0,"#1D2D4E");g.addColorStop(0.15,"#121D38");g.addColorStop(0.6,"#070B1A");g.addColorStop(1,"#03050C");}
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(const [x,y,m] of stars){
+    const h=hOf([x,y]); if(h<(state.day?340:60)) continue;
+    ctx.fillStyle=`rgba(255,255,255,${0.25+m*0.55})`; ctx.fillRect(x,y,m>0.85?2:1.2,m>0.85?2:1.2);
+  }
+}
+function drawLayers(){
+  const a0=-0.42,a1=0.42, day=state.day;
+  sector(R+LAYERS.tropo[0],R+LAYERS.tropo[1],a0,a1); ctx.fillStyle=day?"rgba(255,255,255,.14)":"rgba(160,190,255,.07)"; ctx.fill();
+  const ion=(l,a)=>{sector(R+l[0],R+l[1],a0,a1);ctx.fillStyle=`rgba(255,196,120,${a})`;ctx.fill();};
+  if(day){ion(LAYERS.D,.22);ion(LAYERS.E,.24);ion(LAYERS.F1,.22);ion(LAYERS.F2,.3);}
+  else{ion(LAYERS.E,.1);ion(LAYERS.Fn,.24);
+    ctx.setLineDash([4,5]);ctx.strokeStyle="rgba(255,196,120,.3)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(CX,CY,R+110,-Math.PI/2+a0,-Math.PI/2+a1);ctx.stroke();ctx.setLineDash([]);}
+  const th=0.318, c="rgba(255,236,205,.92)";
+  const L=(h,t)=>{const p=P(th,h);label(t,W-10,p[1],"right",12,c,500);};
+  L(46,"Troposfera");
+  L(day?110:110,day?"Capa D":"Capa D (desaparece de noche)");
+  L(157,"Capa E");
+  if(day){L(212,"Capa F1");L(270,"Capa F2");} else L(270,"Capa F");
+  L(390,"Espacio: fuera de la atmósfera");
+}
+function drawEarth(){
+  const day=state.day;
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.fillStyle=day?"#56643A":"#2A331F"; ctx.fill();
+  ctx.beginPath(); ctx.arc(CX,CY,R-8,0,Math.PI*2); ctx.fillStyle=day?"#4A4230":"#221E17"; ctx.fill();
+  sector(R-34,R,SEA[0],SEA[1]); ctx.fillStyle=day?"#1D5C88":"#113150"; ctx.fill();
+  ctx.lineWidth=2.5; ctx.strokeStyle=day?"#7F9154":"#46552F";
+  ctx.beginPath(); ctx.arc(CX,CY,R,-Math.PI/2-0.42,-Math.PI/2+SEA[0]); ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX,CY,R,-Math.PI/2+SEA[1],-Math.PI/2+0.42); ctx.stroke();
+  ctx.strokeStyle=day?"#6FB2DE":"#3C78A6";
+  ctx.beginPath(); ctx.arc(CX,CY,R,-Math.PI/2+SEA[0],-Math.PI/2+SEA[1]); ctx.stroke();
+  // submarino
+  const s=P(SUB.th,-SUB.d);
+  ctx.save(); ctx.translate(s[0],s[1]); ctx.rotate(SUB.th);
+  ctx.fillStyle="#1A1F26"; ctx.strokeStyle="#8A96A3"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.ellipse(0,0,17,4.5,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillRect(-3,-8,6,4); ctx.strokeRect(-3,-8,6,4);
+  ctx.restore();
+}
+function drawGround(dt){
+  const g=state.scene.ground; if(!g) return;
+  const b=BANDS[state.bi], col=lighten(b.color), D=g.to-TX, spacing=0.028, speed=0.055;
+  const off=(state.t*speed)%spacing;
+  const st=statusOf(b);
+  for(let d=off; d<D; d+=spacing){
+    const k=Math.pow(1-d/D,0.8), th=TX+d;
+    const amp=4+g.amp*k, a=0.15+0.75*k;
+    const p0=P(th,0), p1=P(th,amp);
+    ctx.strokeStyle=hexA(b.color,a); ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke();
+    if(g.pen>0 && th>SEA[0] && th<SEA[1]){
+      const q=P(th,-g.pen*Math.max(0.35,k));
+      const gr=ctx.createLinearGradient(p0[0],p0[1],q[0],q[1]);
+      gr.addColorStop(0,hexA(b.color,a)); gr.addColorStop(1,hexA(b.color,0));
+      ctx.strokeStyle=gr; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(q[0],q[1]); ctx.stroke();
+    }
+  }
+  // envolvente
+  ctx.strokeStyle=hexA(b.color,.35); ctx.lineWidth=1; ctx.setLineDash([3,4]); ctx.beginPath();
+  for(let d=0; d<=D; d+=0.004){const k=Math.pow(1-d/D,0.8); const p=P(TX+d,4+g.amp*k); d===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]);}
+  ctx.stroke(); ctx.setLineDash([]);
+  const lt=Math.max(0.05,D*0.45), lk=Math.pow(1-lt/D,0.8), lp=P(TX+lt,(D<0.15?40:4+g.amp*lk+22));
+  label("Onda de superficie",lp[0],lp[1],"center",12,col,650);
+  // pulsos al pasar por receptores
+  if(state.playing){
+    const now=(state.t*speed), prev=now-speed*dt;
+    const crossed=(dist)=>{if(dist<0||dist>D) return false; return Math.floor((now-dist)/spacing)!==Math.floor((prev-dist)/spacing);};
+    for(const k of ["A","B","C","D"]) if(st[k]!=="no" && crossed(RX[k].th-TX)) pulse(k,st[k]);
+    if(g.pen>0 && st.W!=="no" && crossed(SUB.th-TX)) pulse("W",st.W);
+  }
+}
+function drawStaticPaths(){
+  const b=BANDS[state.bi];
+  for(const p of state.scene.paths){
+    ctx.lineWidth=p.w*0.8; ctx.setLineDash(p.dashed?[6,6]:[]);
+    for(let s=0;s<p.len;s+=6){
+      const f=s/p.len, a=alphaAt(p,f); if(a<=0.01) break;
+      const q0=pointAt(p,s), q1=pointAt(p,Math.min(p.len,s+6.5));
+      ctx.strokeStyle=hexA(b.color,0.18+0.3*a); ctx.beginPath(); ctx.moveTo(q0[0],q0[1]); ctx.lineTo(q1[0],q1[1]); ctx.stroke();
+      if(p.fade && p.fade[2]===0 && alphaAt(p,(s+6)/p.len)<=0.01){
+        ctx.setLineDash([]); ctx.strokeStyle=hexA(b.color,.9); ctx.lineWidth=1.6;
+        const [x,y]=q1; ctx.beginPath(); ctx.moveTo(x-4,y-4); ctx.lineTo(x+4,y+4); ctx.moveTo(x+4,y-4); ctx.lineTo(x-4,y+4); ctx.stroke();
+      }
+    }
+  }
+  ctx.setLineDash([]);
+}
+function drawShadow(){
+  const sh=state.scene.shadow; if(!sh) return;
+  ctx.beginPath(); ctx.moveTo(sh.G[0],sh.G[1]); ctx.lineTo(sh.far[0],sh.far[1]); ctx.lineTo(W+50,H+50);
+  const a0=-Math.PI/2+0.45, a1=Math.atan2(sh.G[1]-CY,sh.G[0]-CX);
+  ctx.arc(CX,CY,R,a0,a1,true); ctx.closePath();
+  ctx.fillStyle="rgba(0,0,20,.3)"; ctx.fill();
+}
+function drawHorizon(){
+  const G=state.scene.horizon; if(!G) return;
+  const th=Math.atan2(G[0]-CX,CY-G[1]), q=P(th,-48);
+  ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+  ctx.beginPath(); ctx.moveTo(G[0],G[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(G[0],G[1],3,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
+}
+function drawSkip(){
+  const s=state.scene.skip; if(!s) return;
+  const a=P(s.from,10), b=P(s.to,10);
+  ctx.strokeStyle="rgba(255,255,255,.75)"; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(a[0],a[1]+6); ctx.lineTo(a[0],a[1]);
+  for(let th=s.from; th<=s.to; th+=0.005){const p=P(th,10); ctx.lineTo(p[0],p[1]);}
+  ctx.lineTo(b[0],b[1]+6); ctx.stroke();
+  const m=P((s.from+s.to)/2,24); label("Zona de silencio",m[0],m[1],"center",12.5,"#fff",650);
+}
+function drawCloud(){
+  if(!state.rain) return;
+  const c=P(-0.262,52);
+  ctx.fillStyle=state.day?"rgba(120,132,150,.95)":"rgba(70,80,98,.95)";
+  for(const [dx,dy,r] of [[-22,4,13],[-8,-6,16],[10,-3,15],[24,5,11],[0,8,14]]){ctx.beginPath();ctx.arc(c[0]+dx,c[1]+dy,r,0,Math.PI*2);ctx.fill();}
+  ctx.strokeStyle="rgba(170,205,240,.75)"; ctx.lineWidth=1.2;
+  const off=(state.t*80)%12;
+  for(let i=-28;i<=28;i+=7){for(let y=18;y<60;y+=12){const yy=c[1]+y+off; if(hOf([c[0]+i,yy])<2) continue; ctx.beginPath();ctx.moveTo(c[0]+i,yy);ctx.lineTo(c[0]+i-2,yy+6);ctx.stroke();}}
+}
+function drawAntenna(){
+  const b=BANDS[state.bi], a=b.ant, base=P(TX,0);
+  ctx.save(); ctx.translate(base[0],base[1]); ctx.rotate(TX);
+  ctx.strokeStyle="#E8EDF3"; ctx.fillStyle="#E8EDF3"; ctx.lineWidth=1.4;
+  const h=a.h;
+  if(a.type==="mast"||a.type==="mastHat"){
+    ctx.beginPath(); ctx.moveTo(-4,0); ctx.lineTo(0,-h); ctx.lineTo(4,0); ctx.stroke();
+    for(let y=6;y<h;y+=6){const w=4*(1-y/h); ctx.beginPath(); ctx.moveTo(-w,-y); ctx.lineTo(w,-y+6*(1-y/h)); ctx.stroke();}
+    ctx.strokeStyle="rgba(232,237,243,.45)"; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(0,-h*0.7); ctx.lineTo(-h*0.45,0); ctx.moveTo(0,-h*0.7); ctx.lineTo(h*0.45,0); ctx.stroke();
+    if(a.type==="mastHat"){ctx.strokeStyle="#E8EDF3";ctx.lineWidth=1;ctx.beginPath();
+      for(const dx of [-30,-18,18,30]){ctx.moveTo(0,-h);ctx.lineTo(dx,-h*0.45);} ctx.stroke();}
+  } else if(a.type==="dipole"){
+    ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(-20,-h); ctx.moveTo(20,0); ctx.lineTo(20,-h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-20,-h); ctx.quadraticCurveTo(0,-h+6,20,-h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-h+3); ctx.lineTo(0,0); ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+  } else if(a.type==="yagi"){
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-h); ctx.moveTo(-9,-h); ctx.lineTo(9,-h); ctx.stroke();
+    for(const x of [-8,-3,2,7]){ctx.beginPath();ctx.moveTo(x,-h-4);ctx.lineTo(x,-h+4);ctx.stroke();}
+  } else if(a.type==="panel"){
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-h); ctx.stroke(); ctx.fillRect(1,-h-4,3,9);
+  } else if(a.type==="dish"){
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-h+2); ctx.stroke();
+    ctx.save(); ctx.translate(0,-h); ctx.rotate(-0.7);
+    ctx.beginPath(); ctx.ellipse(0,0,3,8,0,-Math.PI/2,Math.PI/2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(8,0); ctx.stroke(); ctx.restore();
+  } else if(a.type==="horn"){
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-h+2); ctx.stroke();
+    ctx.save(); ctx.translate(0,-h); ctx.rotate(-0.7);
+    ctx.beginPath(); ctx.moveTo(-2,-2); ctx.lineTo(7,-5); ctx.lineTo(7,5); ctx.lineTo(-2,2); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  ctx.restore();
+  label("Transmisor",base[0]+2,base[1]+18,"center",12,"#fff",600);
+}
+const SC={ok:"#2FB06A",lim:"#E1A12F",no:"#D2564A",sat:"#4A8DE6"};
+function badge(x,y,s){
+  ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.fillStyle=SC[s]; ctx.fill();
+  ctx.strokeStyle="rgba(5,10,25,.6)"; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.font="800 12.5px Archivo, system-ui, sans-serif"; ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(SYM[s],x,y+0.5);
+}
+function drawReceivers(){
+  const b=BANDS[state.bi], st=statusOf(b);
+  const names={A:["Local","~10 km"],B:["Tras el horizonte","~150 km"],C:["Lejano","~2.000 km"],D:["Intercontinental","> 4.000 km"]};
+  for(const k of ["A","B","C","D"]){
+    const base=P(RX[k].th,0), top=P(RX[k].th,6);
+    ctx.strokeStyle="#E8EDF3"; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(base[0],base[1]); ctx.lineTo(top[0],top[1]); ctx.stroke();
+    ctx.beginPath(); ctx.arc(top[0],top[1],3,0,Math.PI*2); ctx.fillStyle="#E8EDF3"; ctx.fill();
+    const bp=P(RX[k].th+0.009,16); badge(bp[0],bp[1],st[k]);
+    const l1=P(RX[k].th,-17), l2=P(RX[k].th,-34);
+    label(names[k][0],l1[0],l1[1],"center",12.5,"#fff",650);
+    label(names[k][1],l2[0],l2[1],"center",11.5,"rgba(255,255,255,.8)",500);
+  }
+  const s=P(SUB.th,-SUB.d); badge(s[0]+30,s[1]-2,st.W);
+  const sl=P(SUB.th,-SUB.d-20); label("Submarino",sl[0],sl[1],"center",11.5,"rgba(255,255,255,.85)",500);
+  // satélite
+  const sp=P(SAT.th,SAT.h);
+  ctx.save(); ctx.translate(sp[0],sp[1]); ctx.rotate(SAT.th);
+  ctx.fillStyle="#3E5E9E"; ctx.fillRect(-26,-4,17,8); ctx.fillRect(9,-4,17,8);
+  ctx.strokeStyle="#9DB5E0"; ctx.lineWidth=0.8; for(let x=-24;x<-9;x+=4){ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x,4);ctx.stroke();} for(let x=11;x<26;x+=4){ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x,4);ctx.stroke();}
+  ctx.fillStyle="#D9DEE5"; ctx.fillRect(-7,-6,14,12);
+  ctx.beginPath(); ctx.moveTo(0,6); ctx.lineTo(0,11); ctx.strokeStyle="#D9DEE5"; ctx.lineWidth=1.4; ctx.stroke();
+  ctx.restore();
+  badge(sp[0]+38,sp[1]-10,st.S);
+  label("Satélite",sp[0],sp[1]-24,"center",12.5,"#fff",650);
+}
+function drawNotes(){
+  for(const n of state.scene.notes) label(n.text,n.p[0],n.p[1],n.align,12,"#FFF3DA",550);
+  label("Escena no a escala",12,16,"left",11,"rgba(255,255,255,.6)",500);
+}
+function anchorOf(k){
+  if(k==="S") return P(SAT.th,SAT.h);
+  if(k==="W") return P(SUB.th,-SUB.d);
+  return P(RX[k].th,6);
+}
+function pulse(k,s){
+  if(state.cool[k] && state.t-state.cool[k]<0.35) return;
+  state.cool[k]=state.t;
+  state.pulses.push({p:anchorOf(k),t0:state.t,c:SC[s]});
+}
+function drawPulses(){
+  state.pulses=state.pulses.filter(p=>state.t-p.t0<0.9);
+  for(const p of state.pulses){
+    const k=(state.t-p.t0)/0.9;
+    ctx.beginPath(); ctx.arc(p.p[0],p.p[1],4+k*20,0,Math.PI*2);
+    ctx.strokeStyle=p.c; ctx.globalAlpha=1-k; ctx.lineWidth=2.2; ctx.stroke(); ctx.globalAlpha=1;
+  }
+}
+function drawPackets(){
+  const b=BANDS[state.bi], col=lighten(b.color);
+  for(const pk of state.packets){
+    const p=pk.path, f=pk.s/p.len, a=alphaAt(p,f);
+    for(let i=0;i<10;i++){
+      const s0=pk.s-60+i*6, s1=s0+6; if(s1<0) continue;
+      const q0=pointAt(p,Math.max(0,s0)), q1=pointAt(p,s1);
+      const aa=a*(i/10)*alphaAt(p,Math.max(0,s0)/p.len)/Math.max(a,0.001)*a;
+      ctx.strokeStyle=hexA(b.color,Math.min(1,aa)); ctx.lineWidth=p.w+1;
+      ctx.beginPath(); ctx.moveTo(q0[0],q0[1]); ctx.lineTo(q1[0],q1[1]); ctx.stroke();
+    }
+    const h=pointAt(p,pk.s);
+    ctx.save(); ctx.shadowColor=b.color; ctx.shadowBlur=12; ctx.globalAlpha=Math.max(0,a);
+    ctx.beginPath(); ctx.arc(h[0],h[1],p.relay?3:4,0,Math.PI*2); ctx.fillStyle=col; ctx.fill(); ctx.restore();
+  }
+}
+
+function step(dt){
+  const sc=state.scene, st=statusOf(BANDS[state.bi]), speed=230;
+  state.t+=dt;
+  for(const p of sc.paths){
+    if(state.t>=p.next){state.packets.push({path:p,s:0}); p.next+=p.period;}
+  }
+  for(const pk of state.packets){
+    pk.s+=speed*dt;
+    const h=pointAt(pk.path,pk.s), a=alphaAt(pk.path,pk.s/pk.path.len);
+    if(a<0.08) continue;
+    for(const k of ["A","B","C","D","S"]){
+      if(st[k]==="no") continue;
+      const q=anchorOf(k);
+      if(Math.hypot(h[0]-q[0],h[1]-q[1])<13) pulse(k,st[k]);
+    }
+  }
+  state.packets=state.packets.filter(pk=>pk.s<pk.path.len && alphaAt(pk.path,pk.s/pk.path.len)>0.01);
+}
+let lastDt=0;
+function draw(){
+  ctx.setTransform(dpr*scale,0,0,dpr*scale,0,0);
+  ctx.clearRect(0,0,W,H);
+  drawSky(); drawLayers(); drawShadow(); drawEarth();
+  drawStaticPaths(); drawCloud(); drawGround(lastDt); drawSkip(); drawHorizon();
+  drawPackets(); drawAntenna(); drawReceivers(); drawPulses(); drawNotes();
+}
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(state.playing){ step(dt); lastDt=dt; } else lastDt=0;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- UI ---------- */
+const bandsEl=document.getElementById("bands");
+BANDS.forEach((b,i)=>{
+  const btn=document.createElement("button");
+  btn.className="band"; btn.style.setProperty("--c",b.color);
+  btn.innerHTML=`<b>${b.id}</b><span>${b.f}</span>`;
+  btn.setAttribute("aria-pressed",i===0?"true":"false");
+  btn.setAttribute("aria-label",`${b.id}, ${b.full}, ${b.f}`);
+  btn.addEventListener("click",()=>select(i));
+  bandsEl.appendChild(btn);
+});
+const tbody=document.querySelector("#matrix tbody");
+BANDS.forEach((b,i)=>{
+  const tr=document.createElement("tr"); tr.style.setProperty("--c",b.color); tr.tabIndex=0;
+  tr.addEventListener("click",()=>{select(i);document.querySelector(".stage").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});});
+  tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tr.click();}});
+  tbody.appendChild(tr);
+});
+function renderMatrix(){
+  const ctxv={day:state.day,rain:state.rain};
+  [...tbody.children].forEach((tr,i)=>{
+    const b=BANDS[i], st=b.st(ctxv), why=b.why(ctxv);
+    tr.className=i===state.bi?"sel":"";
+    tr.innerHTML=`<th scope="row">${b.id}<small>${b.f}</small></th>`+DEST.map(([k])=>`<td title="${why[k]}"><i class="sym s-${st[k]}" aria-label="${STXT[st[k]]}: ${why[k]}">${SYM[st[k]]}</i></td>`).join("");
+  });
+}
+function renderInfo(){
+  const b=BANDS[state.bi], cx={day:state.day,rain:state.rain}, st=b.st(cx), why=b.why(cx);
+  const info=document.getElementById("info"); info.style.setProperty("--c",b.color);
+  document.getElementById("iName").textContent=b.id;
+  document.getElementById("iFull").textContent=`${b.full}, banda ${b.n}`;
+  document.getElementById("iF").textContent=b.f;
+  document.getElementById("iL").textContent=b.lam;
+  document.getElementById("iA").textContent=b.antTxt;
+  document.getElementById("iMech").innerHTML=b.mech.map(m=>`<li>${m}</li>`).join("");
+  document.getElementById("iDesc").textContent=b.desc;
+  document.getElementById("iCond").textContent=b.cond(cx);
+  document.getElementById("iUses").textContent=b.uses;
+  document.getElementById("iDest").innerHTML=DEST.map(([k,n,d])=>`<li><i class="sym s-${st[k]}" aria-hidden="true">${SYM[st[k]]}</i><div><strong>${n}</strong> <span style="color:var(--muted);font-size:13px">${d}</span><small>${STXT[st[k]]}. ${why[k]}.</small></div></li>`).join("");
+}
+function refresh(){ rebuild(); renderInfo(); renderMatrix(); draw(); }
+function select(i){
+  state.bi=i;
+  [...bandsEl.children].forEach((btn,j)=>btn.setAttribute("aria-pressed",j===i?"true":"false"));
+  refresh();
+}
+const bDay=document.getElementById("bDay"), bNight=document.getElementById("bNight"), bRain=document.getElementById("bRain"), bPlay=document.getElementById("bPlay");
+function setDay(v){state.day=v; bDay.setAttribute("aria-pressed",v); bNight.setAttribute("aria-pressed",!v); refresh();}
+bDay.onclick=()=>setDay(true); bNight.onclick=()=>setDay(false);
+bRain.onclick=()=>{state.rain=!state.rain; bRain.setAttribute("aria-pressed",state.rain); refresh();};
+function syncPlay(){bPlay.textContent=state.playing?"Pausar":"Reproducir"; bPlay.setAttribute("aria-pressed",!state.playing);}
+bPlay.onclick=()=>{state.playing=!state.playing; syncPlay();};
+document.addEventListener("keydown",e=>{
+  if(e.target.closest&&e.target.closest("input,textarea")) return;
+  if(e.key==="ArrowRight"){select(Math.min(BANDS.length-1,state.bi+1)); e.preventDefault();}
+  if(e.key==="ArrowLeft"){select(Math.max(0,state.bi-1)); e.preventDefault();}
+});
+window.addEventListener("resize",resize);
+syncPlay(); refresh(); resize();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(draw);
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espectro ensanchado por secuencia directa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EDF2;--panel:#F8FAFC;--ink:#18202C;--muted:#5A6678;--grid:#D5DCE6;--line:#C3CCD8;
+  --hl:rgba(31,91,214,.08);
+  --data:#1F5BD6;--pn:#C9771A;--tx:#B02E78;--rx:#13866F;--jam:#D23A2A;--noise:#8C96A5;
+  --u1:#1F5BD6;--u2:#C9771A;--u3:#7B3FC4;--accent:#1F5BD6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10151D;--panel:#18202B;--ink:#E4E9F1;--muted:#95A1B3;--grid:#273241;--line:#334052;
+    --hl:rgba(111,155,255,.10);
+    --data:#6F9BFF;--pn:#F0A548;--tx:#EC6FB3;--rx:#3CC9A6;--jam:#FF6B5B;--noise:#7D8898;
+    --u1:#6F9BFF;--u2:#F0A548;--u3:#B68CFF;--accent:#6F9BFF;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151D;--panel:#18202B;--ink:#E4E9F1;--muted:#95A1B3;--grid:#273241;--line:#334052;
+  --hl:rgba(111,155,255,.10);
+  --data:#6F9BFF;--pn:#F0A548;--tx:#EC6FB3;--rx:#3CC9A6;--jam:#FF6B5B;--noise:#7D8898;
+  --u1:#6F9BFF;--u2:#F0A548;--u3:#B68CFF;--accent:#6F9BFF;color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Spline Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+.wrap{max-width:1260px;margin:0 auto;padding:22px clamp(12px,3vw,28px) 44px}
+h1{font-size:clamp(23px,3.3vw,34px);font-weight:600;letter-spacing:-.015em;line-height:1.12;margin:0 0 6px}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+.tabs{display:flex;gap:8px;margin:20px 0 14px;flex-wrap:wrap}
+.tab{font:inherit;font-weight:500;border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px 16px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button,select{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stage{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:920px){.stage{grid-template-columns:1fr}}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;min-width:0}
+figcaption{font-weight:600;font-size:14px;margin:0 2px 6px;display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;align-items:baseline}
+figcaption .sub{font-weight:400;color:var(--muted);font-size:13px}
+canvas{display:block;width:100%}
+#t1{height:372px}#s1{height:300px}
+#t2{height:452px}#s2{height:300px}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:14px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.btn{border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;min-width:96px;font-weight:600}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;color:var(--muted);padding:5px 11px;border-radius:999px;cursor:pointer;font-size:13.5px}
+.chip.on{color:var(--ink);border-color:var(--ink);font-weight:600}
+.transport input[type=range]{flex:1 1 160px;min-width:120px;accent-color:var(--accent)}
+.speed{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;margin:0 2px 8px}
+.opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.opts input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.opts input[type=range]{accent-color:var(--accent);width:140px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--muted);padding:4px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.read{display:grid;grid-template-columns:1fr auto;gap:5px 14px;font-size:14px;margin:0}
+.read dt{color:var(--muted)}
+.read dd{margin:0;font-weight:600;text-align:right}
+.explain{margin:14px 0 0;max-width:78ch;font-size:15.5px;line-height:1.6}
+.explain strong{font-weight:600}
+.hidden{display:none}
+.note{font-size:13px;color:var(--muted);margin:8px 2px 0;max-width:70ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav aria-label="Ruta de navegación" style="margin-bottom:16px"><a href="index.html" style="color:var(--accent)">← Redes inalámbricas</a></nav>
+  <header>
+    <h1>Espectro ensanchado por secuencia directa</h1>
+    <p class="lede">Cada bit se multiplica por un código pseudoaleatorio mucho más rápido. En el tiempo la señal se trocea en chips; en frecuencia se reparte sobre una banda N veces más ancha. El receptor, con el mismo código, deshace el proceso.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="1">1. Ensanchado y desensanchado</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="2">2. Varios usuarios con códigos distintos</button>
+  </nav>
+
+  <!-- ================= PARTE 1 ================= -->
+  <section id="part1">
+    <div class="opts">
+      <label>Chips por bit (N)
+        <select id="n1"><option value="4" selected>4 (ejemplo)</option><option value="8">8</option><option value="16">16</option></select>
+      </label>
+      <label><input type="checkbox" id="jam1" checked> Interferencia de banda estrecha en el canal</label>
+      <label><input type="checkbox" id="db1"> Escala en dB</label>
+    </div>
+    <div class="stage">
+      <figure>
+        <figcaption>Dominio del tiempo <span class="sub">T = duración del bit, Tc = T/N = duración del chip</span></figcaption>
+        <canvas id="t1" aria-label="Formas de onda de datos, código PN y señal transmitida y recibida"></canvas>
+      </figure>
+      <div class="side">
+        <figure>
+          <figcaption>Dominio de la frecuencia <span class="sub">densidad espectral de potencia</span></figcaption>
+          <canvas id="s1" aria-label="Espectro de la señal ensanchándose o estrechándose"></canvas>
+        </figure>
+        <figure>
+          <dl class="read" id="r1"></dl>
+        </figure>
+      </div>
+    </div>
+    <div class="transport" id="tp1"></div>
+    <p class="explain" id="e1"></p>
+  </section>
+
+  <!-- ================= PARTE 2 ================= -->
+  <section id="part2" class="hidden">
+    <div class="opts">
+      <label>Decodificar
+        <span class="seg" id="user2"><button aria-pressed="true" data-u="0">Usuario 1</button><button aria-pressed="false" data-u="1">Usuario 2</button><button aria-pressed="false" data-u="2">Usuario 3</button></span>
+      </label>
+      <label>Códigos
+        <select id="codes2"><option value="walsh" selected>Walsh (ortogonales)</option><option value="pn">PN aleatorios</option></select>
+      </label>
+      <label>N
+        <select id="n2"><option value="8" selected>8</option><option value="16">16</option></select>
+      </label>
+      <label>SNR por chip <input type="range" id="snr2" min="-20" max="10" step="1" value="0"> <span id="snrv"></span></label>
+      <label><input type="checkbox" id="db2"> Escala en dB</label>
+      <button class="btn" id="new2">Nuevos datos</button>
+    </div>
+    <div class="stage">
+      <figure>
+        <figcaption>Dominio del tiempo <span class="sub">señales bipolares ±1; el sombreado indica el bit de cada usuario</span></figcaption>
+        <canvas id="t2" aria-label="Señales de tres usuarios, canal con ruido, desensanchado, integrador y decisión"></canvas>
+      </figure>
+      <div class="side">
+        <figure>
+          <figcaption>Dominio de la frecuencia <span class="sub">espectros apilados</span></figcaption>
+          <canvas id="s2" aria-label="Espectros de los usuarios y del ruido"></canvas>
+        </figure>
+        <figure>
+          <dl class="read" id="r2"></dl>
+        </figure>
+      </div>
+    </div>
+    <div class="transport" id="tp2"></div>
+    <p class="explain" id="e2"></p>
+    <p class="note">El espectro se dibuja con la aproximación sinc² propia de códigos pseudoaleatorios. Con códigos Walsh sincronizados la interferencia entre usuarios se anula exactamente al integrar cada bit; con códigos PN queda un pequeño residuo que se suma al ruido.</p>
+  </section>
+</div>
+
+<script>
+(()=>{
+const FONT='"Spline Sans", system-ui, sans-serif';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let C={};
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  ['ink','muted','grid','line','hl','data','pn','tx','rx','jam','noise','u1','u2','u3','panel','accent'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim());
+}
+readColors();
+
+/* ---------- utilidades ---------- */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ss=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+const sinc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
+const fmt=(v,d=2)=>v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const dB=v=>10*Math.log10(v);
+function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function lfsr(n,seed=0b1011001){let s=seed,out=[];for(let i=0;i<n;i++){out.push(s&1);const fb=(s^(s>>1))&1;s=(s>>1)|(fb<<6);}return out;}
+function hadamard(n){let H=[[1]];while(H.length<n){H=H.flatMap(r=>[[...r,...r],[...r,...r.map(v=>-v)]]);}return H;}
+function integ(fn,a,b,n=600){let s=0;const h=(b-a)/n;for(let i=0;i<=n;i++){const w=(i===0||i===n)?.5:1;s+=w*fn(a+i*h);}return s*h;}
+function fit(cv){
+  const d=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function alpha(col,a){ // hex -> rgba
+  const m=col.replace('#','');const n=parseInt(m.length===3?m.split('').map(c=>c+c).join(''):m,16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+function stepPath(ctx,x0,cw,vals,mapY,upto){
+  const xEnd=x0+vals.length*cw*upto;if(upto<=0)return;
+  ctx.beginPath();let first=true;
+  for(let i=0;i<vals.length;i++){
+    const xa=x0+i*cw;if(xa>=xEnd-0.01)break;
+    const xb=Math.min(x0+(i+1)*cw,xEnd),y=mapY(vals[i]);
+    if(first){ctx.moveTo(xa,y);first=false;}else ctx.lineTo(xa,y);
+    ctx.lineTo(xb,y);
+  }
+  ctx.stroke();
+}
+function vline(ctx,x,y0,y1,col,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(Math.round(x)+.5,y0);ctx.lineTo(Math.round(x)+.5,y1);ctx.stroke();ctx.restore();}
+function cursor(ctx,x,y0,y1){ctx.save();ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke();ctx.fillStyle=C.ink;ctx.beginPath();ctx.moveTo(x-5,y0-6);ctx.lineTo(x+5,y0-6);ctx.lineTo(x,y0);ctx.fill();ctx.restore();}
+
+/* ---------- espectro genérico ---------- */
+function drawSpectrum(cv,o){
+  const {ctx,w,h}=fit(cv);
+  const padL=46,padR=12,padT=12,padB=36,W=w-padL-padR,H=h-padT-padB;
+  const X=o.X,xs=f=>padL+(f+X)/(2*X)*W;
+  const dmin=-40,dmax=o.dbMax??5;
+  const yv=v=>{
+    if(o.db){const d=v<=1e-12?dmin:clamp(dB(v),dmin,dmax+1);return padT+H*(1-(d-dmin)/(dmax-dmin));}
+    return padT+H*(1-clamp(v/o.ymax,0,1.03));
+  };
+  ctx.font=`11px ${FONT}`;ctx.lineWidth=1;
+  // rejilla horizontal
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  if(o.db){for(let d=Math.floor(dmax/10)*10;d>=dmin;d-=10){const y=yv(10**(d/10));ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+W,y);ctx.stroke();ctx.fillStyle=C.muted;ctx.fillText(d+' dB',padL-5,y);}}
+  else{const st=o.ymax>2?1:.25;for(let v=0;v<=o.ymax+1e-9;v+=st){const y=yv(v);ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+W,y);ctx.stroke();ctx.fillStyle=C.muted;ctx.fillText(fmt(v,st<1?2:0),padL-5,y);}}
+  // rejilla vertical
+  const step=X<=8?1:X<=14?2:4;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  for(let f=-Math.floor(X/step)*step;f<=X+1e-9;f+=step){const x=xs(f);ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,padT+H);ctx.stroke();ctx.fillStyle=C.muted;ctx.fillText(f,x,padT+H+14);}
+  ctx.fillText('frecuencia × T',padL+W/2,h-4);
+  // banda del filtro
+  if(o.band&&o.band.a>0.01){
+    const x0=xs(-o.band.w),x1=xs(o.band.w);
+    ctx.save();ctx.globalAlpha=o.band.a;ctx.fillStyle=C.hl;ctx.fillRect(x0,padT,x1-x0,H);
+    ctx.setLineDash([4,3]);ctx.strokeStyle=C.ink;ctx.beginPath();ctx.moveTo(x0,padT);ctx.lineTo(x0,padT+H);ctx.moveTo(x1,padT);ctx.lineTo(x1,padT+H);ctx.stroke();
+    ctx.restore();
+  }
+  // capas
+  const n=Math.max(240,Math.round(W*1.2));const fs=[];for(let i=0;i<=n;i++)fs.push(-X+2*X*i/n);
+  let base=new Float64Array(n+1);
+  o.layers.forEach(L=>{
+    const top=fs.map((f,i)=>(o.stacked?base[i]:0)+L.fn(f));
+    ctx.beginPath();fs.forEach((f,i)=>{const x=xs(f),y=yv(top[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    for(let i=n;i>=0;i--)ctx.lineTo(xs(fs[i]),o.stacked?yv(base[i]):padT+H);
+    ctx.closePath();ctx.fillStyle=alpha(L.color,L.alpha??.22);ctx.fill();
+    ctx.beginPath();fs.forEach((f,i)=>{const x=xs(f),y=yv(top[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=L.color;ctx.lineWidth=L.lw??2;ctx.stroke();
+    if(o.stacked)base=Float64Array.from(top);
+  });
+  // eje
+  ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padL,padT+H+.5);ctx.lineTo(padL+W,padT+H+.5);ctx.stroke();
+  // leyenda
+  let lx=padL+8,ly=padT+12;ctx.font=`12px ${FONT}`;ctx.textAlign='left';ctx.textBaseline='middle';
+  const items=[...o.layers].reverse().filter(l=>l.label);
+  if(o.band&&o.band.a>0.3)items.push({label:o.band.label,color:C.ink,dashed:true});
+  items.forEach(l=>{
+    if(l.dashed){ctx.save();ctx.setLineDash([3,2]);ctx.strokeStyle=l.color;ctx.strokeRect(lx,ly-5,10,10);ctx.restore();}
+    else{ctx.fillStyle=alpha(l.color,.35);ctx.fillRect(lx,ly-5,10,10);ctx.strokeStyle=l.color;ctx.lineWidth=1.5;ctx.strokeRect(lx,ly-5,10,10);}
+    ctx.fillStyle=C.ink;ctx.fillText(l.label,lx+15,ly);ly+=17;
+  });
+}
+
+/* ---------- reproductor ---------- */
+let dirty=true;
+function makePlayer(root,gmax,steps){
+  const pl={g:0,gmax,playing:!reduce,speed:1,unit:7};
+  root.innerHTML=`<button class="btn primary" data-a="play"></button><button class="btn" data-a="restart">Reiniciar</button>
+  <div class="steps">${steps.map((s,i)=>`<button class="chip" data-i="${i}">${i+1}. ${s.label}</button>`).join('')}</div>
+  <input type="range" min="0" max="1000" value="0" aria-label="Posición de la animación">
+  <label class="speed">Velocidad <select><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>`;
+  const play=root.querySelector('[data-a=play]'),rng=root.querySelector('input'),sel=root.querySelector('select'),chips=[...root.querySelectorAll('.chip')];
+  pl.sync=()=>{
+    play.textContent=pl.playing?'Pausar':(pl.g>=pl.gmax?'Repetir':'Reproducir');
+    rng.value=Math.round(pl.g/pl.gmax*1000);
+    let cur=0;steps.forEach((s,i)=>{if(pl.g>=s.g)cur=i;});chips.forEach((c,i)=>c.classList.toggle('on',i===cur));
+  };
+  play.onclick=()=>{if(pl.g>=pl.gmax)pl.g=0;pl.playing=!pl.playing;pl.sync();dirty=true;};
+  root.querySelector('[data-a=restart]').onclick=()=>{pl.g=0;pl.playing=true;pl.sync();dirty=true;};
+  rng.oninput=()=>{pl.g=rng.value/1000*gmax;pl.playing=false;pl.sync();dirty=true;};
+  sel.onchange=()=>{pl.speed=+sel.value;};
+  chips.forEach((c,i)=>c.onclick=()=>{pl.g=steps[i].g;pl.playing=true;pl.sync();dirty=true;});
+  pl.sync();return pl;
+}
+
+/* =================================================================
+   PARTE 1
+   ================================================================= */
+const EX_PN=[1,0,0,1,0,1,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1,1,0,0];
+const P1={N:4,data:[1,0,1,1,0,1],pn:EX_PN.slice(),jam:true,db:false};
+P1.player=makePlayer(document.getElementById('tp1'),2.3,[{label:'Ensanchar en el transmisor',g:0},{label:'Desensanchar en el receptor',g:1.2}]);
+const cvT1=document.getElementById('t1'),cvS1=document.getElementById('s1');
+const p1State=g=>g<1.2?{ph:'tx',p:clamp(g,0,1)}:{ph:'rx',p:clamp(g-1.2,0,1)};
+
+document.getElementById('n1').onchange=e=>{
+  P1.N=+e.target.value;P1.pn=P1.N===4?EX_PN.slice():lfsr(6*P1.N);dirty=true;
+};
+document.getElementById('jam1').onchange=e=>{P1.jam=e.target.checked;dirty=true;};
+document.getElementById('db1').onchange=e=>{P1.db=e.target.checked;dirty=true;};
+
+function drawT1(){
+  const {ctx,w}=fit(cvT1);const narrow=w<560;
+  const L=narrow?52:120,R=10,W=w-L-R;
+  const N=P1.N,nb=6,nc=nb*N,bitW=W/nb,chipW=W/nc;
+  const {ph,p}=p1State(P1.player.g);
+  const A=P1.data,B=P1.pn,Cs=B.map((b,i)=>b^A[Math.floor(i/N)]);
+  const rowH=50,hdr=26;
+  const groups=[
+    {name:'Transmisor',y:6,rows:[[narrow?'A':'Datos A',A,'bit',C.data],[narrow?'B':'Código PN B',B,'chip',C.pn],[narrow?'C':'C = A ⊕ B',Cs,'chip',C.tx]]},
+    {name:'Receptor',y:6+hdr+3*rowH+20,rows:[[narrow?'C':'Recibida C',Cs,'chip',C.tx],[narrow?'B':'Código PN B',B,'chip',C.pn],[narrow?'A':'Salida C ⊕ B',A,'bit',C.rx]]}
+  ];
+  groups.forEach((G,gi)=>{
+    const active=(gi===0&&ph==='tx')||(gi===1&&ph==='rx');
+    const gp=gi===0?(ph==='tx'?p:1):(ph==='rx'?p:0);
+    const top=G.y+hdr,bottom=top+3*rowH;
+    ctx.font=`600 14px ${FONT}`;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillStyle=active?C.ink:C.muted;ctx.fillText(G.name,4,G.y+15);
+    ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,G.y+10.5);ctx.lineTo(L+W,G.y+10.5);ctx.stroke();
+    if(gi===1&&ph==='tx'){
+      ctx.fillStyle=C.muted;ctx.font=`14px ${FONT}`;ctx.textAlign='center';
+      ctx.fillText('El receptor espera la señal…',L+W/2,top+1.5*rowH);return;
+    }
+    ctx.globalAlpha=active?1:.55;
+    if(active&&p<1){const b=Math.floor(p*nb);ctx.fillStyle=C.hl;ctx.fillRect(L+b*bitW,top-4,bitW,3*rowH);}
+    for(let b=0;b<=nb;b++)vline(ctx,L+b*bitW,top-4,bottom-4,C.line,[3,3]);
+    G.rows.forEach(([lab,vals,kind,col],ri)=>{
+      const y0=top+ri*rowH,yHi=y0+18,yLo=y0+40;
+      const prog=ri===2?gp:1;
+      ctx.fillStyle=C.ink;ctx.font=`${narrow?600:500} 13px ${FONT}`;ctx.textAlign='left';ctx.fillText(lab,4,y0+33);
+      ctx.fillStyle=C.muted;ctx.font=`11px ${FONT}`;ctx.textAlign='center';
+      const cw=kind==='bit'?bitW:chipW;
+      if(kind==='bit'||chipW>=11){
+        vals.forEach((v,i)=>{if((i+.5)/vals.length<=prog+1e-6)ctx.fillText(v,L+(i+.5)*cw,y0+11);});
+      }
+      ctx.strokeStyle=alpha(col,.18);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,yLo+.5);ctx.lineTo(L+W,yLo+.5);ctx.stroke();
+      ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.lineJoin='miter';
+      stepPath(ctx,L,cw,vals,v=>v?yHi:yLo,prog);
+    });
+    ctx.globalAlpha=1;
+    if(active&&p<1)cursor(ctx,L+p*W,top-2,bottom-4);
+  });
+  // escala T y Tc
+  ctx.fillStyle=C.muted;ctx.font=`11px ${FONT}`;ctx.textAlign='center';
+}
+
+function p1Layers(){
+  const {ph,p}=p1State(P1.player.g),s=ss(p),N=P1.N,Pj=.7,q0=1.4;
+  const layers=[];let band=null,q,qj=null;
+  if(ph==='tx'){q=N**(-s);}
+  else{
+    q=N**(-(1-s));
+    if(P1.jam){qj=q0*(1/(N*q0))**s;const qq=qj;layers.push({fn:f=>Pj*qq*sinc(f*qq)**2,color:C.jam,label:'Interferencia',alpha:.18});}
+    band={w:1,a:s,label:'Filtro del decisor ±1/T'};
+  }
+  layers.push({fn:f=>q*sinc(f*q)**2,color:ph==='tx'?C.tx:C.rx,label:'Señal deseada',alpha:.25});
+  return {ph,p,s,q,qj,layers,band,Pj,q0};
+}
+function drawS1(){
+  const st=p1Layers();
+  drawSpectrum(cvS1,{X:P1.N+2,ymax:1.1,db:P1.db,dbMax:5,layers:st.layers,band:st.band});
+  // lecturas
+  const N=P1.N,q=st.q;
+  let html=`<dt>Duración del chip</dt><dd>Tc = T/${N}</dd>
+  <dt>Ganancia de procesado</dt><dd>N = ${N} (${fmt(dB(N),1)} dB)</dd>
+  <dt>Ancho del lóbulo principal</dt><dd>±${fmt(1/q,2)}/T</dd>
+  <dt>Pico de densidad espectral</dt><dd>${fmt(q,2)} (área = 1)</dd>`;
+  if(st.ph==='rx'&&P1.jam){
+    const Pj=st.Pj,q0=st.q0;
+    const sirB=dB(integ(f=>(1/N)*sinc(f/N)**2,-N,N)/integ(f=>Pj*q0*sinc(q0*f)**2,-N,N));
+    const sirA=dB(integ(f=>sinc(f)**2,-1,1)/integ(f=>Pj*(1/N)*sinc(f/N)**2,-1,1));
+    html+=`<dt>SIR antes de desensanchar</dt><dd>${fmt(sirB,1)} dB</dd><dt>SIR tras desensanchar y filtrar</dt><dd>${fmt(sirA,1)} dB</dd>`;
+  }
+  document.getElementById('r1').innerHTML=html;
+  const e=document.getElementById('e1');
+  const txt=st.ph==='tx'
+    ?`<strong>Ensanchado.</strong> Cada bit de datos A, de duración T, se combina mediante XOR con ${N} chips del código PN B, de duración Tc = T/${N}. La señal C cambia hasta ${N} veces más rápido, así que su espectro se ensancha ${N} veces mientras su densidad espectral baja en la misma proporción: la potencia total (el área) no cambia. Por eso una señal DSSS puede quedar por debajo del nivel de ruido.`
+    :`<strong>Desensanchado.</strong> El receptor genera el mismo código B sincronizado y aplica de nuevo el XOR. Como B ⊕ B = 0, sale C ⊕ B = A: la señal deseada vuelve a concentrarse en ±1/T. ${P1.jam?'La interferencia de banda estrecha, en cambio, no estaba ensanchada, así que al multiplicarse por el código se reparte sobre ±N/T y el filtro del decisor solo deja pasar una fracción 1/N de su potencia.':'Activa la interferencia para ver el efecto contrario sobre una señal no deseada.'}`;
+  if(e.dataset.k!==st.ph+N+P1.jam){e.innerHTML=txt;e.dataset.k=st.ph+N+P1.jam;}
+}
+
+/* =================================================================
+   PARTE 2
+   ================================================================= */
+const P2={N:8,K:3,nb:6,M:8,type:'walsh',u:0,snr:0,seed:1,db:false};
+P2.player=makePlayer(document.getElementById('tp2'),2.3,[{label:'Ensanchar y sumar en el canal',g:0},{label:'Desensanchar, integrar y decidir',g:1.2}]);
+const cvT2=document.getElementById('t2'),cvS2=document.getElementById('s2');
+
+function buildP2(){
+  const rnd=mulberry32(P2.seed*7919+P2.N*31+(P2.type==='pn'?7:0));
+  const {N,K,nb,M}=P2;
+  if(P2.type==='walsh'){const H=hadamard(N);P2.codes=[3,5,6].map(i=>H[i]);}
+  else{
+    P2.codes=[];
+    while(P2.codes.length<K){
+      const c=Array.from({length:N},()=>rnd()<.5?-1:1);
+      const ok=P2.codes.every(d=>Math.abs(d.reduce((s,v,i)=>s+v*c[i],0))<N/2)&&Math.abs(c.reduce((a,b)=>a+b,0))<N/2;
+      if(ok)P2.codes.push(c);
+    }
+  }
+  const dr=mulberry32(P2.seed*104729+3);
+  P2.data=Array.from({length:K},()=>Array.from({length:nb},()=>dr()<.5?-1:1));
+  const nr=mulberry32(P2.seed*15485863+11);
+  P2.z=Float64Array.from({length:nb*N*M},()=>gauss(nr));
+  computeP2();
+}
+function computeP2(){
+  const {N,K,nb,M,codes,data,z,u}=P2,S=nb*N*M;
+  const sc=10**(-P2.snr/20),sSample=sc*Math.sqrt(M);
+  P2.sigma=sc;
+  const clean=new Float64Array(S),r=new Float64Array(S),y=new Float64Array(S),I=new Float64Array(S);
+  let acc=0;
+  for(let n=0;n<S;n++){
+    const chip=Math.floor(n/M),c=chip%N,b=Math.floor(chip/N);
+    let v=0;for(let k=0;k<K;k++)v+=data[k][b]*codes[k][c];
+    clean[n]=v;r[n]=v+sSample*z[n];y[n]=r[n]*codes[u][c];
+    if(n%(N*M)===0)acc=0;acc+=y[n];I[n]=acc/(N*M);
+  }
+  const dec=[];for(let b=0;b<nb;b++)dec.push(I[(b+1)*N*M-1]>=0?1:-1);
+  const abs=Array.from(r,Math.abs).sort((a,b)=>a-b);
+  P2.rScale=Math.max(K+.4,abs[Math.floor(abs.length*.985)]);
+  let im=0;for(let b=0;b<nb;b++)im=Math.max(im,Math.abs(I[(b+1)*N*M-1]));
+  P2.iScale=clamp(im*1.15,1.5,6);
+  Object.assign(P2,{clean,r,y,I,dec});
+  P2.ber=estimateBER();
+  dirty=true;
+}
+function estimateBER(){
+  const {N,K,codes,u}=P2,rnd=mulberry32(99+P2.seed),sd=P2.sigma/Math.sqrt(N);
+  const rho=codes.map(c=>c.reduce((s,v,i)=>s+v*codes[u][i],0)/N);
+  const nbits=20000;let err=0;
+  for(let i=0;i<nbits;i++){
+    const du=rnd()<.5?-1:1;let st=du;
+    for(let k=0;k<K;k++)if(k!==u)st+=(rnd()<.5?-1:1)*rho[k];
+    st+=sd*gauss(rnd);
+    if((st>=0?1:-1)!==du)err++;
+  }
+  return {err,nbits};
+}
+
+document.getElementById('user2').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  P2.u=+b.dataset.u;document.querySelectorAll('#user2 button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  computeP2();if(P2.player.g<1.2){P2.player.g=1.2;}P2.player.playing=!reduce;P2.player.sync();
+};
+document.getElementById('codes2').onchange=e=>{P2.type=e.target.value;buildP2();};
+document.getElementById('n2').onchange=e=>{P2.N=+e.target.value;buildP2();};
+const snrEl=document.getElementById('snr2'),snrV=document.getElementById('snrv');
+snrEl.oninput=()=>{P2.snr=+snrEl.value;snrV.textContent=snrEl.value+' dB';computeP2();};
+snrV.textContent=snrEl.value+' dB';
+document.getElementById('db2').onchange=e=>{P2.db=e.target.checked;dirty=true;};
+document.getElementById('new2').onclick=()=>{P2.seed++;buildP2();P2.player.g=0;P2.player.playing=!reduce;P2.player.sync();};
+
+function drawT2(){
+  const {ctx,w}=fit(cvT2);const narrow=w<560;
+  const L=narrow?56:124,R=10,W=w-L-R;
+  const {N,K,nb,M,codes,data,u}=P2,S=nb*N*M,bitW=W/nb,chipW=W/(nb*N);
+  const g=P2.player.g,p1=clamp(g,0,1),p2=clamp(g-1.2,0,1),stage=g<1.2?1:2;
+  const UC=[C.u1,C.u2,C.u3];
+  const xs=n=>L+(n+.5)/S*W;
+  const poly=(arr,mapY,upto,col,lw)=>{
+    const cnt=Math.floor(upto*S);if(cnt<2)return;
+    ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();
+    for(let n=0;n<cnt;n++){const x=xs(n),y=mapY(arr[n]);n?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+  };
+  const label=(t,sub,y,bold)=>{
+    ctx.textAlign='left';ctx.fillStyle=C.ink;ctx.font=`${bold?600:500} 13px ${FONT}`;ctx.fillText(t,4,y);
+    if(sub&&!narrow){ctx.fillStyle=C.muted;ctx.font=`11px ${FONT}`;ctx.fillText(sub,4,y+14);}
+  };
+  const header=(t,y,on)=>{
+    ctx.textAlign='left';ctx.font=`600 14px ${FONT}`;ctx.fillStyle=on?C.ink:C.muted;ctx.fillText(t,4,y+22);
+    ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,y+16.5);ctx.lineTo(L+W,y+16.5);ctx.stroke();
+  };
+  let y=4;
+  // ---- usuarios
+  const uTop=y;
+  if(stage===1&&p1<1){ctx.fillStyle=C.hl;ctx.fillRect(L+Math.floor(p1*nb)*bitW,uTop,bitW,3*46+30+58);}
+  for(let k=0;k<K;k++){
+    const yc=y+28,a=12,col=UC[k],des=stage===2&&k===u;
+    ctx.globalAlpha=stage===2&&!des?.45:1;
+    for(let b=0;b<nb;b++){
+      const v=data[k][b];ctx.fillStyle=alpha(col,.14);ctx.fillRect(L+b*bitW,v>0?yc-a:yc,bitW,a);
+      ctx.fillStyle=C.muted;ctx.font=`11px ${FONT}`;ctx.textAlign='center';ctx.fillText(v>0?'1':'0',L+(b+.5)*bitW,y+11);
+    }
+    ctx.strokeStyle=alpha(col,.25);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,yc+.5);ctx.lineTo(L+W,yc+.5);ctx.stroke();
+    const chips=[];for(let b=0;b<nb;b++)for(let c=0;c<N;c++)chips.push(data[k][b]*codes[k][c]);
+    ctx.strokeStyle=col;ctx.lineWidth=1.8;stepPath(ctx,L,chipW,chips,v=>yc-v*a,p1);
+    label(narrow?'U'+(k+1):'Usuario '+(k+1),null,yc+4,des);
+    if(!narrow){ // código en miniatura
+      const cw=Math.min(5,(L-70)/N);
+      for(let c=0;c<N;c++){ctx.fillStyle=col;ctx.fillRect(4+c*cw,yc+10+(codes[k][c]>0?0:4),cw-.5,4);}
+    }
+    ctx.globalAlpha=1;
+    y+=46;
+  }
+  // ---- canal
+  header('Canal',y,stage===1);y+=30;
+  {
+    const yc=y+29,amp=24/P2.rScale,my=v=>clamp(yc-v*amp,y+2,y+56);
+    ctx.save();ctx.beginPath();ctx.rect(L,y,W,58);ctx.clip();
+    ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(L,yc+.5);ctx.lineTo(L+W,yc+.5);ctx.stroke();
+    poly(P2.r,my,p1,alpha(C.ink,.75),1);
+    ctx.setLineDash([4,3]);
+    const cl=[];for(let i=0;i<nb*N;i++)cl.push(P2.clean[i*M]);
+    ctx.strokeStyle=C.accent;ctx.lineWidth=1.6;stepPath(ctx,L,chipW,cl,v=>yc-v*amp,p1);
+    ctx.restore();
+    label('r(t)',narrow?null:'Σ usuarios + ruido',yc,stage===1);
+    y+=58;
+  }
+  if(stage===1&&p1<1)cursor(ctx,L+p1*W,uTop+6,y-2);
+  // ---- receptor
+  const rTop=y;
+  header(narrow?'Rx U'+(u+1):'Receptor del usuario '+(u+1),y,stage===2);y+=30;
+  const colU=UC[u];
+  if(stage===1){
+    ctx.fillStyle=C.muted;ctx.font=`14px ${FONT}`;ctx.textAlign='center';
+    ctx.fillText('El receptor espera la señal…',L+W/2,y+70);
+  }else{
+    if(p2<1){ctx.fillStyle=C.hl;ctx.fillRect(L+Math.floor(p2*nb)*bitW,y,bitW,58*2+44);}
+    // r·c
+    {
+      const yc=y+29,amp=24/P2.rScale,my=v=>clamp(yc-v*amp,y+2,y+56);
+      ctx.save();ctx.beginPath();ctx.rect(L,y,W,58);ctx.clip();
+      ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(L,yc+.5);ctx.lineTo(L+W,yc+.5);ctx.stroke();
+      poly(P2.y,my,p2,alpha(colU,.85),1);
+      ctx.setLineDash([4,3]);ctx.strokeStyle=C.ink;ctx.lineWidth=1.4;
+      stepPath(ctx,L,bitW,data[u],v=>yc-v*amp,p2);
+      ctx.restore();
+      label(narrow?'r·c':'r(t)·c'+(u+1)+'(t)',narrow?null:'desensanchado',yc,true);
+      y+=58;
+    }
+    // integrador
+    {
+      const yc=y+29,amp=25/P2.iScale,my=v=>clamp(yc-v*amp,y+2,y+56);
+      ctx.strokeStyle=C.line;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(L,yc+.5);ctx.lineTo(L+W,yc+.5);ctx.stroke();ctx.setLineDash([]);
+      if(!narrow){ctx.fillStyle=C.muted;ctx.font=`11px ${FONT}`;ctx.textAlign='right';ctx.fillText('umbral 0',L+W-2,yc-4);}
+      // integrar por tramos (vuelve a cero en cada bit)
+      const cnt=Math.floor(p2*S);
+      ctx.strokeStyle=colU;ctx.lineWidth=2;
+      for(let b=0;b<nb;b++){
+        const s0=b*N*M,s1=Math.min((b+1)*N*M,cnt);if(s1<=s0+1)break;
+        ctx.beginPath();ctx.moveTo(L+b*bitW,yc);
+        for(let n=s0;n<s1;n++)ctx.lineTo(xs(n),my(P2.I[n]));ctx.stroke();
+        if(s1===(b+1)*N*M){const ok=P2.dec[b]===data[u][b];ctx.fillStyle=ok?C.rx:C.jam;ctx.beginPath();ctx.arc(xs(s1-1),my(P2.I[s1-1]),4,0,7);ctx.fill();}
+      }
+      label(narrow?'∫':'Integrador',narrow?null:'integra y vacía',yc,true);
+      y+=58;
+    }
+    // decisor
+    {
+      const cnt=Math.floor(p2*S);
+      for(let b=0;b<nb;b++){
+        if((b+1)*N*M>cnt)break;
+        const ok=P2.dec[b]===data[u][b],x=L+b*bitW+3,bw=bitW-6;
+        ctx.fillStyle=alpha(ok?C.rx:C.jam,.16);ctx.strokeStyle=ok?C.rx:C.jam;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y+6,bw,32,6):ctx.rect(x,y+6,bw,32);ctx.fill();ctx.stroke();
+        ctx.fillStyle=C.ink;ctx.textAlign='center';ctx.font=`600 15px ${FONT}`;
+        ctx.fillText((P2.dec[b]>0?'1':'0')+(ok?' ✓':' ✗'),x+bw/2,y+27);
+      }
+      label('Decisión',narrow?null:'signo de la integral',y+22,true);
+      y+=44;
+    }
+    if(p2<1)cursor(ctx,L+p2*W,rTop+22,y-2);
+  }
+  // divisiones de bit
+  for(let b=0;b<=nb;b++)vline(ctx,L+b*bitW,uTop,y,alpha(C.muted,.35),[3,4]);
+}
+
+function drawS2(){
+  const {N,K,u}=P2,g=P2.player.g,stage=g<1.2?1:2;
+  const s1=ss(clamp(g,0,1)),s2=ss(clamp(g-1.2,0,1));
+  const UC=[C.u1,C.u2,C.u3],noise=P2.sigma**2/N;
+  const layers=[{fn:()=>noise*(stage===1?s1:1),color:C.noise,label:'Ruido',alpha:.3,lw:1.2}];
+  const qOf=k=>stage===1?N**(-s1):(k===u?N**(-(1-s2)):1/N);
+  const order=[...Array(K).keys()].filter(k=>k!==u).concat([u]);
+  order.forEach(k=>{const q=qOf(k);layers.push({fn:f=>q*sinc(f*q)**2,color:UC[k],label:'Usuario '+(k+1)+(stage===2&&k===u?' (deseado)':''),alpha:.28});});
+  drawSpectrum(cvS2,{X:N+2,ymax:3.3,db:P2.db,dbMax:15,stacked:true,layers,band:stage===2?{w:1,a:s2,label:'Filtro del decisor ±1/T'}:null});
+  // lecturas
+  const others=K-1;
+  const sinrB=dB(integ(f=>(1/N)*sinc(f/N)**2,-N,N)/(others*integ(f=>(1/N)*sinc(f/N)**2,-N,N)+noise*2*N));
+  const sinrA=dB(integ(f=>sinc(f)**2,-1,1)/(others*integ(f=>(1/N)*sinc(f/N)**2,-1,1)+noise*2));
+  const errs=P2.dec.reduce((s,d,b)=>s+(d!==P2.data[u][b]?1:0),0);
+  const {err,nbits}=P2.ber;
+  const ber=err===0?`< ${fmt(1/nbits*100,3)} %`:`${fmt(err/nbits*100,2)} %`;
+  document.getElementById('r2').innerHTML=
+   `<dt>SNR por chip en el canal</dt><dd>${P2.snr} dB</dd>
+    <dt>SNR tras integrar N chips</dt><dd>${fmt(P2.snr+dB(N),1)} dB</dd>
+    <dt>SINR espectral antes / después</dt><dd>${fmt(sinrB,1)} / ${fmt(sinrA,1)} dB</dd>
+    <dt>Bits erróneos en pantalla</dt><dd>${stage===2&&s2>=.999?errs+' de '+P2.nb:'—'}</dd>
+    <dt>Tasa de error (20 000 bits)</dt><dd>${ber}</dd>`;
+  const e=document.getElementById('e2');
+  const txt=stage===1
+    ?`<strong>Transmisión simultánea.</strong> Tres usuarios transmiten a la vez y en la misma banda, cada uno multiplicando sus bits (±1) por su propio código de ${N} chips. En el canal las señales se suman y se añade ruido, así que r(t) ya no se parece a ningún usuario. La línea discontinua es la suma sin ruido; en frecuencia, los tres espectros ensanchados se apilan sobre la misma banda.`
+    :`<strong>Recepción del usuario ${u+1}.</strong> El receptor multiplica r(t) por c${u+1}(t). Como c${u+1}·c${u+1} = 1, la componente del usuario ${u+1} vuelve a ser un nivel constante ±1 en cada bit (línea discontinua) y su espectro se estrecha; los otros usuarios y el ruido siguen siendo de banda ancha. El integrador suma durante todo el bit, de modo que la parte deseada crece de forma coherente y el resto se promedia. Al final de cada bit el decisor compara con el umbral 0: positivo decide 1, negativo decide 0.`;
+  if(e.dataset.k!==String(stage)+u+N){e.innerHTML=txt;e.dataset.k=String(stage)+u+N;}
+}
+
+/* ---------- pestañas y bucle ---------- */
+let active=1;
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  active=+t.dataset.tab;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  document.getElementById('part1').classList.toggle('hidden',active!==1);
+  document.getElementById('part2').classList.toggle('hidden',active!==2);
+  const pl=active===1?P1.player:P2.player;
+  if(pl.g===0&&!reduce)pl.playing=true;pl.sync();dirty=true;
+});
+P2.player.playing=false;P2.player.sync();
+function drawActive(){if(active===1){drawT1();drawS1();}else{drawT2();drawS2();}}
+let last=performance.now();
+function frame(t){
+  const dt=Math.min(.1,(t-last)/1000);last=t;
+  const pl=active===1?P1.player:P2.player;
+  if(pl.playing){pl.g+=dt*pl.speed/pl.unit;if(pl.g>=pl.gmax){pl.g=pl.gmax;pl.playing=false;}pl.sync();dirty=true;}
+  if(dirty){drawActive();dirty=false;}
+  requestAnimationFrame(frame);
+}
+buildP2();
+new ResizeObserver(()=>{dirty=true;}).observe(document.body);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readColors();dirty=true;});
+new MutationObserver(()=>{readColors();dirty=true;}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts)document.fonts.ready.then(()=>{dirty=true;});
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -7,8 +7,8 @@ Portal de demostraciones interactivas para docencia. La navegación se organiza 
 ## Apartados
 
 - **[Teoría de la Información](teoria-de-la-informacion/index.html):** conserva el índice de TI_GCED y sus seis recursos sobre circunferencia unidad, periodicidad espectral, aliasing, cuantificación, series de Fourier y bins de la DFT. Incorpora la demostración de polos, ceros y respuesta en frecuencia.
-- **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador interactivo de RAG y vídeos sobre la ventana de contexto, el concepto de RAG, LLM Wiki (`llm_wiki_explicado.mp4`) y cómo las ondas atraviesan las paredes (`ondas_atraviesan_paredes_voz.mp4`).
-- **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico y coexistencia (`EspectroyRedes.html`), demostración de QAM, ruido y regiones de decisión (`QAM, ruido y regiones de decisión.html`), comparación de la propagación de nueve bandas de radiofrecuencia (`Bandas de radiofrecuencia_ cómo se propaga cada una.html`), y animación de espectro ensanchado por secuencia directa (`Espectro ensanchado por secuencia directa.html`).
+- **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador interactivo de RAG y vídeos sobre la ventana de contexto, el concepto de RAG y LLM Wiki (`llm_wiki_explicado.mp4`).
+- **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico y coexistencia (`EspectroyRedes.html`), demostración de QAM, ruido y regiones de decisión (`QAM, ruido y regiones de decisión.html`), comparación de la propagación de nueve bandas de radiofrecuencia (`Bandas de radiofrecuencia_ cómo se propaga cada una.html`), animación de espectro ensanchado por secuencia directa (`Espectro ensanchado por secuencia directa.html`), y vídeo narrado sobre cómo las ondas atraviesan las paredes (`ondas-atraviesan-paredes.html`).
 
 ## Estructura
 
@@ -17,7 +17,7 @@ index.html                       Portada de temas
 assets/site.css                  Estilos de la portada y los nuevos índices
 teoria-de-la-informacion/         Índice TI_GCED y siete demos
 inteligencia-artificial/         Índice, simulador interactivo y páginas de vídeo
-redes-inalambricas/               Índice y demos de espectro, QAM, propagación y secuencia directa
+redes-inalambricas/               Índice y demos de espectro, propagación, QAM y secuencia directa
 ```
 
 Cada apartado tiene su propio `index.html`. Las demos mantienen su HTML, CSS y JavaScript autocontenidos. En la raíz solo se conserva `index.html`, la portada general.

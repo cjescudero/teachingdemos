@@ -51,8 +51,11 @@
     if (name === "compare") renderComparison();
   }
   function selectMethod(id) {
+    const anchor = active.chunks[selected] ? core(active.chunks[selected]).start : 0;
     active = data.methods.find((method) => method.id === id) || active;
-    selected = 0;
+    selected = Math.max(0, active.chunks.findIndex((chunk) => {
+      const span = core(chunk); return span.start <= anchor && anchor < span.end;
+    }));
     for (const button of document.querySelectorAll(".method-button")) button.setAttribute("aria-pressed", String(button.dataset.method === id));
     $("method-description").textContent = active.description;
     $("chunk-select").replaceChildren(...active.chunks.map((_, index) => {
@@ -62,9 +65,16 @@
     }));
     renderMap($("source-map"), active, (index) => selectChunk(index));
     renderSource();
-    selectChunk(0, false);
+    selectChunk(selected);
     for (const row of $("metrics").children) row.classList.toggle("active", row.dataset.method === id);
-    $("source").scrollTop = 0;
+    const p = active.parameters;
+    $("method-budget").replaceChildren();
+    for (const [label, value] of [[p.hard_limit ? "Límite total" : "Objetivo flexible", `${fmt(p.limit_tokens)} tokens`], ["Overlap máximo", `${fmt(p.overlap_tokens)} tokens`]]) {
+      $("method-budget").append(element("dt", "", label), element("dd", "", value));
+    }
+    $("method-warning").textContent = active.metrics.over_limit_count
+      ? `${fmt(active.metrics.over_limit_count)} chunks superan el objetivo para mantener bloques completos.`
+      : "Todos los chunks cumplen el límite de esta estrategia.";
   }
   function renderMap(container, method, onSelect, position) {
     container.replaceChildren();
@@ -73,6 +83,7 @@
       const button = element("button", "map-chunk", String(index + 1));
       button.type = "button";
       button.dataset.chunk = String(index);
+      button.style.left = `${100 * span.start / sourceLength}%`;
       button.style.width = `${100 * (span.end - span.start) / sourceLength}%`;
       button.style.background = colors[index % colors.length];
       button.title = `Chunk ${index + 1} · ${fmt(chunk.token_count)} tokens`;
@@ -139,11 +150,17 @@
     for (const [label, value] of [["Tokens", fmt(chunk.token_count)], ["Método", chunk.split_method], ["Análisis", chunk.analysis_mode], ["Solapamiento", `${fmt(chunk.overlap_tokens)} tokens`]]) {
       const row = element("div"); row.append(element("dt", "", label), element("dd", "", String(value))); facts.append(row);
     }
-    const preview = element("pre", "inspector-text", sourceText(chunk).slice(0, 650));
+    const overlaps = chunk.source_spans.filter((span) => span.role === "overlap");
+    const preview = element("pre", "inspector-text");
+    preview.append(markedSource(chunk.start, Math.min(chunk.end, chunk.start + 650), overlaps));
     const details = element("details");
-    details.append(element("summary", "", "Ver fragmento completo"), element("pre", "inspector-text", sourceText(chunk)));
+    const full = element("pre", "inspector-text");
+    full.append(markedSource(chunk.start, chunk.end, overlaps));
+    details.append(element("summary", "", "Ver fragmento completo"), full);
+    const sectionPath = element("p", "span-note", chunk.section_path.length
+      ? `Sección: ${chunk.section_path.join(" › ")}` : "Sin una sección asignada por esta estrategia.");
     const offsets = element("p", "span-note", `Caracteres ${fmt(chunk.start)}–${fmt(chunk.end)}. Intervalo con final excluido.`);
-    $("inspector").replaceChildren(counter, facts, preview, details, offsets);
+    $("inspector").replaceChildren(counter, facts, sectionPath, preview, details, offsets);
   }
   function renderMetrics() {
     $("metrics").replaceChildren(...data.methods.map((method, index) => {
@@ -154,7 +171,7 @@
       button.addEventListener("click", () => { selectMethod(method.id); setView("explore"); });
       label.append(button); row.append(label);
       const metrics = method.metrics;
-      for (const value of [fmt(metrics.count), fmt(metrics.mean_tokens, 1), `${fmt(metrics.min_tokens)} / ${fmt(metrics.max_tokens)}`, `${fmt(metrics.redundancy_percent, 1)} %`]) row.append(element("td", "", value));
+      for (const value of [fmt(metrics.count), fmt(metrics.mean_tokens, 1), `${fmt(metrics.min_tokens)} / ${fmt(metrics.max_tokens)}`, `${fmt(metrics.redundancy_percent, 1)} %`, fmt(metrics.over_limit_count)]) row.append(element("td", "", value));
       return row;
     }));
   }
@@ -179,9 +196,23 @@
       const text = element("pre", "comparison-text");
       text.append(document.createTextNode(sourceSlice(chunk.start, position)), element("mark", "", sourceSlice(position, position + 1)), document.createTextNode(sourceSlice(position + 1, chunk.end)));
       const parameters = element("p", "span-note", `${fmt(chunk.start)}–${fmt(chunk.end)} caracteres · ${chunk.analysis_mode}`);
-      $(`${id}-content`).replaceChildren(map, stats, text, parameters);
+      const matches = method.chunks.filter((item) => item.start <= position && position < item.end);
+      const overlapNote = element("p", "span-note", matches.length > 1
+        ? `Este carácter aparece en ${matches.length} chunks (${matches.map((item) => item.index + 1).join(", ")}) por el solapamiento. Se muestra el que lo incorpora como contenido nuevo.`
+        : "Este carácter aparece en un único chunk.");
+      $(`${id}-content`).replaceChildren(map, stats, text, parameters, overlapNote);
     }
   }
+  $("experiment-intro").textContent = `Explora cómo ${data.methods.length} estrategias dividen el mismo documento y qué contexto conserva cada fragmento.`;
+  $("footer-methods").textContent = `Un documento, ${data.methods.length} estrategias calculadas. Sin conexiones a modelos.`;
+  $("source-description").textContent = data.document.source_description;
+  const cfg = data.config;
+  $("budget-explanation").textContent = `Tokenizador: ${data.tokenizer}. Ventanas, párrafos y recursiva: ${fmt(cfg.target_tokens)} tokens. Motor estructural: máximo ${fmt(cfg.max_tokens)}, incluido el contexto prestado; mínimo deseado ${fmt(cfg.min_tokens)} (una sección breve puede quedar por debajo). Overlap: hasta ${fmt(cfg.overlap_tokens)} tokens en ventanas y ${fmt(cfg.structural_overlap_tokens)} en estructura. La agrupación de párrafos permite superar el objetivo si un bloque indivisible es mayor.`;
+  const diagnostic = data.diagnostics;
+  $("diagnostics").textContent = `${fmt(diagnostic.heading_count)} encabezados Markdown y ${fmt(diagnostic.paragraph_count)} bloques separados por líneas en blanco. ${fmt(diagnostic.oversized_paragraph_count)} bloques superan el objetivo: la recursiva los divide con separadores menores; la agrupación de párrafos los conserva completos.`;
+  $("method-equality").textContent = diagnostic.identical_pairs.length
+    ? `Coinciden exactamente: ${diagnostic.identical_pairs.map((pair) => pair.map((id) => data.methods.find((m) => m.id === id).label).join(" y ")).join("; ")}. La coincidencia depende del documento, no de que sean el mismo algoritmo.`
+    : "Todas las estrategias producen cortes diferentes en este documento.";
   $("document-title").textContent = data.document.title;
   $("document-meta").textContent = `${fmt(data.methods[0].metrics.source_tokens)} tokens · Mismo Markdown para todas las técnicas`;
   $("methods").replaceChildren(...data.methods.map((method, index) => {
@@ -199,8 +230,8 @@
   $("extraction-note").textContent = data.document.extraction_note;
   const semantic = data.methods.find((method) => method.id === "semantic");
   $("provenance").textContent = semantic
-    ? `Se reutiliza la ejecución ${semantic.provenance.run}, de ${new Intl.DateTimeFormat("es-ES", { dateStyle: "long", timeZone: "Europe/Madrid" }).format(new Date(semantic.provenance.created_at))}. El modelo concreto no quedó registrado. Su huella SHA-256 coincide con la del Markdown de las otras estrategias.`
-    : "Este experimento no contiene un resultado con LLM.";
+    ? `Se reutiliza la ejecución ${semantic.provenance.run}, de ${new Intl.DateTimeFormat("es-ES", { dateStyle: "long", timeZone: "Europe/Madrid" }).format(new Date(semantic.provenance.created_at))}. ${semantic.provenance.model ? `Modelo: ${semantic.provenance.model}.` : "El modelo concreto no quedó registrado."} Su huella SHA-256 coincide con la del Markdown de las otras estrategias.`
+    : "No disponible para este Markdown: no hay una ejecución semántica guardada y verificada. No se reutiliza el resultado de otro documento ni se simula un LLM con reglas.";
   $("source-hash").textContent = `SHA-256: ${data.markdown_sha256}`;
   for (const id of ["compare-a", "compare-b"]) {
     $(id).replaceChildren(...data.methods.map((method) => { const option = element("option", "", method.label); option.value = method.id; return option; }));

@@ -1,69 +1,67 @@
 # El mismo texto, distintos cortes
 
-Demo estática de Carlos J. Escudero para comparar seis estrategias sobre una
-única extracción Markdown de las recomendaciones de CRUE sobre lenguaje.
+Demo estática de Carlos J. Escudero. Compara cinco estrategias calculadas sobre
+el mismo Markdown de **AQU Catalunya, Marco general para la incorporación de la
+perspectiva de género en la docencia universitaria (2019)**, aportado por el usuario.
+Se mantienen sus metadatos, índice, tablas, notas y bibliografía. La autoría del
+documento corresponde a AQU Catalunya; su aviso de licencia se conserva íntegro.
 
-## Abrir
+## Abrir e integrar
 
-Abre `index.html` directamente. No necesita instalación, servidor, claves,
-servicios externos ni conexión a Internet. La navegación de regreso conduce al
-portal público de Teaching Demos. Se requiere JavaScript.
+Abre `index.html`. Funciona sin servidor, claves, CDN ni conexión a modelos.
+La carpeta completa sustituye `inteligencia-artificial/chunking/` en Teaching Demos.
+La tarjeta del índice de IA debe indicar cinco estrategias y AQU, no seis y CRUE.
 
-La vista **Explorar cortes** permite seleccionar estrategia y fragmento; muestra
-la fuente completa una sola vez y resalta los solapamientos. **Comparar
-estrategias** enfrenta los chunks que cubren el mismo punto del documento.
-**Cómo funciona** explica los parámetros, la procedencia y las limitaciones.
-Los resultados y el Markdown se pueden descargar.
+- **Explorar cortes** muestra cada carácter una vez. El inspector muestra el chunk
+  completo y resalta el solapamiento; cambiar de método conserva el punto de lectura.
+- **Comparar estrategias** enfrenta fragmentos que incorporan el mismo carácter
+  como contenido nuevo e indica si también aparece en otros chunks por overlap.
+- **Cómo funciona** presenta parámetros, diagnósticos calculados y procedencia.
 
-## Publicación en Teaching Demos
+## Métodos y límites
 
-Esta carpeta está preparada para copiarse completa como
-`inteligencia-artificial/chunking/` dentro de `cjescudero/teachingdemos`.
-Todos los recursos de la demo usan rutas relativas. No requiere recompilar el
-portal ni ejecutar Python en GitHub Pages.
+| Método | Regla | Límite total | Overlap |
+|---|---|---:|---:|
+| Tokens fijos | Ventanas con fronteras Unicode válidas | 600 | 0 |
+| Tokens con overlap | Ventanas con contexto de la anterior | 600, incluido overlap | Hasta 80 |
+| Agrupación de párrafos | Empaqueta bloques separados por líneas en blanco | Objetivo 600; un bloque indivisible puede superarlo | 0 |
+| Recursiva | Desciende por párrafos, líneas, frases, espacios y tokens solo si hace falta | 600 | 0 |
+| Estructural | Jerarquía Markdown y divisiones locales por tamaño | 600 | 0 |
 
-Al integrarla, añade una tarjeta «El mismo texto, distintos cortes» al índice de
-Inteligencia artificial y revisa la portada, los demás índices y el README,
-según las instrucciones de ese repositorio. No es necesario cambiar la
-configuración existente de Pages.
+El mínimo deseado del motor estructural es 200; una sección breve puede quedar
+por debajo para conservar la estructura. El máximo de 600 incluye todo el texto
+indexado. La variante estructural sin solapamiento permite aislar el efecto de
+la estructura; el constructor admite activar su overlap por separado.
 
-## Reproducción del experimento
+La agrupación de párrafos **no equivale a un chunk por párrafo**. En AQU hay dos
+bloques de más de 600 tokens, uno de 2.207: conservarlos enteros es la excepción
+declarada de este método. La recursiva sí los divide. Los cinco métodos dan cortes
+distintos; los diagnósticos se calculan, no se presuponen en el HTML.
 
-Desde el proyecto `chunking_jerarquico`:
+No hay resultado semántico con LLM para este Markdown. Se indica como no disponible;
+no se reutiliza la captura de CRUE ni se atribuyen reglas locales a una IA.
+La captura histórica CRUE permanece separada en el proyecto de origen.
+
+La repetición es caracteres duplicados / caracteres indexados. No mide calidad
+RAG. Todos los métodos cubren el 100 % del texto y sus intervalos de contenido
+nuevo forman una partición exacta. Los offsets Python se convierten a UTF-16 en
+el navegador para preservar caracteres no BMP.
+
+## Reproducir desde chunking_jerarquico
 
 ```bash
-uv run python scripts/build_chunking_demo.py
-# Para el portal, con enlaces de regreso relativos:
 uv run python scripts/build_chunking_demo.py --teaching-demos
+# Otro Markdown, conservado sin normalizar saltos de línea:
+uv run python scripts/build_chunking_demo.py --markdown documento.md
+# Experimento histórico CRUE, con su captura LLM validada:
+uv run python scripts/build_chunking_demo.py --document crue
+# Estructural con overlap, sin cambiar el de las ventanas:
+uv run python scripts/build_chunking_demo.py --structural-overlap-tokens 80
 uv run pytest
 uv run ruff check .
 uv run mypy src
 ```
 
-La salida se escribe en `build/pages/`. Los recursos originales de interfaz
-están en `docs/demo/`; los datos de entrada versionados, en `assets/demo/`.
-El constructor solo usa dependencias del proyecto; no depende de
-`demo_Chunking_RAG` ni lee `.env` ni llama a un modelo.
-
-## Método y procedencia
-
-- Fuente: `CRUE_Recomendaciones-para-uso-lenguaje-igualitario-en-las-universidades.pdf`,
-  aprobado el 19 de julio de 2024. El texto pertenece a sus titulares; este
-  experimento no atribuye a su autoría el documento de CRUE.
-- Markdown: extracción conservada en la ejecución `20260724T052438978139Z`.
-- Tokenizador: `cl100k_base`. Ventanas, párrafos y recursiva: objetivo 600.
-  Motor jerárquico: mínimo 200, objetivo 600, máximo 1.000; overlap hasta 80.
-- Comparación: tokens fijos; tokens con overlap; agrupación por párrafos;
-  separadores recursivos; motor estructural sin LLM; semántica con LLM guardada.
-- El resultado semántico es una captura real, no una simulación. No se conserva
-  el nombre del modelo ni se promete reproducir idénticos cortes al llamarlo de
-  nuevo. El constructor comprueba SHA-256, parámetros y recuentos de tokens.
-- Se conserva la estructura imperfecta de la conversión, incluidos dos títulos
-  Markdown, uno dudoso. Es una limitación de entrada, no una mejora del algoritmo.
-- La repetición se mide por caracteres duplicados entre chunks divididos entre
-  el total de caracteres indexados. No es una puntuación de calidad RAG.
-- Las posiciones son caracteres de Python. El navegador calcula su equivalente
-  UTF-16 antes de cortar cadenas, para preservar también caracteres no BMP.
-
-Las únicas peticiones que realiza la página al servirse por HTTP son las de sus
-propios recursos estáticos. No contiene analítica, CDN ni backend.
+Salida: `build/pages/`. Fuente de interfaz: `docs/demo/`. Entradas: `assets/demo/`.
+No se leen credenciales ni se llama a modelos durante el cálculo ni en la web.
+Un JSON semántico opcional debe corresponder exactamente a la fuente y parámetros.

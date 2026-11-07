@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Un mismo documento y seis estrategias de chunking: explora sus cortes, solapamientos y contexto. Demo de Carlos J. Escudero.">
+  <meta name="description" content="Un mismo documento y distintas estrategias de chunking: explora sus cortes, solapamientos y contexto. Demo de Carlos J. Escudero.">
   <meta name="color-scheme" content="light">
   <title>El mismo texto, distintos cortes · Carlos J. Escudero</title>
   <link rel="stylesheet" href="styles.css">
@@ -15,12 +15,12 @@
   <div class="shell">
     <header class="site-header">
       <a class="brand" href="../index.html">Carlos J. Escudero <span>/ demos</span></a>
-      <a href="experiment.json" download="experimento-chunking-crue.json">Descargar datos</a>
+      <a href="experiment.json" download="experimento-chunking.json">Descargar datos</a>
     </header>
     <main id="main">
       <section class="intro" aria-labelledby="title">
         <h1 id="title">El mismo texto, distintos cortes.</h1>
-        <p>Explora cómo seis estrategias dividen un documento y qué contexto conserva cada fragmento.</p>
+        <p id="experiment-intro"></p>
       </section>
       <nav class="tabs" aria-label="Vistas del experimento">
         <button type="button" data-view="explore" aria-pressed="true">Explorar cortes</button>
@@ -36,12 +36,12 @@
             <h2>Estrategia</h2>
             <div id="methods" class="method-list" aria-label="Estrategias disponibles"></div>
             <p id="method-description" class="method-description"></p>
-            <dl class="budget"><dt>Objetivo</dt><dd>600 tokens</dd><dt>Máximo jerárquico</dt><dd>1.000 tokens</dd></dl>
+            <dl id="method-budget" class="budget"></dl><p id="method-warning" class="method-description"></p>
           </aside>
           <section class="document-view" aria-labelledby="source-title">
             <div class="panel-heading"><h2 id="source-title">Documento y fronteras</h2><label class="jump">Ir al chunk <select id="chunk-select" aria-label="Chunk seleccionado"></select></label></div>
             <div id="source-map" class="coverage-map" aria-label="Mapa de fragmentos"></div>
-            <p class="legend"><span class="legend-core"></span>Contenido principal <span class="legend-overlap"></span>Texto prestado al siguiente chunk</p>
+            <p class="legend"><span class="legend-core"></span>Contenido nuevo (sin duplicar) <span class="legend-overlap"></span>Texto reutilizado como solapamiento</p>
             <div id="source" class="source-scroll" aria-label="Markdown completo con límites de fragmentos" tabindex="0"></div>
           </section>
           <aside class="inspector" aria-labelledby="inspector-title">
@@ -62,10 +62,11 @@
       </section>
       <section id="view-guide" class="view guide" aria-labelledby="guide-title" hidden>
         <h2 id="guide-title">Un experimento reproducible</h2>
-        <p>La conversión del PDF se hizo una sola vez. Las seis estrategias reciben exactamente el mismo Markdown, sin corregirlo ni reescribirlo. Los colores indican dónde acaba cada contenido principal; las rayas señalan el texto que se reutiliza como contexto.</p>
+        <p id="source-description"></p><p>Todas las estrategias reciben exactamente el mismo Markdown, sin corregirlo ni reescribirlo. El panel central muestra cada carácter una vez; el inspector muestra el chunk completo, incluido el solapamiento resaltado.</p>
         <h3>Qué se mantiene y qué cambia</h3>
-        <p>Se usa el tokenizador <code>cl100k_base</code>. Las ventanas fijas, los párrafos y la división recursiva trabajan con un objetivo de 600 tokens. Los dos métodos del motor jerárquico usan mínimo 200, objetivo 600 y máximo 1.000. Conservar una unidad completa puede producir tamaños diferentes. El overlap de las ventanas es de hasta 80 tokens; el motor solo lo añade en fronteras artificiales.</p>
-        <p>En este documento, párrafos y recursiva producen los mismos cortes: ningún párrafo obliga a descender a separadores menores. Coincidir en un caso no convierte dos algoritmos en el mismo método.</p>
+        <p id="budget-explanation"></p>
+        <p id="diagnostics"></p>
+        <p id="method-equality"></p>
         <div id="technique-notes"></div>
         <h3>La entrada también importa</h3><p id="extraction-note"></p>
         <h3>Qué significa la columna «Análisis»</h3>
@@ -79,11 +80,11 @@
       </section>
       <section class="summary" aria-labelledby="summary-title" hidden>
         <h2 id="summary-title">Qué cambia entre estrategias</h2>
-        <div class="table-scroll"><table><caption class="sr-only">Resultados medidos sobre el mismo documento</caption><thead><tr><th scope="col">Estrategia</th><th scope="col">Chunks</th><th scope="col">Tamaño medio</th><th scope="col">Mín. / máx.</th><th scope="col">Texto repetido</th></tr></thead><tbody id="metrics"></tbody></table></div>
+        <div class="table-scroll"><table><caption class="sr-only">Resultados medidos sobre el mismo documento</caption><thead><tr><th scope="col">Estrategia</th><th scope="col">Chunks</th><th scope="col">Tamaño medio</th><th scope="col">Mín. / máx.</th><th scope="col">Texto repetido</th><th scope="col">Sobre el límite</th></tr></thead><tbody id="metrics"></tbody></table></div>
         <p class="table-note">Tamaños en tokens. Repetición en caracteres. Pulsa una estrategia para explorar sus fragmentos.</p>
       </section>
     </main>
-    <footer><span>Un documento, seis estrategias. Sin conexiones a modelos.</span><a href="../../index.html">Volver a las demos</a></footer>
+    <footer><span id="footer-methods"></span><a href="../../index.html">Volver a las demos</a></footer>
   </div>
 </body>
 </html>

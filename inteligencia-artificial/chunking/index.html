@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="data.js" defer></script>
   <script src="chunk-index.js" defer></script>
+  <script src="chunk-highlights.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -42,7 +43,7 @@
           <section class="document-view" aria-labelledby="source-title">
             <div class="panel-heading"><h2 id="source-title">Documento y fronteras</h2><label class="jump">Ir al chunk <select id="chunk-select" aria-label="Chunk seleccionado"></select></label></div>
             <div id="source-map"></div>
-            <p class="legend"><span class="legend-overlap"></span>En el texto, el amarillo señala contenido reutilizado como solapamiento.</p>
+            <p class="legend"><span class="legend-overlap"></span>Tomado del anterior <span class="legend-next"></span>Lo reutilizará el siguiente. Solo se marcan los solapamientos del chunk seleccionado.</p>
             <div id="source" class="source-scroll" aria-label="Markdown completo con límites de fragmentos" tabindex="0"></div>
           </section>
           <aside class="inspector" aria-labelledby="inspector-title">
@@ -78,6 +79,8 @@
         <h3>Procedencia del resultado con IA</h3><p id="provenance"></p>
         <p id="semantic-download" hidden><a href="semantic-decisions.json" download>Descargar decisiones semánticas y procedencia</a></p>
         <p>La web contiene resultados precalculados. No hace llamadas a modelos, no solicita claves y no vuelve a dividir el documento cuando cambias de vista.</p>
+        <h3>Qué significan los resaltados</h3>
+        <p>El amarillo marca texto que el chunk seleccionado toma del anterior. Un fondo ligeramente más oscuro marca su parte que reutilizará el siguiente. No se resaltan solapamientos ajenos a la selección. En el documento completo, el contexto tomado aparece en su posición original; el inspector lo incluye al comienzo del chunk.</p>
         <h3>Cómo interpretar las cifras</h3>
         <p>«Texto repetido» mide caracteres duplicados entre chunks respecto al total de caracteres indexados. Se expresa en caracteres porque los recuentos de tokens no son aditivos en todas las fronteras. Menos fragmentos o menos repetición no implican mejor recuperación. Aquí se comparan cortes y contexto; no se evalúan embeddings, búsqueda ni respuestas de un RAG.</p>
         <p><a href="documento.md" download>Descargar el Markdown del experimento</a> · <a href="experiment.json" download>Descargar los resultados completos</a></p>

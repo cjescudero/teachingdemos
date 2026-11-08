@@ -37,6 +37,22 @@ Con teclado: Tab entra en la tarjeta seleccionada; flechas izquierda/derecha cam
 de chunk; Inicio/Fin van a los extremos; Re Pág/Av Pág avanzan cinco. Desplazarse
 por la tira sin pulsar una tarjeta no cambia la selección.
 
+### Solapamientos relativos a la selección
+
+Solo se resaltan dos relaciones del chunk seleccionado: en amarillo, el contexto
+que toma del anterior; con un fondo ligeramente más oscuro, su contenido nuevo
+que reutilizará el siguiente. No se colorean los solapamientos de chunks futuros.
+Al cambiar de selección se borran las marcas anteriores. El documento muestra
+cada carácter una vez: el contexto tomado puede verse al final del bloque anterior,
+pero sus offsets pertenecen al texto completo del chunk seleccionado. El salto a
+un chunk empieza en ese contexto, si existe. El inspector y la comparación aplican
+la misma distinción entre contexto recibido y cedido.
+
+La semántica no solapa temas independientes ni grupos que caben enteros, incluso
+si alcanzan exactamente 600 tokens. Solo cuatro grupos AQU superan ese máximo:
+sus subdivisiones generan los 16 chunks que toman contexto del anterior. El
+inspector explica el tamaño del grupo original y el motivo de la subdivisión.
+
 ## Métodos y límites
 
 | Método | Regla | Límite total | Solapamiento |
@@ -110,7 +126,7 @@ uv run pytest
 uv run ruff check .
 uv run mypy src
 # Pruebas de navegación, escala y desplazamiento, sin dependencias npm:
-node --test tests/test_chunk_index.cjs
+node --test tests/test_chunk_index.cjs tests/test_chunk_highlights.cjs
 ```
 
 Salida: `build/pages/`. Interfaz: `docs/demo/`. Entradas: `assets/demo/`.

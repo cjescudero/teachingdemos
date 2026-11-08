@@ -16,6 +16,7 @@
     minimumFractionDigits: digits, maximumFractionDigits: digits,
   }).format(number);
   const chunkIndex = window.ChunkIndex;
+  const highlights = window.ChunkHighlights;
   let explorerIndex;
   const comparisonIndexes = new Map();
   let active = data.methods.find((method) => method.id === "semantic") || data.methods[0];
@@ -35,10 +36,13 @@
     if (chunk.boundary_before) return "Frontera natural de estructura o bloque";
     return "Inicio del documento";
   }
-  function semanticNote(chunk) {
-    return chunk.semantic_label
-      ? `Tema ${chunk.semantic_group_index + 1}: ${chunk.semantic_label}. Fragmento ${chunk.size_fragment_order} de ${chunk.size_fragment_count} del grupo temático.`
-      : "";
+  function semanticNote(chunk, method = active) {
+    if (!chunk.semantic_label) return "";
+    const group = method.semantic_groups?.[chunk.semantic_group_index];
+    const reason = group && chunk.size_fragment_count > 1
+      ? ` Se subdivide porque el grupo tiene ${fmt(group.token_count)} tokens y el máximo es ${fmt(method.parameters.limit_tokens)}. El solapamiento solo se aplica a estas subdivisiones.`
+      : " Sin solapamiento entre grupos temáticos.";
+    return `Tema ${chunk.semantic_group_index + 1}: ${chunk.semantic_label}. Fragmento ${chunk.size_fragment_order} de ${chunk.size_fragment_count} del grupo temático.${reason}`;
   }
   function selectChunk(index, scroll = true) {
     selected = Math.max(0, Math.min(index, active.chunks.length - 1));
@@ -47,10 +51,11 @@
       node.classList.toggle("active", Number(node.dataset.chunk) === selected);
     });
     explorerIndex?.setSelected(selected);
+    renderSourceHighlights();
     renderInspector();
     if (scroll) {
-      const node = $("source").querySelector(`[data-chunk="${selected}"]`);
-      if (node) $("source").scrollTop = node.offsetTop - $("source").offsetTop;
+      const node = $("source").querySelector(".borrowed") || $("source").querySelector(`[data-chunk="${selected}"]`);
+      if (node) $("source").scrollTop += node.getBoundingClientRect().top - $("source").getBoundingClientRect().top;
     }
   }
   function setView(name) {
@@ -87,25 +92,30 @@
       ? `${fmt(active.metrics.over_limit_count)} chunks superan el objetivo para mantener bloques completos.`
       : "Todos los chunks cumplen el límite de esta estrategia.";
   }
-  function markedSource(start, end, overlaps) {
+  function markedSource(start, end, ranges) {
     const fragment = document.createDocumentFragment();
-    const points = new Set([start, end]);
-    for (const span of overlaps) {
-      if (span.end > start && span.start < end) {
-        points.add(Math.max(start, span.start)); points.add(Math.min(end, span.end));
-      }
-    }
-    const sorted = [...points].sort((a, b) => a - b);
-    for (let i = 0; i < sorted.length - 1; i++) {
-      const a = sorted[i], b = sorted[i + 1];
-      const borrowed = overlaps.some((span) => span.start <= a && span.end >= b);
-      const text = sourceSlice(a, b);
-      fragment.append(borrowed ? element("span", "borrowed", text) : document.createTextNode(text));
+    for (const part of highlights.segments(start, end, ranges)) {
+      const text = sourceSlice(part.start, part.end);
+      if (!part.kind) { fragment.append(document.createTextNode(text)); continue; }
+      const mark = element("span", part.kind, text);
+      mark.title = part.kind === "borrowed" ? "Solapamiento tomado del chunk anterior" : "Este texto será reutilizado por el siguiente chunk";
+      fragment.append(mark);
     }
     return fragment;
   }
+  function renderSourceHighlights() {
+    const ranges = highlights.rangesFor(active.chunks, selected);
+    for (const node of $("source").children) {
+      const span = core(active.chunks[Number(node.dataset.chunk)]);
+      const marked = ranges.some((range) => range.start < span.end && range.end > span.start);
+      // Clear old selection marks as well as painting the current ones.
+      if (marked || node.dataset.highlighted === "true") {
+        node.querySelector(".source-text").replaceChildren(markedSource(span.start, span.end, ranges));
+      }
+      node.dataset.highlighted = String(marked);
+    }
+  }
   function renderSource() {
-    const overlaps = active.chunks.flatMap((chunk) => chunk.source_spans.filter((span) => span.role === "overlap"));
     const children = active.chunks.map((chunk, index) => {
       const span = core(chunk);
       const section = element("section", "source-chunk");
@@ -115,7 +125,7 @@
       label.type = "button";
       label.setAttribute("aria-label", `Seleccionar chunk ${index + 1}`);
       const text = element("div", "source-text");
-      text.append(markedSource(span.start, span.end, overlaps));
+      text.textContent = sourceSlice(span.start, span.end);
       section.append(label, text);
       section.addEventListener("click", () => selectChunk(index, false));
       return section;
@@ -133,12 +143,12 @@
     if ("boundary_before" in chunk) {
       const row = element("div"); row.append(element("dt", "", "Inicio del chunk"), element("dd", "", boundaryLabel(chunk))); facts.append(row);
     }
-    const overlaps = chunk.source_spans.filter((span) => span.role === "overlap");
+    const ranges = highlights.rangesFor(active.chunks, selected);
     const preview = element("pre", "inspector-text");
-    preview.append(markedSource(chunk.start, Math.min(chunk.end, chunk.start + 650), overlaps));
+    preview.append(markedSource(chunk.start, Math.min(chunk.end, chunk.start + 650), ranges));
     const details = element("details");
     const full = element("pre", "inspector-text");
-    full.append(markedSource(chunk.start, chunk.end, overlaps));
+    full.append(markedSource(chunk.start, chunk.end, ranges));
     details.append(element("summary", "", "Ver fragmento completo"), full);
     const sectionPath = element("p", "span-note", chunk.section_path.length
       ? `Sección: ${chunk.section_path.join(" › ")}` : "Sin una sección asignada por esta estrategia.");
@@ -186,13 +196,14 @@
       entry.controller.setSelected(index);
       const stats = element("p", "compare-stat", `Chunk ${index + 1} de ${method.chunks.length} · ${fmt(chunk.token_count)} tokens · ${fmt(chunk.overlap_tokens)} tokens de overlap`);
       const text = element("pre", "comparison-text");
-      text.append(document.createTextNode(sourceSlice(chunk.start, position)), element("mark", "", sourceSlice(position, position + 1)), document.createTextNode(sourceSlice(position + 1, chunk.end)));
+      const ranges = highlights.rangesFor(method.chunks, index);
+      text.append(markedSource(chunk.start, position, ranges), element("mark", "", sourceSlice(position, position + 1)), markedSource(position + 1, chunk.end, ranges));
       const parameters = element("p", "span-note", `${fmt(chunk.start)}–${fmt(chunk.end)} caracteres · ${chunk.analysis_mode}`);
       const matches = method.chunks.filter((item) => item.start <= position && position < item.end);
       const overlapNote = element("p", "span-note", matches.length > 1
         ? `Este carácter aparece en ${matches.length} chunks (${matches.map((item) => item.index + 1).join(", ")}) por el solapamiento. Se muestra el que lo incorpora como contenido nuevo.`
         : "Este carácter aparece en un único chunk.");
-      const topic = element("p", "span-note", chunk.semantic_label ? `${semanticNote(chunk)} ${boundaryLabel(chunk)}.` : "");
+      const topic = element("p", "span-note", chunk.semantic_label ? `${semanticNote(chunk, method)} ${boundaryLabel(chunk)}.` : "");
       topic.hidden = !chunk.semantic_label;
       $(`${id}-content`).replaceChildren(stats, topic, text, parameters, overlapNote);
     }

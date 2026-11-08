@@ -1,6 +1,6 @@
 :root {
   --ink: #17243a; --muted: #566178; --accent: #4856db; --line: #d5dae4;
-  --surface: #f5f7fb; --selected: #eef0ff; --overlap: #fff0cd; --reused-next: #d5daec;
+  --surface: #f5f7fb; --selected: #eef0ff; --overlap: #fff0cd; --reused-next: #b8c9dc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink); background: #fff; font-synthesis: none;
 }
@@ -71,11 +71,8 @@ select { background: #fff; border: 1px solid #aeb8cc; border-radius: 4px; paddin
 .chunk-index-help { margin: 6px 0 0; font-size: 11px; line-height: 1.6; color: var(--muted); }
 .legend { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; color: var(--muted); margin: 9px 0 14px; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
-.legend-core, .legend-overlap, .legend-next { display: inline-block; flex: 0 0 16px; height: 13px; border: 1px solid #b8c0d0; border-radius: 2px; }
-.legend-core { background: var(--selected); }
-.legend-overlap { background: var(--overlap); }
-.legend-next { background: var(--reused-next); }
-.legend-note { flex-basis: 100%; }
+.legend-swatch { display: block; width: 20px; min-width: 20px; height: 16px; flex: 0 0 20px; }
+.source-note { margin: -5px 0 12px; font-size: 11px; color: var(--muted); }
 .source-scroll { height: 350px; overflow-y: auto; background: var(--surface); scrollbar-gutter: stable; }
 .source-chunk { position: relative; padding: 10px 14px 10px 60px; border-left: 3px solid transparent; cursor: pointer; background: var(--chunk-bg, #f5f7fb); }
 .source-chunk.active { border-left-color: var(--accent); background: var(--selected); }

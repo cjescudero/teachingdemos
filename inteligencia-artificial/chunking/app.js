@@ -52,9 +52,10 @@
     });
     explorerIndex?.setSelected(selected);
     renderSourceHighlights();
+    renderLegend();
     renderInspector();
     if (scroll) {
-      const node = $("source").querySelector(".borrowed") || $("source").querySelector(`[data-chunk="${selected}"]`);
+      const node = $("source").querySelector(`[data-chunk="${selected}"]`);
       if (node) $("source").scrollTop += node.getBoundingClientRect().top - $("source").getBoundingClientRect().top;
     }
   }
@@ -92,9 +93,9 @@
       ? `${fmt(active.metrics.over_limit_count)} chunks superan el objetivo para mantener bloques completos.`
       : "Todos los chunks cumplen el límite de esta estrategia.";
   }
-  function markedSource(start, end, ranges) {
+  function markedParts(parts) {
     const fragment = document.createDocumentFragment();
-    for (const part of highlights.segments(start, end, ranges)) {
+    for (const part of parts) {
       const text = sourceSlice(part.start, part.end);
       if (!part.kind) { fragment.append(document.createTextNode(text)); continue; }
       const mark = element("span", part.kind, text);
@@ -103,21 +104,40 @@
     }
     return fragment;
   }
+  function markedSource(start, end, ranges) {
+    return markedParts(highlights.segments(start, end, ranges));
+  }
   function renderSourceHighlights() {
-    const ranges = highlights.rangesFor(active.chunks, selected);
     for (const node of $("source").children) {
-      const span = core(active.chunks[Number(node.dataset.chunk)]);
-      const marked = ranges.some((range) => range.start < span.end && range.end > span.start);
-      // Clear old selection marks as well as painting the current ones.
+      const index = Number(node.dataset.chunk);
+      const marked = index === selected;
       if (marked || node.dataset.highlighted === "true") {
-        node.querySelector(".source-text").replaceChildren(markedSource(span.start, span.end, ranges));
+        const panel = highlights.panelFor(active.chunks, index, selected);
+        node.querySelector(".source-text").replaceChildren(markedParts(panel.parts));
       }
       node.dataset.highlighted = String(marked);
     }
   }
+  function renderLegend() {
+    const items = highlights.legendFor(active.chunks, selected).map((item) => {
+      const entry = element("span", "legend-item");
+      // Explicit SVG geometry keeps the swatch visible even with stale layout CSS.
+      const swatch = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      swatch.setAttribute("class", "legend-swatch");
+      swatch.setAttribute("width", "20");
+      swatch.setAttribute("height", "16");
+      swatch.setAttribute("viewBox", "0 0 20 16");
+      swatch.setAttribute("aria-hidden", "true");
+      const rectangle = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      for (const [name, value] of Object.entries({ x: "1", y: "1", width: "18", height: "14", rx: "2", fill: item.color, stroke: "#8e99ae" })) rectangle.setAttribute(name, value);
+      swatch.append(rectangle);
+      entry.append(swatch, document.createTextNode(item.label));
+      return entry;
+    });
+    $("source-legend").replaceChildren(...items);
+  }
   function renderSource() {
     const children = active.chunks.map((chunk, index) => {
-      const span = core(chunk);
       const section = element("section", "source-chunk");
       section.dataset.chunk = String(index);
       section.style.setProperty("--chunk-bg", index % 2 === 0 ? "#f5f7fb" : "#fbfcff");
@@ -125,7 +145,7 @@
       label.type = "button";
       label.setAttribute("aria-label", `Seleccionar chunk ${index + 1}`);
       const text = element("div", "source-text");
-      text.textContent = sourceSlice(span.start, span.end);
+      text.textContent = sourceSlice(chunk.start, chunk.end);
       section.append(label, text);
       section.addEventListener("click", () => selectChunk(index, false));
       return section;

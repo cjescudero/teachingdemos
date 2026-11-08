@@ -6,11 +6,11 @@
   <meta name="description" content="Un mismo documento y distintas estrategias de chunking: explora sus cortes, solapamientos y contexto. Demo de Carlos J. Escudero.">
   <meta name="color-scheme" content="light">
   <title>El mismo texto, distintos cortes · Carlos J. Escudero</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="data.js" defer></script>
-  <script src="chunk-index.js" defer></script>
-  <script src="chunk-highlights.js" defer></script>
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=71bc1e8a5036">
+  <script src="data.js?v=ef346c3befc4" defer></script>
+  <script src="chunk-index.js?v=94510c3ce753" defer></script>
+  <script src="chunk-highlights.js?v=9dc09ecd6852" defer></script>
+  <script src="app.js?v=12b505d978e0" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -43,13 +43,9 @@
           <section class="document-view" aria-labelledby="source-title">
             <div class="panel-heading"><h2 id="source-title">Documento y fronteras</h2><label class="jump">Ir al chunk <select id="chunk-select" aria-label="Chunk seleccionado"></select></label></div>
             <div id="source-map"></div>
-            <p class="legend">
-              <span class="legend-item"><span class="legend-core" aria-hidden="true"></span>Contenido propio del chunk seleccionado</span>
-              <span class="legend-item"><span class="legend-overlap" aria-hidden="true"></span>Solapamiento tomado del anterior</span>
-              <span class="legend-item"><span class="legend-next" aria-hidden="true"></span>Texto que reutilizará el siguiente</span>
-              <span class="legend-note">Solo se marcan los solapamientos del chunk seleccionado.</span>
-            </p>
-            <div id="source" class="source-scroll" aria-label="Markdown completo con límites de fragmentos" tabindex="0"></div>
+            <div id="source-legend" class="legend" aria-label="Colores presentes en el chunk seleccionado"></div>
+            <p class="source-note">Cada bloque muestra el chunk completo, incluido el texto que toma del anterior. Los colores se aplican solo al seleccionado.</p>
+            <div id="source" class="source-scroll" aria-label="Chunks completos, incluido su solapamiento" tabindex="0"></div>
           </section>
           <aside class="inspector" aria-labelledby="inspector-title">
             <h2 id="inspector-title">Chunk seleccionado</h2>
@@ -69,7 +65,7 @@
       </section>
       <section id="view-guide" class="view guide" aria-labelledby="guide-title" hidden>
         <h2 id="guide-title">Un experimento reproducible</h2>
-        <p id="source-description"></p><p>Todas las estrategias reciben exactamente el mismo Markdown, sin corregirlo ni reescribirlo. El panel central muestra cada carácter una vez; el inspector muestra el chunk completo, incluido el solapamiento resaltado.</p>
+        <p id="source-description"></p><p>Todas las estrategias reciben exactamente el mismo Markdown, sin corregirlo ni reescribirlo. El panel central muestra cada chunk completo, incluido el contexto repetido que toma del anterior. El inspector muestra ese mismo contenido.</p>
         <h3>Qué se mantiene y qué cambia</h3>
         <p id="budget-explanation"></p>
         <p id="diagnostics"></p>
@@ -85,7 +81,7 @@
         <p id="semantic-download" hidden><a href="semantic-decisions.json" download>Descargar decisiones semánticas y procedencia</a></p>
         <p>La web contiene resultados precalculados. No hace llamadas a modelos, no solicita claves y no vuelve a dividir el documento cuando cambias de vista.</p>
         <h3>Qué significan los resaltados</h3>
-        <p>El amarillo marca texto que el chunk seleccionado toma del anterior. Un fondo ligeramente más oscuro marca su parte que reutilizará el siguiente. No se resaltan solapamientos ajenos a la selección. En el documento completo, el contexto tomado aparece en su posición original; el inspector lo incluye al comienzo del chunk.</p>
+        <p>El amarillo marca texto que el chunk seleccionado toma del anterior. Un fondo ligeramente más oscuro marca su parte que reutilizará el siguiente. No se resaltan solapamientos ajenos a la selección. El contexto tomado aparece al comienzo del propio bloque del chunk seleccionado, igual que en el inspector. La leyenda solo incluye los colores presentes en ese chunk.</p>
         <h3>Cómo interpretar las cifras</h3>
         <p>«Texto repetido» mide caracteres duplicados entre chunks respecto al total de caracteres indexados. Se expresa en caracteres porque los recuentos de tokens no son aditivos en todas las fronteras. Menos fragmentos o menos repetición no implican mejor recuperación. Aquí se comparan cortes y contexto; no se evalúan embeddings, búsqueda ni respuestas de un RAG.</p>
         <p><a href="documento.md" download>Descargar el Markdown del experimento</a> · <a href="experiment.json" download>Descargar los resultados completos</a></p>

@@ -32,5 +32,24 @@
     });
   }
 
-  root.ChunkHighlights = { rangesFor, segments };
+  function panelFor(chunks, index, selected) {
+    const chunk = chunks[index];
+    return {
+      start: chunk.start,
+      end: chunk.end,
+      parts: segments(chunk.start, chunk.end, index === selected ? rangesFor(chunks, index) : []),
+    };
+  }
+
+  function legendFor(chunks, index) {
+    if (!chunks[index]) return [];
+    const kinds = new Set(panelFor(chunks, index, index).parts.map((part) => part.kind));
+    return [
+      { kind: null, label: "Contenido propio del chunk seleccionado", color: "var(--selected, #eef0ff)" },
+      { kind: "borrowed", label: "Solapamiento tomado del anterior", color: "var(--overlap, #fff0cd)" },
+      { kind: "reused-next", label: "Texto que reutilizará el siguiente", color: "var(--reused-next, #b8c9dc)" },
+    ].filter((item) => kinds.has(item.kind));
+  }
+
+  root.ChunkHighlights = { rangesFor, segments, panelFor, legendFor };
 })(typeof window === "undefined" ? module.exports : window);

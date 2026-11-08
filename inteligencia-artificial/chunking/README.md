@@ -11,8 +11,8 @@ Abre `index.html`. Funciona sin servidor, claves, CDN ni conexión a modelos.
 La carpeta completa sustituye `inteligencia-artificial/chunking/` en Teaching Demos.
 La tarjeta del índice de IA debe indicar seis estrategias y AQU.
 
-- **Explorar cortes** muestra cada carácter una vez. El inspector muestra el chunk
-  completo y resalta el solapamiento; cambiar de método conserva la posición.
+- **Explorar cortes** muestra cada chunk completo, con su contexto repetido al
+  principio. El inspector muestra el mismo contenido y resalta el solapamiento; cambiar de método conserva la posición.
   En semántica se muestra tema, fragmento del grupo y motivo de la frontera.
 - **Comparar estrategias** enfrenta los chunks que incorporan el mismo carácter
   como contenido nuevo e indica si también aparece en otros por solapamiento.
@@ -42,13 +42,16 @@ por la tira sin pulsar una tarjeta no cambia la selección.
 Solo se resaltan dos relaciones del chunk seleccionado: en amarillo, el contexto
 que toma del anterior; con un fondo azul grisáceo más oscuro, su contenido nuevo
 que reutilizará el siguiente. No se colorean los solapamientos de chunks futuros.
-La leyenda muestra los tres fondos con los mismos colores del texto: contenido
-propio, contexto tomado y texto que reutilizará el siguiente.
-Al cambiar de selección se borran las marcas anteriores. El documento muestra
-cada carácter una vez: el contexto tomado puede verse al final del bloque anterior,
-pero sus offsets pertenecen al texto completo del chunk seleccionado. El salto a
-un chunk empieza en ese contexto, si existe. El inspector y la comparación aplican
-la misma distinción entre contexto recibido y cedido.
+La leyenda se calcula para el chunk seleccionado: muestra solo los fondos que
+están presentes (uno, dos o tres). Sus muestras son rectángulos SVG con tamaño
+explícito, borde y el mismo color del texto. Al cambiar de selección se borran las
+marcas anteriores. Cada bloque del panel contiene el chunk completo: el contexto
+tomado del anterior se repite al comienzo de ese propio bloque y se resalta ahí,
+no dentro del bloque anterior. Solo el bloque seleccionado tiene marcas. El
+inspector y la comparación aplican la misma distinción entre recibido y cedido.
+
+Los enlaces a los estilos y scripts incluyen una huella de su contenido para
+que una actualización no conserve por caché estilos de una versión anterior.
 
 La semántica no solapa temas independientes ni grupos que caben enteros, incluso
 si alcanzan exactamente 600 tokens. Solo cuatro grupos AQU superan ese máximo:

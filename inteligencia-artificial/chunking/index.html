@@ -43,7 +43,12 @@
           <section class="document-view" aria-labelledby="source-title">
             <div class="panel-heading"><h2 id="source-title">Documento y fronteras</h2><label class="jump">Ir al chunk <select id="chunk-select" aria-label="Chunk seleccionado"></select></label></div>
             <div id="source-map"></div>
-            <p class="legend"><span class="legend-overlap"></span>Tomado del anterior <span class="legend-next"></span>Lo reutilizará el siguiente. Solo se marcan los solapamientos del chunk seleccionado.</p>
+            <p class="legend">
+              <span class="legend-item"><span class="legend-core" aria-hidden="true"></span>Contenido propio del chunk seleccionado</span>
+              <span class="legend-item"><span class="legend-overlap" aria-hidden="true"></span>Solapamiento tomado del anterior</span>
+              <span class="legend-item"><span class="legend-next" aria-hidden="true"></span>Texto que reutilizará el siguiente</span>
+              <span class="legend-note">Solo se marcan los solapamientos del chunk seleccionado.</span>
+            </p>
             <div id="source" class="source-scroll" aria-label="Markdown completo con límites de fragmentos" tabindex="0"></div>
           </section>
           <aside class="inspector" aria-labelledby="inspector-title">

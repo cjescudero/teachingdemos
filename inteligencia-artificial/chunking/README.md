@@ -40,8 +40,10 @@ por la tira sin pulsar una tarjeta no cambia la selección.
 ### Solapamientos relativos a la selección
 
 Solo se resaltan dos relaciones del chunk seleccionado: en amarillo, el contexto
-que toma del anterior; con un fondo ligeramente más oscuro, su contenido nuevo
+que toma del anterior; con un fondo azul grisáceo más oscuro, su contenido nuevo
 que reutilizará el siguiente. No se colorean los solapamientos de chunks futuros.
+La leyenda muestra los tres fondos con los mismos colores del texto: contenido
+propio, contexto tomado y texto que reutilizará el siguiente.
 Al cambiar de selección se borran las marcas anteriores. El documento muestra
 cada carácter una vez: el contexto tomado puede verse al final del bloque anterior,
 pero sus offsets pertenecen al texto completo del chunk seleccionado. El salto a

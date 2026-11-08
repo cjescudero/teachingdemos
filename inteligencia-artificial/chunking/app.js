@@ -15,7 +15,9 @@
   const fmt = (number, digits = 0) => new Intl.NumberFormat("es-ES", {
     minimumFractionDigits: digits, maximumFractionDigits: digits,
   }).format(number);
-  const colors = ["#dee3ff", "#ddedfc", "#dcf3e6", "#fff3cd", "#ffe6d3", "#f8dfe9", "#eedeff", "#e0f2ef"];
+  const chunkIndex = window.ChunkIndex;
+  let explorerIndex;
+  const comparisonIndexes = new Map();
   let active = data.methods.find((method) => method.id === "semantic") || data.methods[0];
   let selected = 0;
   let view = "explore";
@@ -26,17 +28,25 @@
     if (text !== undefined) node.textContent = text;
     return node;
   }
-  function sourceText(chunk) { return sourceSlice(chunk.start, chunk.end); }
   function core(chunk) { return chunk.source_spans.find((span) => span.role === "core"); }
+  function boundaryLabel(chunk) {
+    if (chunk.boundary_before === "artificial") return "Corte por tamaño (reglas locales)";
+    if (chunk.semantic_label && chunk.boundary_before === "semantic") return "Cambio temático (LLM)";
+    if (chunk.boundary_before) return "Frontera natural de estructura o bloque";
+    return "Inicio del documento";
+  }
+  function semanticNote(chunk) {
+    return chunk.semantic_label
+      ? `Tema ${chunk.semantic_group_index + 1}: ${chunk.semantic_label}. Fragmento ${chunk.size_fragment_order} de ${chunk.size_fragment_count} del grupo temático.`
+      : "";
+  }
   function selectChunk(index, scroll = true) {
     selected = Math.max(0, Math.min(index, active.chunks.length - 1));
     $("chunk-select").value = String(selected);
     document.querySelectorAll("#source .source-chunk").forEach((node) => {
       node.classList.toggle("active", Number(node.dataset.chunk) === selected);
     });
-    document.querySelectorAll("#source-map .map-chunk").forEach((node) => {
-      node.setAttribute("aria-pressed", String(Number(node.dataset.chunk) === selected));
-    });
+    explorerIndex?.setSelected(selected);
     renderInspector();
     if (scroll) {
       const node = $("source").querySelector(`[data-chunk="${selected}"]`);
@@ -49,6 +59,7 @@
     for (const button of document.querySelectorAll("[data-view]")) button.setAttribute("aria-pressed", String(button.dataset.view === name));
     $("summary-title").parentElement.hidden = name === "guide";
     if (name === "compare") renderComparison();
+    if (name === "explore") explorerIndex?.reveal();
   }
   function selectMethod(id) {
     const anchor = active.chunks[selected] ? core(active.chunks[selected]).start : 0;
@@ -63,7 +74,7 @@
       option.value = String(index);
       return option;
     }));
-    renderMap($("source-map"), active, (index) => selectChunk(index));
+    explorerIndex = chunkIndex.create($("source-map"), active, (index) => selectChunk(index));
     renderSource();
     selectChunk(selected);
     for (const row of $("metrics").children) row.classList.toggle("active", row.dataset.method === id);
@@ -75,37 +86,6 @@
     $("method-warning").textContent = active.metrics.over_limit_count
       ? `${fmt(active.metrics.over_limit_count)} chunks superan el objetivo para mantener bloques completos.`
       : "Todos los chunks cumplen el límite de esta estrategia.";
-  }
-  function renderMap(container, method, onSelect, position) {
-    container.replaceChildren();
-    for (const [index, chunk] of method.chunks.entries()) {
-      const span = core(chunk);
-      const button = element("button", "map-chunk", String(index + 1));
-      button.type = "button";
-      button.dataset.chunk = String(index);
-      button.style.left = `${100 * span.start / sourceLength}%`;
-      button.style.width = `${100 * (span.end - span.start) / sourceLength}%`;
-      button.style.background = colors[index % colors.length];
-      button.title = `Chunk ${index + 1} · ${fmt(chunk.token_count)} tokens`;
-      button.setAttribute("aria-label", button.title);
-      button.setAttribute("aria-pressed", String(method === active && selected === index && position === undefined));
-      button.addEventListener("click", () => onSelect(index));
-      container.append(button);
-    }
-    for (const chunk of method.chunks) for (const span of chunk.source_spans) {
-      if (span.role !== "overlap") continue;
-      const stripe = element("span", "map-overlap");
-      stripe.style.left = `${100 * span.start / sourceLength}%`;
-      stripe.style.width = `${100 * (span.end - span.start) / sourceLength}%`;
-      stripe.setAttribute("aria-hidden", "true");
-      container.append(stripe);
-    }
-    if (position !== undefined) {
-      const cursor = element("span", "map-cursor");
-      cursor.style.left = `${Math.min(99.8, 100 * position / sourceLength)}%`;
-      cursor.setAttribute("aria-hidden", "true");
-      container.append(cursor);
-    }
   }
   function markedSource(start, end, overlaps) {
     const fragment = document.createDocumentFragment();
@@ -150,6 +130,9 @@
     for (const [label, value] of [["Tokens", fmt(chunk.token_count)], ["Método", chunk.split_method], ["Análisis", chunk.analysis_mode], ["Solapamiento", `${fmt(chunk.overlap_tokens)} tokens`]]) {
       const row = element("div"); row.append(element("dt", "", label), element("dd", "", String(value))); facts.append(row);
     }
+    if ("boundary_before" in chunk) {
+      const row = element("div"); row.append(element("dt", "", "Inicio del chunk"), element("dd", "", boundaryLabel(chunk))); facts.append(row);
+    }
     const overlaps = chunk.source_spans.filter((span) => span.role === "overlap");
     const preview = element("pre", "inspector-text");
     preview.append(markedSource(chunk.start, Math.min(chunk.end, chunk.start + 650), overlaps));
@@ -160,7 +143,9 @@
     const sectionPath = element("p", "span-note", chunk.section_path.length
       ? `Sección: ${chunk.section_path.join(" › ")}` : "Sin una sección asignada por esta estrategia.");
     const offsets = element("p", "span-note", `Caracteres ${fmt(chunk.start)}–${fmt(chunk.end)}. Intervalo con final excluido.`);
-    $("inspector").replaceChildren(counter, facts, sectionPath, preview, details, offsets);
+    const topic = element("p", "span-note", semanticNote(chunk));
+    topic.hidden = !chunk.semantic_label;
+    $("inspector").replaceChildren(counter, topic, facts, sectionPath, preview, details, offsets);
   }
   function renderMetrics() {
     $("metrics").replaceChildren(...data.methods.map((method, index) => {
@@ -179,6 +164,8 @@
     const position = Math.min(Number($("position").value), sourceLength - 1);
     $("position-label").textContent = `${fmt(position)} / ${fmt(sourceLength)} caracteres`;
     $("position-context").textContent = `…${sourceSlice(Math.max(0, position - 55), position)}▏${sourceSlice(position, position + 90)}…`;
+    const comparedMethods = ["compare-a", "compare-b"].map((id) => data.methods.find((item) => item.id === $(id).value));
+    const scale = chunkIndex.sizeScale(comparedMethods);
     for (const id of ["compare-a", "compare-b"]) {
       const method = data.methods.find((item) => item.id === $(id).value);
       const found = method.chunks.findIndex((chunk) => {
@@ -186,12 +173,17 @@
       });
       const index = found < 0 ? 0 : found;
       const chunk = method.chunks[index];
-      const map = element("div", "coverage-map");
-      renderMap(map, method, (chosen) => {
-        const span = core(method.chunks[chosen]);
-        $("position").value = String(Math.floor((span.start + span.end) / 2));
-        renderComparison();
-      }, position);
+      let entry = comparisonIndexes.get(id);
+      if (!entry || entry.method !== method.id || entry.scale !== scale) {
+        const controller = chunkIndex.create($(`${id}-index`), method, (chosen) => {
+          const span = core(method.chunks[chosen]);
+          $("position").value = String(Math.floor((span.start + span.end) / 2));
+          renderComparison();
+        }, { label: `Chunks · ${id === "compare-a" ? "A" : "B"}`, scale });
+        entry = { method: method.id, scale, controller };
+        comparisonIndexes.set(id, entry);
+      }
+      entry.controller.setSelected(index);
       const stats = element("p", "compare-stat", `Chunk ${index + 1} de ${method.chunks.length} · ${fmt(chunk.token_count)} tokens · ${fmt(chunk.overlap_tokens)} tokens de overlap`);
       const text = element("pre", "comparison-text");
       text.append(document.createTextNode(sourceSlice(chunk.start, position)), element("mark", "", sourceSlice(position, position + 1)), document.createTextNode(sourceSlice(position + 1, chunk.end)));
@@ -200,11 +192,13 @@
       const overlapNote = element("p", "span-note", matches.length > 1
         ? `Este carácter aparece en ${matches.length} chunks (${matches.map((item) => item.index + 1).join(", ")}) por el solapamiento. Se muestra el que lo incorpora como contenido nuevo.`
         : "Este carácter aparece en un único chunk.");
-      $(`${id}-content`).replaceChildren(map, stats, text, parameters, overlapNote);
+      const topic = element("p", "span-note", chunk.semantic_label ? `${semanticNote(chunk)} ${boundaryLabel(chunk)}.` : "");
+      topic.hidden = !chunk.semantic_label;
+      $(`${id}-content`).replaceChildren(stats, topic, text, parameters, overlapNote);
     }
   }
   $("experiment-intro").textContent = `Explora cómo ${data.methods.length} estrategias dividen el mismo documento y qué contexto conserva cada fragmento.`;
-  $("footer-methods").textContent = `Un documento, ${data.methods.length} estrategias calculadas. Sin conexiones a modelos.`;
+  $("footer-methods").textContent = `Un documento, ${data.methods.length} estrategias precalculadas. La web no llama a modelos.`;
   $("source-description").textContent = data.document.source_description;
   const cfg = data.config;
   $("budget-explanation").textContent = `Tokenizador: ${data.tokenizer}. Ventanas, párrafos y recursiva: ${fmt(cfg.target_tokens)} tokens. Motor estructural: máximo ${fmt(cfg.max_tokens)}, incluido el contexto prestado; mínimo deseado ${fmt(cfg.min_tokens)} (una sección breve puede quedar por debajo). Overlap: hasta ${fmt(cfg.overlap_tokens)} tokens en ventanas y ${fmt(cfg.structural_overlap_tokens)} en estructura. La agrupación de párrafos permite superar el objetivo si un bloque indivisible es mayor.`;
@@ -230,8 +224,11 @@
   $("extraction-note").textContent = data.document.extraction_note;
   const semantic = data.methods.find((method) => method.id === "semantic");
   $("provenance").textContent = semantic
-    ? `Se reutiliza la ejecución ${semantic.provenance.run}, de ${new Intl.DateTimeFormat("es-ES", { dateStyle: "long", timeZone: "Europe/Madrid" }).format(new Date(semantic.provenance.created_at))}. ${semantic.provenance.model ? `Modelo: ${semantic.provenance.model}.` : "El modelo concreto no quedó registrado."} Su huella SHA-256 coincide con la del Markdown de las otras estrategias.`
+    ? semantic.provenance.execution_mode === "conversation_llm"
+      ? `El agente LLM de ChatGPT analizó el Markdown íntegro el ${semantic.provenance.created_at} y registró ${semantic.semantic_groups.length} grupos temáticos. Al aplicar el máximo se obtienen ${semantic.chunks.length} chunks. Fue un análisis en la conversación de preparación, no una llamada a la API configurada ni un cálculo de embeddings. El identificador exacto del modelo no está expuesto. Se guardan las instrucciones, etiquetas y fronteras; el constructor reproduce esas decisiones y aplica las restricciones de tamaño. La huella SHA-256 verifica que todas las estrategias usan el mismo texto. No se ha evaluado la calidad de recuperación de esta segmentación.`
+      : `Se reutiliza la ejecución ${semantic.provenance.run}, de ${new Intl.DateTimeFormat("es-ES", { dateStyle: "long", timeZone: "Europe/Madrid" }).format(new Date(semantic.provenance.created_at))}. ${semantic.provenance.model ? `Modelo: ${semantic.provenance.model}.` : "El modelo concreto no quedó registrado."} Su huella SHA-256 coincide con la del Markdown de las otras estrategias.`
     : "No disponible para este Markdown: no hay una ejecución semántica guardada y verificada. No se reutiliza el resultado de otro documento ni se simula un LLM con reglas.";
+  $("semantic-download").hidden = !data.semantic_decisions_available;
   $("source-hash").textContent = `SHA-256: ${data.markdown_sha256}`;
   for (const id of ["compare-a", "compare-b"]) {
     $(id).replaceChildren(...data.methods.map((method) => { const option = element("option", "", method.label); option.value = method.id; return option; }));

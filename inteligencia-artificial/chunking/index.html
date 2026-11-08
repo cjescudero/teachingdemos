@@ -8,6 +8,7 @@
   <title>El mismo texto, distintos cortes · Carlos J. Escudero</title>
   <link rel="stylesheet" href="styles.css">
   <script src="data.js" defer></script>
+  <script src="chunk-index.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -40,8 +41,8 @@
           </aside>
           <section class="document-view" aria-labelledby="source-title">
             <div class="panel-heading"><h2 id="source-title">Documento y fronteras</h2><label class="jump">Ir al chunk <select id="chunk-select" aria-label="Chunk seleccionado"></select></label></div>
-            <div id="source-map" class="coverage-map" aria-label="Mapa de fragmentos"></div>
-            <p class="legend"><span class="legend-core"></span>Contenido nuevo (sin duplicar) <span class="legend-overlap"></span>Texto reutilizado como solapamiento</p>
+            <div id="source-map"></div>
+            <p class="legend"><span class="legend-overlap"></span>En el texto, el amarillo señala contenido reutilizado como solapamiento.</p>
             <div id="source" class="source-scroll" aria-label="Markdown completo con límites de fragmentos" tabindex="0"></div>
           </section>
           <aside class="inspector" aria-labelledby="inspector-title">
@@ -56,8 +57,8 @@
         <input id="position" type="range" min="0" value="5800" step="1">
         <p id="position-context" class="position-context"></p>
         <div class="compare-columns">
-          <section class="compare-column"><label for="compare-a">Estrategia A</label><select id="compare-a"></select><div id="compare-a-content"></div></section>
-          <section class="compare-column"><label for="compare-b">Estrategia B</label><select id="compare-b"></select><div id="compare-b-content"></div></section>
+          <section class="compare-column"><label for="compare-a">Estrategia A</label><select id="compare-a"></select><div id="compare-a-index"></div><div id="compare-a-content"></div></section>
+          <section class="compare-column"><label for="compare-b">Estrategia B</label><select id="compare-b"></select><div id="compare-b-index"></div><div id="compare-b-content"></div></section>
         </div>
       </section>
       <section id="view-guide" class="view guide" aria-labelledby="guide-title" hidden>
@@ -67,11 +68,15 @@
         <p id="budget-explanation"></p>
         <p id="diagnostics"></p>
         <p id="method-equality"></p>
+        <h3>Párrafos y recursiva: la diferencia decisiva</h3>
+        <p>Supón un máximo de 600 tokens. Si llevas 400 y el siguiente párrafo añade 300, ambas estrategias abren otro chunk: no recortan ese párrafo para rellenar los 200 restantes. Si un único párrafo tiene 900 tokens, «Párrafos completos» lo conserva entero y avisa del exceso. «Recursiva» busca separadores menores dentro de él y lo subdivide para respetar el máximo. Las cifras de este ejemplo son orientativas: siempre se cuenta el texto completo porque los tokens no son estrictamente aditivos.</p>
+        <p>La recursiva no reconoce temas ni la jerarquía de títulos. La estructural sí usa esa jerarquía y recurre a cortes locales cuando una unidad no cabe. La semántica de esta demo usa grupos temáticos decididos por un LLM; si un grupo no cabe, también se subdivide por tamaño. En las dos últimas, el solapamiento se aplica únicamente a esas subdivisiones artificiales, no al comenzar otra sección o tema.</p>
         <div id="technique-notes"></div>
         <h3>La entrada también importa</h3><p id="extraction-note"></p>
         <h3>Qué significa la columna «Análisis»</h3>
-        <p><code>llm</code> indica agrupación mediante un modelo de lenguaje. <code>deterministic</code> indica reglas locales. <code>fallback</code> indica que se utilizó el procedimiento de respaldo; por sí solo no demuestra un error del modelo. El método estructural de este experimento se ejecuta expresamente sin LLM.</p>
+        <p><code>llm</code> indica un grupo temático decidido por el modelo que cabe entero. <code>hybrid</code> indica un grupo del LLM subdividido mediante reglas locales para cumplir el máximo. <code>deterministic</code> indica reglas locales. <code>fallback</code> identifica el procedimiento de respaldo del motor estructural; en esta demo se ejecuta expresamente sin LLM y no indica un fallo de una llamada.</p>
         <h3>Procedencia del resultado con IA</h3><p id="provenance"></p>
+        <p id="semantic-download" hidden><a href="semantic-decisions.json" download>Descargar decisiones semánticas y procedencia</a></p>
         <p>La web contiene resultados precalculados. No hace llamadas a modelos, no solicita claves y no vuelve a dividir el documento cuando cambias de vista.</p>
         <h3>Cómo interpretar las cifras</h3>
         <p>«Texto repetido» mide caracteres duplicados entre chunks respecto al total de caracteres indexados. Se expresa en caracteres porque los recuentos de tokens no son aditivos en todas las fronteras. Menos fragmentos o menos repetición no implican mejor recuperación. Aquí se comparan cortes y contexto; no se evalúan embeddings, búsqueda ni respuestas de un RAG.</p>

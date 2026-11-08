@@ -8,7 +8,7 @@
     "target_tokens": 600,
     "max_tokens": 600,
     "overlap_tokens": 80,
-    "structural_overlap_tokens": 0
+    "structural_overlap_tokens": 80
   },
   "diagnostics": {
     "heading_count": 72,
@@ -3667,8 +3667,8 @@
     },
     {
       "id": "paragraph",
-      "label": "Agrupación de párrafos",
-      "description": "Agrupa párrafos consecutivos hasta el objetivo. Un párrafo indivisible puede superarlo: aquí se prioriza conservarlo completo.",
+      "label": "Párrafos completos",
+      "description": "Añade párrafos enteros mientras el siguiente quepa en 600 tokens. Si no cabe, abre otro chunk: no corta el párrafo para rellenar el anterior. Si un párrafo por sí solo supera el objetivo, lo conserva entero y lo señala. No interpreta títulos ni temas. Sin solapamiento.",
       "chunks": [
         {
           "start": 0,
@@ -5241,7 +5241,7 @@
     {
       "id": "recursive",
       "label": "Recursiva",
-      "description": "Prueba párrafos, líneas, frases y espacios; solo las partes demasiado grandes bajan al siguiente separador. No detecta cambios de tema.",
+      "description": "Agrupa por separadores sin superar 600 tokens. Primero prueba párrafos; solo si uno es demasiado grande baja a líneas, frases, espacios y finalmente tokens. Conserva unidades pequeñas completas; no fuerza el relleno exacto. No interpreta encabezados ni temas. Sin solapamiento en esta demo.",
       "chunks": [
         {
           "start": 0,
@@ -6899,7 +6899,7 @@
     {
       "id": "structural",
       "label": "Estructural",
-      "description": "Motor de este proyecto sin LLM: respeta las secciones y usa reglas locales cuando una unidad supera el máximo. Overlap en cortes artificiales: hasta 0 tokens.",
+      "description": "Empieza por la jerarquía de encabezados Markdown. Desciende a subsecciones y, si una unidad sigue siendo grande, la divide localmente por bloques, líneas, frases o tokens. No añade overlap entre secciones naturales; en cortes por tamaño puede añadir hasta 80 tokens del fragmento anterior, sin superar 600 en total. Las secciones pequeñas pueden quedar por debajo del mínimo deseado. Sin LLM.",
       "chunks": [
         {
           "start": 0,
@@ -6986,15 +6986,20 @@
           "overlap_tokens": 0
         },
         {
-          "start": 5871,
+          "start": 5545,
           "end": 7889,
-          "token_count": 505,
+          "token_count": 585,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
             "PRESENTACIÓN"
           ],
           "source_spans": [
+            {
+              "start": 5545,
+              "end": 5871,
+              "role": "overlap"
+            },
             {
               "start": 5871,
               "end": 7889,
@@ -7004,18 +7009,23 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 4,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 7889,
+          "start": 7552,
           "end": 9319,
-          "token_count": 350,
+          "token_count": 430,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
             "PRESENTACIÓN"
           ],
           "source_spans": [
+            {
+              "start": 7552,
+              "end": 7889,
+              "role": "overlap"
+            },
             {
               "start": 7889,
               "end": 9319,
@@ -7025,7 +7035,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 5,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 9319,
@@ -7093,9 +7103,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 13514,
+          "start": 13197,
           "end": 14214,
-          "token_count": 188,
+          "token_count": 268,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7103,6 +7113,11 @@
             "1.2. Ámbito europeo"
           ],
           "source_spans": [
+            {
+              "start": 13197,
+              "end": 13514,
+              "role": "overlap"
+            },
             {
               "start": 13514,
               "end": 14214,
@@ -7112,7 +7127,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 9,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 14214,
@@ -7159,9 +7174,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 17189,
+          "start": 16943,
           "end": 19233,
-          "token_count": 536,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7169,6 +7184,11 @@
             "1.4. Ámbito catalán"
           ],
           "source_spans": [
+            {
+              "start": 16943,
+              "end": 17189,
+              "role": "overlap"
+            },
             {
               "start": 17189,
               "end": 19233,
@@ -7178,7 +7198,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 12,
-          "overlap_tokens": 0
+          "overlap_tokens": 64
         },
         {
           "start": 19233,
@@ -7225,9 +7245,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 23819,
+          "start": 23517,
           "end": 24347,
-          "token_count": 136,
+          "token_count": 216,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7235,6 +7255,11 @@
             "2.1. ¿Qué es una docencia con perspectiva de género?"
           ],
           "source_spans": [
+            {
+              "start": 23517,
+              "end": 23819,
+              "role": "overlap"
+            },
             {
               "start": 23819,
               "end": 24347,
@@ -7244,7 +7269,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 15,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 24347,
@@ -7292,9 +7317,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 26906,
+          "start": 26624,
           "end": 28820,
-          "token_count": 513,
+          "token_count": 593,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7302,6 +7327,11 @@
             "2.2. ¿Qué beneficios comporta la dimensión de género en la docencia?"
           ],
           "source_spans": [
+            {
+              "start": 26624,
+              "end": 26906,
+              "role": "overlap"
+            },
             {
               "start": 26906,
               "end": 28820,
@@ -7311,12 +7341,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 18,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 28820,
+          "start": 28515,
           "end": 30038,
-          "token_count": 322,
+          "token_count": 402,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7324,6 +7354,11 @@
             "2.2. ¿Qué beneficios comporta la dimensión de género en la docencia?"
           ],
           "source_spans": [
+            {
+              "start": 28515,
+              "end": 28820,
+              "role": "overlap"
+            },
             {
               "start": 28820,
               "end": 30038,
@@ -7333,7 +7368,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 19,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 30038,
@@ -7382,9 +7417,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 33058,
+          "start": 32747,
           "end": 35151,
-          "token_count": 507,
+          "token_count": 587,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7394,6 +7429,11 @@
             "**_Desarrollar la capacidad de evaluar las desigualdades por razón de sexo y género, para diseñar soluciones_**."
           ],
           "source_spans": [
+            {
+              "start": 32747,
+              "end": 33058,
+              "role": "overlap"
+            },
             {
               "start": 33058,
               "end": 35151,
@@ -7403,12 +7443,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 22,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 35151,
+          "start": 34807,
           "end": 36800,
-          "token_count": 417,
+          "token_count": 497,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7418,6 +7458,11 @@
             "**_Desarrollar la capacidad de evaluar las desigualdades por razón de sexo y género, para diseñar soluciones_**."
           ],
           "source_spans": [
+            {
+              "start": 34807,
+              "end": 35151,
+              "role": "overlap"
+            },
             {
               "start": 35151,
               "end": 36800,
@@ -7427,12 +7472,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 23,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 36800,
+          "start": 36572,
           "end": 38942,
-          "token_count": 536,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7442,6 +7487,11 @@
             "**_Desarrollar la capacidad de evaluar las desigualdades por razón de sexo y género, para diseñar soluciones_**."
           ],
           "source_spans": [
+            {
+              "start": 36572,
+              "end": 36800,
+              "role": "overlap"
+            },
             {
               "start": 36800,
               "end": 38942,
@@ -7451,12 +7501,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 24,
-          "overlap_tokens": 0
+          "overlap_tokens": 64
         },
         {
-          "start": 38942,
+          "start": 38891,
           "end": 41295,
-          "token_count": 588,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7466,6 +7516,11 @@
             "**_Desarrollar la capacidad de evaluar las desigualdades por razón de sexo y género, para diseñar soluciones_**."
           ],
           "source_spans": [
+            {
+              "start": 38891,
+              "end": 38942,
+              "role": "overlap"
+            },
             {
               "start": 38942,
               "end": 41295,
@@ -7475,12 +7530,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 25,
-          "overlap_tokens": 0
+          "overlap_tokens": 12
         },
         {
-          "start": 41295,
+          "start": 41014,
           "end": 41502,
-          "token_count": 57,
+          "token_count": 137,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7491,6 +7546,11 @@
           ],
           "source_spans": [
             {
+              "start": 41014,
+              "end": 41295,
+              "role": "overlap"
+            },
+            {
               "start": 41295,
               "end": 41502,
               "role": "core"
@@ -7499,7 +7559,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 26,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 41502,
@@ -7547,9 +7607,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 44329,
+          "start": 44016,
           "end": 45400,
-          "token_count": 283,
+          "token_count": 362,
           "split_method": "sentence",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7558,6 +7618,11 @@
             "Elementos de diagnóstico: institución, centro y profesorado"
           ],
           "source_spans": [
+            {
+              "start": 44016,
+              "end": 44329,
+              "role": "overlap"
+            },
             {
               "start": 44329,
               "end": 45400,
@@ -7567,13 +7632,13 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 29,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 45400,
+          "start": 45159,
           "end": 47586,
-          "token_count": 534,
-          "split_method": "sentence",
+          "token_count": 600,
+          "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
             "3. LA EVALUACIÓN DE LA PERSPECTIVA DE GÉNERO EN LAS TITULACIONES",
@@ -7581,6 +7646,11 @@
             "Elementos de diagnóstico: institución, centro y profesorado"
           ],
           "source_spans": [
+            {
+              "start": 45159,
+              "end": 45400,
+              "role": "overlap"
+            },
             {
               "start": 45400,
               "end": 47586,
@@ -7590,7 +7660,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 30,
-          "overlap_tokens": 0
+          "overlap_tokens": 67
         },
         {
           "start": 47586,
@@ -7637,9 +7707,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 50561,
+          "start": 50253,
           "end": 51051,
-          "token_count": 125,
+          "token_count": 205,
           "split_method": "token",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7647,6 +7717,11 @@
             "3.2. Indicadores de evaluación"
           ],
           "source_spans": [
+            {
+              "start": 50253,
+              "end": 50561,
+              "role": "overlap"
+            },
             {
               "start": 50561,
               "end": 51051,
@@ -7656,7 +7731,7 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 33,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 51051,
@@ -7681,8 +7756,8 @@
           "overlap_tokens": 0
         },
         {
-          "start": 53355,
-          "end": 55629,
+          "start": 53052,
+          "end": 55318,
           "token_count": 600,
           "split_method": "token",
           "analysis_mode": "fallback",
@@ -7692,20 +7767,25 @@
           ],
           "source_spans": [
             {
+              "start": 53052,
+              "end": 53355,
+              "role": "overlap"
+            },
+            {
               "start": 53355,
-              "end": 55629,
+              "end": 55318,
               "role": "core"
             }
           ],
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 35,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 55629,
+          "start": 55020,
           "end": 56892,
-          "token_count": 341,
+          "token_count": 501,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7714,7 +7794,12 @@
           ],
           "source_spans": [
             {
-              "start": 55629,
+              "start": 55020,
+              "end": 55318,
+              "role": "overlap"
+            },
+            {
+              "start": 55318,
               "end": 56892,
               "role": "core"
             }
@@ -7722,7 +7807,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 36,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 56892,
@@ -7747,9 +7832,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 58731,
+          "start": 58479,
           "end": 59256,
-          "token_count": 158,
+          "token_count": 238,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7757,6 +7842,11 @@
             "4.1. La dimensión de género en las diferentes áreas de conocimiento"
           ],
           "source_spans": [
+            {
+              "start": 58479,
+              "end": 58731,
+              "role": "overlap"
+            },
             {
               "start": 58731,
               "end": 59256,
@@ -7766,7 +7856,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 38,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 59256,
@@ -7792,9 +7882,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 60531,
+          "start": 60476,
           "end": 62834,
-          "token_count": 588,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7803,6 +7893,11 @@
             "Introducción"
           ],
           "source_spans": [
+            {
+              "start": 60476,
+              "end": 60531,
+              "role": "overlap"
+            },
             {
               "start": 60531,
               "end": 62834,
@@ -7812,12 +7907,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 40,
-          "overlap_tokens": 0
+          "overlap_tokens": 12
         },
         {
-          "start": 62834,
+          "start": 62495,
           "end": 62961,
-          "token_count": 32,
+          "token_count": 112,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7827,6 +7922,11 @@
           ],
           "source_spans": [
             {
+              "start": 62495,
+              "end": 62834,
+              "role": "overlap"
+            },
+            {
               "start": 62834,
               "end": 62961,
               "role": "core"
@@ -7835,7 +7935,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 41,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 62961,
@@ -7861,9 +7961,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 65108,
+          "start": 65060,
           "end": 67298,
-          "token_count": 589,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7872,6 +7972,11 @@
             "Sesgos de género más comunes en las Artes y Humanidades"
           ],
           "source_spans": [
+            {
+              "start": 65060,
+              "end": 65108,
+              "role": "overlap"
+            },
             {
               "start": 65108,
               "end": 67298,
@@ -7881,12 +7986,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 43,
-          "overlap_tokens": 0
+          "overlap_tokens": 11
         },
         {
-          "start": 67298,
+          "start": 67024,
           "end": 69151,
-          "token_count": 486,
+          "token_count": 566,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7895,6 +8000,11 @@
             "Sesgos de género más comunes en las Artes y Humanidades"
           ],
           "source_spans": [
+            {
+              "start": 67024,
+              "end": 67298,
+              "role": "overlap"
+            },
             {
               "start": 67298,
               "end": 69151,
@@ -7904,12 +8014,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 44,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 69151,
+          "start": 68852,
           "end": 70053,
-          "token_count": 236,
+          "token_count": 316,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -7919,6 +8029,11 @@
           ],
           "source_spans": [
             {
+              "start": 68852,
+              "end": 69151,
+              "role": "overlap"
+            },
+            {
               "start": 69151,
               "end": 70053,
               "role": "core"
@@ -7927,7 +8042,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 45,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 70053,
@@ -8025,9 +8140,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 78251,
+          "start": 77946,
           "end": 78521,
-          "token_count": 74,
+          "token_count": 154,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8038,6 +8153,11 @@
           ],
           "source_spans": [
             {
+              "start": 77946,
+              "end": 78251,
+              "role": "overlap"
+            },
+            {
               "start": 78251,
               "end": 78521,
               "role": "core"
@@ -8046,7 +8166,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 50,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 78521,
@@ -8119,9 +8239,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 83506,
+          "start": 83307,
           "end": 85679,
-          "token_count": 548,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8130,6 +8250,11 @@
             "Sesgos de género más comunes en las Ciencias Sociales y Jurídicas"
           ],
           "source_spans": [
+            {
+              "start": 83307,
+              "end": 83506,
+              "role": "overlap"
+            },
             {
               "start": 83506,
               "end": 85679,
@@ -8139,12 +8264,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 54,
-          "overlap_tokens": 0
+          "overlap_tokens": 52
         },
         {
-          "start": 85679,
+          "start": 85381,
           "end": 86898,
-          "token_count": 306,
+          "token_count": 386,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8154,6 +8279,11 @@
           ],
           "source_spans": [
             {
+              "start": 85381,
+              "end": 85679,
+              "role": "overlap"
+            },
+            {
               "start": 85679,
               "end": 86898,
               "role": "core"
@@ -8162,7 +8292,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 55,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 86898,
@@ -8188,9 +8318,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 89163,
+          "start": 88960,
           "end": 91490,
-          "token_count": 550,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8199,6 +8329,11 @@
             "Los resultados de aprendizaje de la competencia de dimensión de género"
           ],
           "source_spans": [
+            {
+              "start": 88960,
+              "end": 89163,
+              "role": "overlap"
+            },
             {
               "start": 89163,
               "end": 91490,
@@ -8208,12 +8343,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 57,
-          "overlap_tokens": 0
+          "overlap_tokens": 50
         },
         {
-          "start": 91490,
+          "start": 91351,
           "end": 93799,
-          "token_count": 567,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8223,6 +8358,11 @@
           ],
           "source_spans": [
             {
+              "start": 91351,
+              "end": 91490,
+              "role": "overlap"
+            },
+            {
               "start": 91490,
               "end": 93799,
               "role": "core"
@@ -8231,7 +8371,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 58,
-          "overlap_tokens": 0
+          "overlap_tokens": 33
         },
         {
           "start": 93799,
@@ -8257,9 +8397,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 96151,
+          "start": 95885,
           "end": 96801,
-          "token_count": 163,
+          "token_count": 243,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8269,6 +8409,11 @@
           ],
           "source_spans": [
             {
+              "start": 95885,
+              "end": 96151,
+              "role": "overlap"
+            },
+            {
               "start": 96151,
               "end": 96801,
               "role": "core"
@@ -8277,7 +8422,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 60,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 96801,
@@ -8303,9 +8448,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 98916,
+          "start": 98584,
           "end": 100695,
-          "token_count": 492,
+          "token_count": 572,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8315,6 +8460,11 @@
           ],
           "source_spans": [
             {
+              "start": 98584,
+              "end": 98916,
+              "role": "overlap"
+            },
+            {
               "start": 98916,
               "end": 100695,
               "role": "core"
@@ -8323,7 +8473,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 62,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 100695,
@@ -8422,9 +8572,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 106548,
+          "start": 106212,
           "end": 107858,
-          "token_count": 329,
+          "token_count": 409,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8436,6 +8586,11 @@
           ],
           "source_spans": [
             {
+              "start": 106212,
+              "end": 106548,
+              "role": "overlap"
+            },
+            {
               "start": 106548,
               "end": 107858,
               "role": "core"
@@ -8444,7 +8599,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 67,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 107858,
@@ -8472,9 +8627,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 110188,
+          "start": 109874,
           "end": 111982,
-          "token_count": 448,
+          "token_count": 528,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8486,6 +8641,11 @@
           ],
           "source_spans": [
             {
+              "start": 109874,
+              "end": 110188,
+              "role": "overlap"
+            },
+            {
               "start": 110188,
               "end": 111982,
               "role": "core"
@@ -8494,7 +8654,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 69,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 111982,
@@ -8544,9 +8704,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 114812,
+          "start": 114530,
           "end": 116928,
-          "token_count": 527,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8557,6 +8717,11 @@
           ],
           "source_spans": [
             {
+              "start": 114530,
+              "end": 114812,
+              "role": "overlap"
+            },
+            {
               "start": 114812,
               "end": 116928,
               "role": "core"
@@ -8565,7 +8730,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 72,
-          "overlap_tokens": 0
+          "overlap_tokens": 73
         },
         {
           "start": 116928,
@@ -8591,9 +8756,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 118980,
+          "start": 118652,
           "end": 120789,
-          "token_count": 471,
+          "token_count": 551,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8602,6 +8767,11 @@
             "Sesgos de género más comunes en las Ciencias"
           ],
           "source_spans": [
+            {
+              "start": 118652,
+              "end": 118980,
+              "role": "overlap"
+            },
             {
               "start": 118980,
               "end": 120789,
@@ -8611,12 +8781,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 74,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 120789,
+          "start": 120632,
           "end": 123053,
-          "token_count": 561,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8625,6 +8795,11 @@
             "Sesgos de género más comunes en las Ciencias"
           ],
           "source_spans": [
+            {
+              "start": 120632,
+              "end": 120789,
+              "role": "overlap"
+            },
             {
               "start": 120789,
               "end": 123053,
@@ -8634,12 +8809,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 75,
-          "overlap_tokens": 0
+          "overlap_tokens": 39
         },
         {
-          "start": 123053,
+          "start": 122711,
           "end": 123727,
-          "token_count": 175,
+          "token_count": 255,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8649,6 +8824,11 @@
           ],
           "source_spans": [
             {
+              "start": 122711,
+              "end": 123053,
+              "role": "overlap"
+            },
+            {
               "start": 123053,
               "end": 123727,
               "role": "core"
@@ -8657,7 +8837,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 76,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 123727,
@@ -8707,9 +8887,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 126534,
+          "start": 126203,
           "end": 127571,
-          "token_count": 256,
+          "token_count": 336,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8720,6 +8900,11 @@
           ],
           "source_spans": [
             {
+              "start": 126203,
+              "end": 126534,
+              "role": "overlap"
+            },
+            {
               "start": 126534,
               "end": 127571,
               "role": "core"
@@ -8728,7 +8913,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 79,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 127571,
@@ -8754,9 +8939,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 129631,
+          "start": 129326,
           "end": 131745,
-          "token_count": 522,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8766,6 +8951,11 @@
           ],
           "source_spans": [
             {
+              "start": 129326,
+              "end": 129631,
+              "role": "overlap"
+            },
+            {
               "start": 129631,
               "end": 131745,
               "role": "core"
@@ -8774,7 +8964,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 81,
-          "overlap_tokens": 0
+          "overlap_tokens": 78
         },
         {
           "start": 131745,
@@ -8824,9 +9014,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 134874,
+          "start": 134522,
           "end": 136403,
-          "token_count": 374,
+          "token_count": 454,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8837,6 +9027,11 @@
           ],
           "source_spans": [
             {
+              "start": 134522,
+              "end": 134874,
+              "role": "overlap"
+            },
+            {
               "start": 134874,
               "end": 136403,
               "role": "core"
@@ -8845,7 +9040,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 84,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 136403,
@@ -8923,9 +9118,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 140450,
+          "start": 140110,
           "end": 141858,
-          "token_count": 340,
+          "token_count": 420,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -8937,6 +9132,11 @@
           ],
           "source_spans": [
             {
+              "start": 140110,
+              "end": 140450,
+              "role": "overlap"
+            },
+            {
               "start": 140450,
               "end": 141858,
               "role": "core"
@@ -8945,7 +9145,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 88,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 141858,
@@ -9020,9 +9220,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 145846,
+          "start": 145527,
           "end": 146693,
-          "token_count": 212,
+          "token_count": 292,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9034,6 +9234,11 @@
           ],
           "source_spans": [
             {
+              "start": 145527,
+              "end": 145846,
+              "role": "overlap"
+            },
+            {
               "start": 145846,
               "end": 146693,
               "role": "core"
@@ -9042,7 +9247,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 92,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 146693,
@@ -9091,9 +9296,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 150382,
+          "start": 150051,
           "end": 151741,
-          "token_count": 321,
+          "token_count": 401,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9102,6 +9307,11 @@
             "Sesgos de género más comunes en Ingeniería y Arquitectura"
           ],
           "source_spans": [
+            {
+              "start": 150051,
+              "end": 150382,
+              "role": "overlap"
+            },
             {
               "start": 150382,
               "end": 151741,
@@ -9111,12 +9321,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 95,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 151741,
+          "start": 151401,
           "end": 152963,
-          "token_count": 305,
+          "token_count": 385,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9125,6 +9335,11 @@
             "Sesgos de género más comunes en Ingeniería y Arquitectura"
           ],
           "source_spans": [
+            {
+              "start": 151401,
+              "end": 151741,
+              "role": "overlap"
+            },
             {
               "start": 151741,
               "end": 152963,
@@ -9134,12 +9349,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 96,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 152963,
+          "start": 152596,
           "end": 154221,
-          "token_count": 324,
+          "token_count": 404,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9148,6 +9363,11 @@
             "Sesgos de género más comunes en Ingeniería y Arquitectura"
           ],
           "source_spans": [
+            {
+              "start": 152596,
+              "end": 152963,
+              "role": "overlap"
+            },
             {
               "start": 152963,
               "end": 154221,
@@ -9157,12 +9377,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 97,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 154221,
+          "start": 153913,
           "end": 155754,
-          "token_count": 387,
+          "token_count": 467,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9171,6 +9391,11 @@
             "Sesgos de género más comunes en Ingeniería y Arquitectura"
           ],
           "source_spans": [
+            {
+              "start": 153913,
+              "end": 154221,
+              "role": "overlap"
+            },
             {
               "start": 154221,
               "end": 155754,
@@ -9180,12 +9405,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 98,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
-          "start": 155754,
+          "start": 155390,
           "end": 157660,
-          "token_count": 457,
+          "token_count": 537,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9195,6 +9420,11 @@
           ],
           "source_spans": [
             {
+              "start": 155390,
+              "end": 155754,
+              "role": "overlap"
+            },
+            {
               "start": 155754,
               "end": 157660,
               "role": "core"
@@ -9203,7 +9433,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 99,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 157660,
@@ -9253,9 +9483,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 160561,
+          "start": 160538,
           "end": 163016,
-          "token_count": 593,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9265,6 +9495,11 @@
             "Resultados de aprendizaje comunes"
           ],
           "source_spans": [
+            {
+              "start": 160538,
+              "end": 160561,
+              "role": "overlap"
+            },
             {
               "start": 160561,
               "end": 163016,
@@ -9274,12 +9509,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 102,
-          "overlap_tokens": 0
+          "overlap_tokens": 7
         },
         {
-          "start": 163016,
+          "start": 162662,
           "end": 164013,
-          "token_count": 247,
+          "token_count": 327,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9290,6 +9525,11 @@
           ],
           "source_spans": [
             {
+              "start": 162662,
+              "end": 163016,
+              "role": "overlap"
+            },
+            {
               "start": 163016,
               "end": 164013,
               "role": "core"
@@ -9298,7 +9538,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 103,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 164013,
@@ -9323,9 +9563,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 166030,
+          "start": 165903,
           "end": 167989,
-          "token_count": 563,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9333,6 +9573,11 @@
             "Referencias bibliográficas utilizadas a lo largo del documento"
           ],
           "source_spans": [
+            {
+              "start": 165903,
+              "end": 166030,
+              "role": "overlap"
+            },
             {
               "start": 166030,
               "end": 167989,
@@ -9342,12 +9587,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 105,
-          "overlap_tokens": 0
+          "overlap_tokens": 37
         },
         {
-          "start": 167989,
+          "start": 167925,
           "end": 170147,
-          "token_count": 578,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9355,6 +9600,11 @@
             "Referencias bibliográficas utilizadas a lo largo del documento"
           ],
           "source_spans": [
+            {
+              "start": 167925,
+              "end": 167989,
+              "role": "overlap"
+            },
             {
               "start": 167989,
               "end": 170147,
@@ -9364,12 +9614,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 106,
-          "overlap_tokens": 0
+          "overlap_tokens": 22
         },
         {
-          "start": 170147,
+          "start": 170111,
           "end": 172283,
-          "token_count": 585,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9377,6 +9627,11 @@
             "Referencias bibliográficas utilizadas a lo largo del documento"
           ],
           "source_spans": [
+            {
+              "start": 170111,
+              "end": 170147,
+              "role": "overlap"
+            },
             {
               "start": 170147,
               "end": 172283,
@@ -9386,12 +9641,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 107,
-          "overlap_tokens": 0
+          "overlap_tokens": 15
         },
         {
-          "start": 172283,
+          "start": 172185,
           "end": 174241,
-          "token_count": 574,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9399,6 +9654,11 @@
             "Referencias bibliográficas utilizadas a lo largo del documento"
           ],
           "source_spans": [
+            {
+              "start": 172185,
+              "end": 172283,
+              "role": "overlap"
+            },
             {
               "start": 172283,
               "end": 174241,
@@ -9408,12 +9668,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 108,
-          "overlap_tokens": 0
+          "overlap_tokens": 26
         },
         {
-          "start": 174241,
+          "start": 173958,
           "end": 175887,
-          "token_count": 482,
+          "token_count": 562,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9421,6 +9681,11 @@
             "Referencias bibliográficas utilizadas a lo largo del documento"
           ],
           "source_spans": [
+            {
+              "start": 173958,
+              "end": 174241,
+              "role": "overlap"
+            },
             {
               "start": 174241,
               "end": 175887,
@@ -9430,7 +9695,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 109,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 175887,
@@ -9455,9 +9720,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 177908,
+          "start": 177683,
           "end": 179651,
-          "token_count": 548,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9465,6 +9730,11 @@
             "Recursos docentes"
           ],
           "source_spans": [
+            {
+              "start": 177683,
+              "end": 177908,
+              "role": "overlap"
+            },
             {
               "start": 177908,
               "end": 179651,
@@ -9474,12 +9744,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 111,
-          "overlap_tokens": 0
+          "overlap_tokens": 52
         },
         {
-          "start": 179651,
+          "start": 179417,
           "end": 181210,
-          "token_count": 471,
+          "token_count": 551,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9487,6 +9757,11 @@
             "Recursos docentes"
           ],
           "source_spans": [
+            {
+              "start": 179417,
+              "end": 179651,
+              "role": "overlap"
+            },
             {
               "start": 179651,
               "end": 181210,
@@ -9496,7 +9771,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 112,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 181210,
@@ -9521,9 +9796,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 183075,
+          "start": 182818,
           "end": 184586,
-          "token_count": 402,
+          "token_count": 482,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9531,6 +9806,11 @@
             "Otros materiales de apoyo"
           ],
           "source_spans": [
+            {
+              "start": 182818,
+              "end": 183075,
+              "role": "overlap"
+            },
             {
               "start": 183075,
               "end": 184586,
@@ -9540,7 +9820,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 114,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 184586,
@@ -9565,9 +9845,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 186646,
+          "start": 186625,
           "end": 188994,
-          "token_count": 590,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9575,6 +9855,11 @@
             "Glosario"
           ],
           "source_spans": [
+            {
+              "start": 186625,
+              "end": 186646,
+              "role": "overlap"
+            },
             {
               "start": 186646,
               "end": 188994,
@@ -9584,12 +9869,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 116,
-          "overlap_tokens": 0
+          "overlap_tokens": 10
         },
         {
-          "start": 188994,
+          "start": 188917,
           "end": 191276,
-          "token_count": 579,
+          "token_count": 600,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9597,6 +9882,11 @@
             "Glosario"
           ],
           "source_spans": [
+            {
+              "start": 188917,
+              "end": 188994,
+              "role": "overlap"
+            },
             {
               "start": 188994,
               "end": 191276,
@@ -9606,12 +9896,12 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 117,
-          "overlap_tokens": 0
+          "overlap_tokens": 21
         },
         {
-          "start": 191276,
+          "start": 190997,
           "end": 193069,
-          "token_count": 458,
+          "token_count": 538,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9619,6 +9909,11 @@
             "Glosario"
           ],
           "source_spans": [
+            {
+              "start": 190997,
+              "end": 191276,
+              "role": "overlap"
+            },
             {
               "start": 191276,
               "end": 193069,
@@ -9628,7 +9923,7 @@
           "boundary_before": "artificial",
           "boundary_after": "artificial",
           "index": 118,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 193069,
@@ -9653,9 +9948,9 @@
           "overlap_tokens": 0
         },
         {
-          "start": 195470,
+          "start": 195193,
           "end": 195667,
-          "token_count": 59,
+          "token_count": 139,
           "split_method": "structural",
           "analysis_mode": "fallback",
           "section_path": [
@@ -9663,6 +9958,11 @@
             "Glosario"
           ],
           "source_spans": [
+            {
+              "start": 195193,
+              "end": 195470,
+              "role": "overlap"
+            },
             {
               "start": 195470,
               "end": 195667,
@@ -9672,7 +9972,7 @@
           "boundary_before": "artificial",
           "boundary_after": "structural",
           "index": 120,
-          "overlap_tokens": 0
+          "overlap_tokens": 80
         },
         {
           "start": 195667,
@@ -9719,24 +10019,4355 @@
         }
       ],
       "warnings": [
-        "Semantic analyzer was not provided; deterministic fallback used"
+        "Semantic analyzer was not provided; deterministic fallback used",
+        "No artificial overlap fitted within max_tokens at an artificial boundary"
       ],
       "parameters": {
         "target_tokens": 600,
         "limit_tokens": 600,
         "hard_limit": true,
-        "overlap_tokens": 0
+        "overlap_tokens": 80
       },
       "metrics": {
         "count": 123,
-        "min_tokens": 32,
-        "mean_tokens": 412.8,
+        "min_tokens": 112,
+        "mean_tokens": 444.8,
         "max_tokens": 600,
-        "indexed_tokens": 50770,
+        "indexed_tokens": 54713,
         "source_tokens": 50768,
-        "repeated_characters": 0,
+        "repeated_characters": 15273,
         "covered_characters": 197989,
-        "redundancy_percent": 0.0,
+        "redundancy_percent": 7.16,
+        "coverage_percent": 100.0,
+        "over_limit_count": 0
+      }
+    },
+    {
+      "id": "semantic",
+      "label": "Semántica con LLM",
+      "description": "Un LLM leyó el documento y decidió qué bloques consecutivos forman una unidad temática. Puede separar dos temas aunque quepan juntos, o unir continuaciones bajo títulos distintos. Si el grupo es demasiado grande, el código lo subdivide y añade overlap solo en esos cortes por tamaño. El tema lo decide el LLM; el límite lo aplica el código. Análisis guardado, sin llamadas a IA en la web.",
+      "chunks": [
+        {
+          "start": 0,
+          "end": 1145,
+          "token_count": 345,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 0,
+              "end": 1145,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 0,
+          "semantic_label": "Identificación, edición y licencia del documento",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": null,
+          "boundary_after": "semantic",
+          "index": 0,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 1145,
+          "end": 4262,
+          "token_count": 407,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 1145,
+              "end": 4262,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 1,
+          "semantic_label": "Índice y mapa de contenidos",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 1,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 4262,
+          "end": 5871,
+          "token_count": 403,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 4262,
+              "end": 5871,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 2,
+          "semantic_label": "Igualdad de género y responsabilidad social universitaria",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 2,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 5871,
+          "end": 7066,
+          "token_count": 315,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 5871,
+              "end": 7066,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 3,
+          "semantic_label": "Elaboración y aprobación del marco por AQU Catalunya",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 3,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 7066,
+          "end": 9319,
+          "token_count": 540,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 7066,
+              "end": 9319,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 4,
+          "semantic_label": "Destinatarios, finalidad y organización del marco",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 4,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 9319,
+          "end": 9975,
+          "token_count": 174,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 9319,
+              "end": 9975,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 5,
+          "semantic_label": "Justificación del marco normativo",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 5,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 9975,
+          "end": 11824,
+          "token_count": 469,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 9975,
+              "end": 11824,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 6,
+          "semantic_label": "Compromisos internacionales: CEDAW y formación en igualdad",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 6,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 11824,
+          "end": 13514,
+          "token_count": 438,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 11824,
+              "end": 13514,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 7,
+          "semantic_label": "Igualdad en el derecho y la investigación de la Unión Europea",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 7,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 13514,
+          "end": 14214,
+          "token_count": 188,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 13514,
+              "end": 14214,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 8,
+          "semantic_label": "Competencias de igualdad en el Espacio Europeo de Educación Superior",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 8,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 14214,
+          "end": 16376,
+          "token_count": 584,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 14214,
+              "end": 16376,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 9,
+          "semantic_label": "Normativa estatal sobre igualdad, universidades y ciencia",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 9,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 16376,
+          "end": 17189,
+          "token_count": 216,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 16376,
+              "end": 17189,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 10,
+          "semantic_label": "Principios de igualdad en la normativa catalana",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 10,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 17189,
+          "end": 19233,
+          "token_count": 536,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 17189,
+              "end": 19233,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 11,
+          "semantic_label": "Obligaciones curriculares y diversidad sexual en las leyes catalanas",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 11,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 19233,
+          "end": 20486,
+          "token_count": 327,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 19233,
+              "end": 20486,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 12,
+          "semantic_label": "Aplicación del marco a las áreas de conocimiento",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 12,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 20486,
+          "end": 21531,
+          "token_count": 247,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 20486,
+              "end": 21531,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 13,
+          "semantic_label": "Incorporación de género al ciclo de evaluación VSMA",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 13,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 21531,
+          "end": 23218,
+          "token_count": 437,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 21531,
+              "end": 23218,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 14,
+          "semantic_label": "Sexo y género como categorías para analizar la docencia",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 14,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 23218,
+          "end": 23819,
+          "token_count": 163,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 23218,
+              "end": 23819,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 15,
+          "semantic_label": "Definiciones de sexo y género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 15,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 23819,
+          "end": 25122,
+          "token_count": 330,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 23819,
+              "end": 25122,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 16,
+          "semantic_label": "Interseccionalidad: desigualdades combinadas y vulnerabilidad al VIH",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 16,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 25122,
+          "end": 26160,
+          "token_count": 265,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 25122,
+              "end": 26160,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 17,
+          "semantic_label": "Beneficios de la perspectiva de género para la calidad docente",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 17,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 26160,
+          "end": 27562,
+          "token_count": 380,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 26160,
+              "end": 27562,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 18,
+          "semantic_label": "Ceguera de género y sesgos en los contenidos",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 18,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 27562,
+          "end": 28820,
+          "token_count": 334,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 27562,
+              "end": 28820,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 19,
+          "semantic_label": "Currículo oculto, referentes e interacciones en el aula",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 19,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 28820,
+          "end": 29430,
+          "token_count": 171,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 28820,
+              "end": 29430,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 20,
+          "semantic_label": "Sesgos en las metodologías docentes y de evaluación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 20,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 29430,
+          "end": 30038,
+          "token_count": 151,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 29430,
+              "end": 30038,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 21,
+          "semantic_label": "Género en la elección de estudios y la cultura profesional",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 21,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 30038,
+          "end": 31777,
+          "token_count": 451,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 30038,
+              "end": 31777,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 22,
+          "semantic_label": "Integración curricular y competencia transversal en género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 22,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 31777,
+          "end": 33685,
+          "token_count": 476,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 31777,
+              "end": 33685,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 23,
+          "semantic_label": "Relevancia del género en Humanidades y Ciencias Sociales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 23,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 33685,
+          "end": 34631,
+          "token_count": 239,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 33685,
+              "end": 34631,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 24,
+          "semantic_label": "Coeducación y análisis del sexismo en Educación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 24,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 34631,
+          "end": 36474,
+          "token_count": 447,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 34631,
+              "end": 36474,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 25,
+          "semantic_label": "Aplicación de la perspectiva de género a Ciencias, Salud y Tecnología",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 25,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 36474,
+          "end": 37547,
+          "token_count": 288,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 36474,
+              "end": 37547,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 26,
+          "semantic_label": "Género en los fundamentos de la disciplina y el diseño de investigaciones",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 26,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 37547,
+          "end": 39675,
+          "token_count": 517,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 37547,
+              "end": 39675,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 27,
+          "semantic_label": "Formulación de preguntas y aplicación del género a proyectos y TFG",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 27,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 39675,
+          "end": 41502,
+          "token_count": 465,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 39675,
+              "end": 41502,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 28,
+          "semantic_label": "Bibliografía equilibrada, formación docente y síntesis de la competencia",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 28,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 41502,
+          "end": 42254,
+          "token_count": 194,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 41502,
+              "end": 42254,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 29,
+          "semantic_label": "Diagnóstico de la institución, el centro y el profesorado",
+          "size_fragment_order": 1,
+          "size_fragment_count": 5,
+          "boundary_before": "semantic",
+          "boundary_after": "artificial",
+          "index": 29,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 41903,
+          "end": 44316,
+          "token_count": 600,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 41903,
+              "end": 42254,
+              "role": "overlap"
+            },
+            {
+              "start": 42254,
+              "end": 44316,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 29,
+          "semantic_label": "Diagnóstico de la institución, el centro y el profesorado",
+          "size_fragment_order": 2,
+          "size_fragment_count": 5,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 30,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 43995,
+          "end": 44968,
+          "token_count": 251,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 43995,
+              "end": 44316,
+              "role": "overlap"
+            },
+            {
+              "start": 44316,
+              "end": 44968,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 29,
+          "semantic_label": "Diagnóstico de la institución, el centro y el profesorado",
+          "size_fragment_order": 3,
+          "size_fragment_count": 5,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 31,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 44649,
+          "end": 47022,
+          "token_count": 598,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 44649,
+              "end": 44968,
+              "role": "overlap"
+            },
+            {
+              "start": 44968,
+              "end": 47022,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 29,
+          "semantic_label": "Diagnóstico de la institución, el centro y el profesorado",
+          "size_fragment_order": 4,
+          "size_fragment_count": 5,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 32,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 46703,
+          "end": 47586,
+          "token_count": 210,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 46703,
+              "end": 47022,
+              "role": "overlap"
+            },
+            {
+              "start": 47022,
+              "end": 47586,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 29,
+          "semantic_label": "Diagnóstico de la institución, el centro y el profesorado",
+          "size_fragment_order": 5,
+          "size_fragment_count": 5,
+          "boundary_before": "artificial",
+          "boundary_after": "semantic",
+          "index": 33,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 47586,
+          "end": 48203,
+          "token_count": 150,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 47586,
+              "end": 48203,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 6,
+          "boundary_before": "semantic",
+          "boundary_after": "artificial",
+          "index": 34,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 47865,
+          "end": 49836,
+          "token_count": 499,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 47865,
+              "end": 48203,
+              "role": "overlap"
+            },
+            {
+              "start": 48203,
+              "end": 49836,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 2,
+          "size_fragment_count": 6,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 35,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 49515,
+          "end": 51486,
+          "token_count": 498,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 49515,
+              "end": 49836,
+              "role": "overlap"
+            },
+            {
+              "start": 49836,
+              "end": 51486,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 3,
+          "size_fragment_count": 6,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 36,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 51165,
+          "end": 53338,
+          "token_count": 562,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 51165,
+              "end": 51486,
+              "role": "overlap"
+            },
+            {
+              "start": 51486,
+              "end": 53338,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 4,
+          "size_fragment_count": 6,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 37,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 53036,
+          "end": 55171,
+          "token_count": 565,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 53036,
+              "end": 53338,
+              "role": "overlap"
+            },
+            {
+              "start": 53338,
+              "end": 55171,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 5,
+          "size_fragment_count": 6,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 38,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 54870,
+          "end": 56892,
+          "token_count": 542,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 54870,
+              "end": 55171,
+              "role": "overlap"
+            },
+            {
+              "start": 55171,
+              "end": 56892,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 30,
+          "semantic_label": "Indicadores de género vinculados a verificación y acreditación",
+          "size_fragment_order": 6,
+          "size_fragment_count": 6,
+          "boundary_before": "artificial",
+          "boundary_after": "semantic",
+          "index": 39,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 56892,
+          "end": 58504,
+          "token_count": 506,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 56892,
+              "end": 58504,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 31,
+          "semantic_label": "Catálogo de áreas y subáreas para aplicar la competencia de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 2,
+          "boundary_before": "semantic",
+          "boundary_after": "artificial",
+          "index": 40,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 58269,
+          "end": 59256,
+          "token_count": 311,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 58269,
+              "end": 58504,
+              "role": "overlap"
+            },
+            {
+              "start": 58504,
+              "end": 59256,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 31,
+          "semantic_label": "Catálogo de áreas y subáreas para aplicar la competencia de género",
+          "size_fragment_order": 2,
+          "size_fragment_count": 2,
+          "boundary_before": "artificial",
+          "boundary_after": "semantic",
+          "index": 41,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 59256,
+          "end": 60531,
+          "token_count": 316,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 59256,
+              "end": 60531,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 32,
+          "semantic_label": "Invisibilidad de las mujeres en el canon de Artes y Humanidades",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 42,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 60531,
+          "end": 62343,
+          "token_count": 471,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 60531,
+              "end": 62343,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 33,
+          "semantic_label": "Reinterpretación histórica de contribuciones y relaciones de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 43,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 62343,
+          "end": 62961,
+          "token_count": 149,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 62343,
+              "end": 62961,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 34,
+          "semantic_label": "Símbolos, subjetividad y modelos de feminidad y masculinidad",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 44,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 62961,
+          "end": 64155,
+          "token_count": 298,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 62961,
+              "end": 64155,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 35,
+          "semantic_label": "Androcentrismo y sesgos de la historiografía",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 45,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 64155,
+          "end": 65986,
+          "token_count": 474,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 64155,
+              "end": 65986,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 36,
+          "semantic_label": "Invisibilidad y reconocimiento desigual en arte y literatura",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 46,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 65986,
+          "end": 68153,
+          "token_count": 599,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 65986,
+              "end": 68153,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 37,
+          "semantic_label": "Crítica feminista de la abstracción filosófica y del individuo liberal",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 47,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 68153,
+          "end": 69151,
+          "token_count": 254,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 68153,
+              "end": 69151,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 38,
+          "semantic_label": "Sesgos de género en los relatos y los medios de comunicación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 48,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 69151,
+          "end": 70053,
+          "token_count": 236,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 69151,
+              "end": 70053,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 39,
+          "semantic_label": "Representación artística de la violencia de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 49,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 70053,
+          "end": 71877,
+          "token_count": 461,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 70053,
+              "end": 71877,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 40,
+          "semantic_label": "Competencias comunes de investigación y análisis de género en Humanidades",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 50,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 71877,
+          "end": 72922,
+          "token_count": 253,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 71877,
+              "end": 72922,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 41,
+          "semantic_label": "Resultados de aprendizaje: historia, trabajo femenino y producción cultural",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 51,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 72922,
+          "end": 73976,
+          "token_count": 274,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 72922,
+              "end": 73976,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 42,
+          "semantic_label": "Resultados de aprendizaje: crítica filosófica, epistemología y música",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 52,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 73976,
+          "end": 75312,
+          "token_count": 339,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 73976,
+              "end": 75312,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 43,
+          "semantic_label": "Lengua y literatura como construcción de identidades y roles",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 53,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 75312,
+          "end": 76140,
+          "token_count": 208,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 75312,
+              "end": 76140,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 44,
+          "semantic_label": "Comunicación no sexista, canon literario y traducción",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 54,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 76140,
+          "end": 77451,
+          "token_count": 328,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 76140,
+              "end": 77451,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 45,
+          "semantic_label": "Resultados de aprendizaje: iconografía y contextualización del arte",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 55,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 77451,
+          "end": 78521,
+          "token_count": 274,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 77451,
+              "end": 78521,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 46,
+          "semantic_label": "Resultados de aprendizaje: cultura visual, patrimonio y diseño",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 56,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 78521,
+          "end": 80205,
+          "token_count": 396,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 78521,
+              "end": 80205,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 47,
+          "semantic_label": "Género como categoría y proceso en Ciencias Sociales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 57,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 80205,
+          "end": 81603,
+          "token_count": 347,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 80205,
+              "end": 81603,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 48,
+          "semantic_label": "Desigualdades materiales y relaciones de poder: ejemplo de Letherby",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 58,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 81603,
+          "end": 82993,
+          "token_count": 363,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 81603,
+              "end": 82993,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 49,
+          "semantic_label": "Androcentrismo y sesgos en Economía y Antropología",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 59,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 82993,
+          "end": 84776,
+          "token_count": 454,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 82993,
+              "end": 84776,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 50,
+          "semantic_label": "Género en criminalidad, participación política y protección social",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 60,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 84776,
+          "end": 85679,
+          "token_count": 225,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 84776,
+              "end": 85679,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 51,
+          "semantic_label": "Sesgos en planificación urbana y decisiones judiciales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 61,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 85679,
+          "end": 86898,
+          "token_count": 306,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 85679,
+              "end": 86898,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 52,
+          "semantic_label": "Representación mediática y bases sociales de la violencia de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 62,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 86898,
+          "end": 88931,
+          "token_count": 520,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 86898,
+              "end": 88931,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 53,
+          "semantic_label": "Competencias transversales de género en Ciencias Sociales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 63,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 88931,
+          "end": 90205,
+          "token_count": 306,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 88931,
+              "end": 90205,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 54,
+          "semantic_label": "Resultados de aprendizaje en Economía, Empresa y Turismo",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 64,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 90205,
+          "end": 91490,
+          "token_count": 302,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 90205,
+              "end": 91490,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 55,
+          "semantic_label": "Resultados de aprendizaje en empleo, igualdad legal y justicia penal",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 65,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 91490,
+          "end": 92479,
+          "token_count": 244,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 91490,
+              "end": 92479,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 56,
+          "semantic_label": "Políticas públicas, instituciones y derechos de las mujeres",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 66,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 92479,
+          "end": 93799,
+          "token_count": 323,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 92479,
+              "end": 93799,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 57,
+          "semantic_label": "Comunicación, documentación y tratamiento informativo no sexista",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 67,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 93799,
+          "end": 95286,
+          "token_count": 354,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 93799,
+              "end": 95286,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 58,
+          "semantic_label": "Formación en género para profesionales educativos y de intervención social",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 68,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 95286,
+          "end": 96801,
+          "token_count": 388,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 95286,
+              "end": 96801,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 59,
+          "semantic_label": "Responsabilidad profesional y revisión de los planes de estudio",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 69,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 96801,
+          "end": 98916,
+          "token_count": 552,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 96801,
+              "end": 98916,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 60,
+          "semantic_label": "Desigualdades persistentes y currículo oculto en Educación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 70,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 98916,
+          "end": 100695,
+          "token_count": 492,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 98916,
+              "end": 100695,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 61,
+          "semantic_label": "Coeducación: definición, prevención de violencia y marco legal",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 71,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 100695,
+          "end": 102543,
+          "token_count": 465,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 100695,
+              "end": 102543,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 62,
+          "semantic_label": "Componentes prácticos de la coeducación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 72,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 102543,
+          "end": 104499,
+          "token_count": 490,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 102543,
+              "end": 104499,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 63,
+          "semantic_label": "Resultados transversales de aprendizaje para formar educadores",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 73,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 104499,
+          "end": 106102,
+          "token_count": 423,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 104499,
+              "end": 106102,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 64,
+          "semantic_label": "Diagnóstico de sesgos y transformación del entorno escolar",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 74,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 106102,
+          "end": 107858,
+          "token_count": 437,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 106102,
+              "end": 107858,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 65,
+          "semantic_label": "Recursos y metodologías para sensibilizar y prevenir violencia",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 75,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 107858,
+          "end": 109194,
+          "token_count": 337,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 107858,
+              "end": 109194,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 66,
+          "semantic_label": "Resultados de aprendizaje de Educación Infantil, Primaria y Pedagogía",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 76,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 109194,
+          "end": 110308,
+          "token_count": 287,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 109194,
+              "end": 110308,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 67,
+          "semantic_label": "Resultados de aprendizaje en Intervención Social",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 77,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 110308,
+          "end": 111982,
+          "token_count": 416,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 110308,
+              "end": 111982,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 68,
+          "semantic_label": "Competencias del máster de formación del profesorado",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 78,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 111982,
+          "end": 113091,
+          "token_count": 268,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 111982,
+              "end": 113091,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 69,
+          "semantic_label": "Pertinencia del género y vocaciones en Ciencias",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 79,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 113091,
+          "end": 114812,
+          "token_count": 409,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 113091,
+              "end": 114812,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 70,
+          "semantic_label": "El estereotipo del genio masculino y la construcción colectiva de la Física",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 80,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 114812,
+          "end": 116928,
+          "token_count": 527,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 114812,
+              "end": 116928,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 71,
+          "semantic_label": "Efecto Matilda y agenda profesional para la igualdad en Física",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 81,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 116928,
+          "end": 118980,
+          "token_count": 522,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 116928,
+              "end": 118980,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 72,
+          "semantic_label": "Falsa neutralidad científica y riesgos químicos diferenciados",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 82,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 118980,
+          "end": 120789,
+          "token_count": 471,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 118980,
+              "end": 120789,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 73,
+          "semantic_label": "Estereotipos en el aprendizaje matemático y las metáforas de la Física",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 83,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 120789,
+          "end": 121999,
+          "token_count": 294,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 120789,
+              "end": 121999,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 74,
+          "semantic_label": "Género, diversidad social y evaluación ambiental",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 84,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 121999,
+          "end": 123727,
+          "token_count": 442,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 121999,
+              "end": 123727,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 75,
+          "semantic_label": "Sexo en la experimentación biológica y en el análisis estadístico",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 85,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 123727,
+          "end": 125576,
+          "token_count": 462,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 123727,
+              "end": 125576,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 76,
+          "semantic_label": "Competencias comunes de análisis de género en Ciencias",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 86,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 125576,
+          "end": 126700,
+          "token_count": 282,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 125576,
+              "end": 126700,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 77,
+          "semantic_label": "Resultados de aprendizaje en Ciencias Biológicas y de la Tierra",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 87,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 126700,
+          "end": 127571,
+          "token_count": 215,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 126700,
+              "end": 127571,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 78,
+          "semantic_label": "Resultados de aprendizaje en Ciencias Experimentales y Matemáticas",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 88,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 127571,
+          "end": 129631,
+          "token_count": 506,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 127571,
+              "end": 129631,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 79,
+          "semantic_label": "Competencia sanitaria en género e interacción entre sexo y salud",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 89,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 129631,
+          "end": 131745,
+          "token_count": 522,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 129631,
+              "end": 131745,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 80,
+          "semantic_label": "Diferencias epidemiológicas, cuidados y transversalización curricular",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 90,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 131745,
+          "end": 133059,
+          "token_count": 330,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 131745,
+              "end": 133059,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 81,
+          "semantic_label": "Definición y mecanismos del sesgo de género sanitario",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 91,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 133059,
+          "end": 134238,
+          "token_count": 298,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 133059,
+              "end": 134238,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 82,
+          "semantic_label": "Sesgos en pruebas diagnósticas y expresión clínica",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 92,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 134238,
+          "end": 135513,
+          "token_count": 306,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 134238,
+              "end": 135513,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 83,
+          "semantic_label": "Representación de las mujeres y validez de los ensayos clínicos",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 93,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 135513,
+          "end": 136403,
+          "token_count": 220,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 135513,
+              "end": 136403,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 84,
+          "semantic_label": "Género, trabajo rural y riesgo de zoonosis",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 94,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 136403,
+          "end": 137845,
+          "token_count": 387,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 136403,
+              "end": 137845,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 85,
+          "semantic_label": "Sesgos en salud mental, psicofármacos y rehabilitación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 95,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 137845,
+          "end": 138332,
+          "token_count": 125,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 137845,
+              "end": 138332,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 86,
+          "semantic_label": "Etiquetas de enfermería y atribución de los cuidados",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 96,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 138332,
+          "end": 140450,
+          "token_count": 511,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 138332,
+              "end": 140450,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 87,
+          "semantic_label": "Violencia de género: limitaciones de las inferencias causales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 97,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 140450,
+          "end": 141858,
+          "token_count": 340,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 140450,
+              "end": 141858,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 88,
+          "semantic_label": "Sesgos de información y selección al estudiar violencia de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 98,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 141858,
+          "end": 143681,
+          "token_count": 460,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 141858,
+              "end": 143681,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 89,
+          "semantic_label": "Competencias comunes de investigación y género en Salud",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 99,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 143681,
+          "end": 144788,
+          "token_count": 276,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 143681,
+              "end": 144788,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 90,
+          "semantic_label": "Determinantes sociales e interseccionales de las desigualdades de salud",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 100,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 144788,
+          "end": 145846,
+          "token_count": 269,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 144788,
+              "end": 145846,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 91,
+          "semantic_label": "Diagnóstico, atención y comunicación clínica sensibles al género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 101,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 145846,
+          "end": 146693,
+          "token_count": 212,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 145846,
+              "end": 146693,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 92,
+          "semantic_label": "Evaluación de equidad sanitaria, políticas y protocolos de violencia",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 102,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 146693,
+          "end": 148154,
+          "token_count": 365,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 146693,
+              "end": 148154,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 93,
+          "semantic_label": "Género como criterio de validez del diseño tecnológico y urbano",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 103,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 148154,
+          "end": 150382,
+          "token_count": 556,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 148154,
+              "end": 150382,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 94,
+          "semantic_label": "Movilidad del cuidado y planificación de viviendas y ciudades",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 104,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 150382,
+          "end": 151741,
+          "token_count": 321,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 150382,
+              "end": 151741,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 95,
+          "semantic_label": "Diseño participativo de tecnologías asistenciales para mayores",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 105,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 151741,
+          "end": 152963,
+          "token_count": 305,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 151741,
+              "end": 152963,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 96,
+          "semantic_label": "Seguridad del automóvil y representación corporal en las pruebas",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 106,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 152963,
+          "end": 154221,
+          "token_count": 324,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 152963,
+              "end": 154221,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 97,
+          "semantic_label": "Participación de las mujeres en infraestructuras de agua y saneamiento",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 107,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 154221,
+          "end": 155754,
+          "token_count": 387,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 154221,
+              "end": 155754,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 98,
+          "semantic_label": "Accesibilidad e información para pasajeros aéreos con dependientes",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 108,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 155754,
+          "end": 156872,
+          "token_count": 267,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 155754,
+              "end": 156872,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 99,
+          "semantic_label": "Sesgos de género en la traducción automática",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 109,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 156872,
+          "end": 157660,
+          "token_count": 190,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 156872,
+              "end": 157660,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 100,
+          "semantic_label": "Seguridad urbana y tecnologías contra la violencia de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 110,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 157660,
+          "end": 159507,
+          "token_count": 462,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 157660,
+              "end": 159507,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 101,
+          "semantic_label": "Competencias transversales de género en Ingeniería y Arquitectura",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 111,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 159507,
+          "end": 160436,
+          "token_count": 225,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 159507,
+              "end": 160436,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 102,
+          "semantic_label": "Necesidades de las personas y variables de género en proyectos técnicos",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 112,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 160436,
+          "end": 161239,
+          "token_count": 198,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 160436,
+              "end": 161239,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 103,
+          "semantic_label": "Resultados de aprendizaje en Arquitectura, Construcción y Civil",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 113,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 161239,
+          "end": 162569,
+          "token_count": 325,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 161239,
+              "end": 162569,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 104,
+          "semantic_label": "Resultados de aprendizaje en Tecnologías Industriales",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 114,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 162569,
+          "end": 163263,
+          "token_count": 168,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 162569,
+              "end": 163263,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 105,
+          "semantic_label": "Resultados de aprendizaje en Telecomunicaciones e Informática",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 115,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 163263,
+          "end": 164013,
+          "token_count": 185,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 163263,
+              "end": 164013,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 106,
+          "semantic_label": "Resultados de aprendizaje en Agricultura, Forestal y Pesca",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 116,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 164013,
+          "end": 165672,
+          "token_count": 473,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 164013,
+              "end": 165672,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 1,
+          "size_fragment_count": 7,
+          "boundary_before": "semantic",
+          "boundary_after": "artificial",
+          "index": 117,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 165384,
+          "end": 167467,
+          "token_count": 585,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 165384,
+              "end": 165672,
+              "role": "overlap"
+            },
+            {
+              "start": 165672,
+              "end": 167467,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 2,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 118,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 167175,
+          "end": 169268,
+          "token_count": 593,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 167175,
+              "end": 167467,
+              "role": "overlap"
+            },
+            {
+              "start": 167467,
+              "end": 169268,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 3,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 119,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 168992,
+          "end": 171037,
+          "token_count": 556,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 168992,
+              "end": 169268,
+              "role": "overlap"
+            },
+            {
+              "start": 169268,
+              "end": 171037,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 4,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 120,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 170762,
+          "end": 172806,
+          "token_count": 568,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 170762,
+              "end": 171037,
+              "role": "overlap"
+            },
+            {
+              "start": 171037,
+              "end": 172806,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 5,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 121,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 172527,
+          "end": 174448,
+          "token_count": 549,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 172527,
+              "end": 172806,
+              "role": "overlap"
+            },
+            {
+              "start": 172806,
+              "end": 174448,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 6,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "artificial",
+          "index": 122,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 174125,
+          "end": 175887,
+          "token_count": 508,
+          "split_method": "recursive",
+          "analysis_mode": "hybrid",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 174125,
+              "end": 174448,
+              "role": "overlap"
+            },
+            {
+              "start": 174448,
+              "end": 175887,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 107,
+          "semantic_label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "size_fragment_order": 7,
+          "size_fragment_count": 7,
+          "boundary_before": "artificial",
+          "boundary_after": "semantic",
+          "index": 123,
+          "overlap_tokens": 80
+        },
+        {
+          "start": 175887,
+          "end": 177414,
+          "token_count": 462,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 175887,
+              "end": 177414,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 108,
+          "semantic_label": "Recursos docentes y guías generales para incorporar género al currículo",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 124,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 177414,
+          "end": 179323,
+          "token_count": 575,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 177414,
+              "end": 179323,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 109,
+          "semantic_label": "Herramientas y bancos de recursos para docencia e investigación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 125,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 179323,
+          "end": 181210,
+          "token_count": 581,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 179323,
+              "end": 181210,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 110,
+          "semantic_label": "Guías y materiales de universidades y redes docentes",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 126,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 181210,
+          "end": 182717,
+          "token_count": 435,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 181210,
+              "end": 182717,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 111,
+          "semantic_label": "Herramientas de diagnóstico, glosarios y diseño curricular",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 127,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 182717,
+          "end": 184586,
+          "token_count": 509,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 182717,
+              "end": 184586,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 112,
+          "semantic_label": "Manuales, tesauros y herramientas de género en investigación",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 128,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 184586,
+          "end": 185329,
+          "token_count": 184,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 184586,
+              "end": 185329,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 113,
+          "semantic_label": "Glosario: acción positiva",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 129,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 185329,
+          "end": 186218,
+          "token_count": 230,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 185329,
+              "end": 186218,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 114,
+          "semantic_label": "Glosario: androcentrismo y ceguera de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 130,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 186218,
+          "end": 187226,
+          "token_count": 259,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 186218,
+              "end": 187226,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 115,
+          "semantic_label": "Glosario: coeducación y currículo oculto",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 131,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 187226,
+          "end": 188994,
+          "token_count": 445,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 187226,
+              "end": 188994,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 116,
+          "semantic_label": "Glosario: discriminación, diversidad y equidad",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 132,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 188994,
+          "end": 190466,
+          "token_count": 362,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 188994,
+              "end": 190466,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 117,
+          "semantic_label": "Glosario: estereotipos, igualdad e interseccionalidad",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 133,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 190466,
+          "end": 192292,
+          "token_count": 485,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 190466,
+              "end": 192292,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 118,
+          "semantic_label": "Glosario: neutralidad normativa, paridad y perspectiva de género",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 134,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 192292,
+          "end": 193917,
+          "token_count": 401,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 192292,
+              "end": 193917,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 119,
+          "semantic_label": "Glosario: roles de género y trabajo de cuidados",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 135,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 193917,
+          "end": 195667,
+          "token_count": 448,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 193917,
+              "end": 195667,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 120,
+          "semantic_label": "Glosario: transversalidad, violencia y visibilización",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 136,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 195667,
+          "end": 196555,
+          "token_count": 293,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 195667,
+              "end": 196555,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 121,
+          "semantic_label": "Fuentes institucionales y educativas del glosario",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 137,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 196555,
+          "end": 197305,
+          "token_count": 256,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 196555,
+              "end": 197305,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 122,
+          "semantic_label": "Fuentes normativas y documentales del glosario",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": "semantic",
+          "index": 138,
+          "overlap_tokens": 0
+        },
+        {
+          "start": 197305,
+          "end": 197989,
+          "token_count": 209,
+          "split_method": "semantic",
+          "analysis_mode": "llm",
+          "section_path": [],
+          "source_spans": [
+            {
+              "start": 197305,
+              "end": 197989,
+              "role": "core"
+            }
+          ],
+          "semantic_group_index": 123,
+          "semantic_label": "Autoría y composición del grupo de trabajo",
+          "size_fragment_order": 1,
+          "size_fragment_count": 1,
+          "boundary_before": "semantic",
+          "boundary_after": null,
+          "index": 139,
+          "overlap_tokens": 0
+        }
+      ],
+      "provenance": {
+        "run": "aqu-chatgpt-semantic-2026-11-08",
+        "created_at": "2026-11-08",
+        "model": null,
+        "producer": "ChatGPT: análisis del agente LLM en esta conversación",
+        "execution_mode": "conversation_llm",
+        "input_scope": "Texto íntegro de los 742 bloques del Markdown, leído en nueve tandas consecutivas. Las tandas de lectura no imponen fronteras de chunk.",
+        "limitations": "Decisiones producidas por el LLM de esta conversación, no por la API configurada ni por embeddings. El identificador exacto del modelo no está expuesto. Las etiquetas son interpretaciones del LLM y no garantizan una mejor recuperación. El ajuste al límite y los solapamientos se calculan después con reglas locales.",
+        "decision_sha256": "39b7808426e0cd4c99e97b507e77333c7785185cc0787c5e399d9d9673d30f60"
+      },
+      "semantic_groups": [
+        {
+          "first": 0,
+          "last": 14,
+          "label": "Identificación, edición y licencia del documento",
+          "start": 0,
+          "end": 1145,
+          "token_count": 345
+        },
+        {
+          "first": 15,
+          "last": 39,
+          "label": "Índice y mapa de contenidos",
+          "start": 1145,
+          "end": 4262,
+          "token_count": 407
+        },
+        {
+          "first": 40,
+          "last": 43,
+          "label": "Igualdad de género y responsabilidad social universitaria",
+          "start": 4262,
+          "end": 5871,
+          "token_count": 403
+        },
+        {
+          "first": 44,
+          "last": 44,
+          "label": "Elaboración y aprobación del marco por AQU Catalunya",
+          "start": 5871,
+          "end": 7066,
+          "token_count": 315
+        },
+        {
+          "first": 45,
+          "last": 50,
+          "label": "Destinatarios, finalidad y organización del marco",
+          "start": 7066,
+          "end": 9319,
+          "token_count": 540
+        },
+        {
+          "first": 51,
+          "last": 52,
+          "label": "Justificación del marco normativo",
+          "start": 9319,
+          "end": 9975,
+          "token_count": 174
+        },
+        {
+          "first": 53,
+          "last": 57,
+          "label": "Compromisos internacionales: CEDAW y formación en igualdad",
+          "start": 9975,
+          "end": 11824,
+          "token_count": 469
+        },
+        {
+          "first": 58,
+          "last": 60,
+          "label": "Igualdad en el derecho y la investigación de la Unión Europea",
+          "start": 11824,
+          "end": 13514,
+          "token_count": 438
+        },
+        {
+          "first": 61,
+          "last": 61,
+          "label": "Competencias de igualdad en el Espacio Europeo de Educación Superior",
+          "start": 13514,
+          "end": 14214,
+          "token_count": 188
+        },
+        {
+          "first": 62,
+          "last": 64,
+          "label": "Normativa estatal sobre igualdad, universidades y ciencia",
+          "start": 14214,
+          "end": 16376,
+          "token_count": 584
+        },
+        {
+          "first": 65,
+          "last": 66,
+          "label": "Principios de igualdad en la normativa catalana",
+          "start": 16376,
+          "end": 17189,
+          "token_count": 216
+        },
+        {
+          "first": 67,
+          "last": 67,
+          "label": "Obligaciones curriculares y diversidad sexual en las leyes catalanas",
+          "start": 17189,
+          "end": 19233,
+          "token_count": 536
+        },
+        {
+          "first": 68,
+          "last": 70,
+          "label": "Aplicación del marco a las áreas de conocimiento",
+          "start": 19233,
+          "end": 20486,
+          "token_count": 327
+        },
+        {
+          "first": 71,
+          "last": 71,
+          "label": "Incorporación de género al ciclo de evaluación VSMA",
+          "start": 20486,
+          "end": 21531,
+          "token_count": 247
+        },
+        {
+          "first": 72,
+          "last": 75,
+          "label": "Sexo y género como categorías para analizar la docencia",
+          "start": 21531,
+          "end": 23218,
+          "token_count": 437
+        },
+        {
+          "first": 76,
+          "last": 79,
+          "label": "Definiciones de sexo y género",
+          "start": 23218,
+          "end": 23819,
+          "token_count": 163
+        },
+        {
+          "first": 80,
+          "last": 84,
+          "label": "Interseccionalidad: desigualdades combinadas y vulnerabilidad al VIH",
+          "start": 23819,
+          "end": 25122,
+          "token_count": 330
+        },
+        {
+          "first": 85,
+          "last": 86,
+          "label": "Beneficios de la perspectiva de género para la calidad docente",
+          "start": 25122,
+          "end": 26160,
+          "token_count": 265
+        },
+        {
+          "first": 87,
+          "last": 88,
+          "label": "Ceguera de género y sesgos en los contenidos",
+          "start": 26160,
+          "end": 27562,
+          "token_count": 380
+        },
+        {
+          "first": 89,
+          "last": 92,
+          "label": "Currículo oculto, referentes e interacciones en el aula",
+          "start": 27562,
+          "end": 28820,
+          "token_count": 334
+        },
+        {
+          "first": 93,
+          "last": 93,
+          "label": "Sesgos en las metodologías docentes y de evaluación",
+          "start": 28820,
+          "end": 29430,
+          "token_count": 171
+        },
+        {
+          "first": 94,
+          "last": 94,
+          "label": "Género en la elección de estudios y la cultura profesional",
+          "start": 29430,
+          "end": 30038,
+          "token_count": 151
+        },
+        {
+          "first": 95,
+          "last": 100,
+          "label": "Integración curricular y competencia transversal en género",
+          "start": 30038,
+          "end": 31777,
+          "token_count": 451
+        },
+        {
+          "first": 101,
+          "last": 104,
+          "label": "Relevancia del género en Humanidades y Ciencias Sociales",
+          "start": 31777,
+          "end": 33685,
+          "token_count": 476
+        },
+        {
+          "first": 105,
+          "last": 105,
+          "label": "Coeducación y análisis del sexismo en Educación",
+          "start": 33685,
+          "end": 34631,
+          "token_count": 239
+        },
+        {
+          "first": 106,
+          "last": 109,
+          "label": "Aplicación de la perspectiva de género a Ciencias, Salud y Tecnología",
+          "start": 34631,
+          "end": 36474,
+          "token_count": 447
+        },
+        {
+          "first": 110,
+          "last": 111,
+          "label": "Género en los fundamentos de la disciplina y el diseño de investigaciones",
+          "start": 36474,
+          "end": 37547,
+          "token_count": 288
+        },
+        {
+          "first": 112,
+          "last": 115,
+          "label": "Formulación de preguntas y aplicación del género a proyectos y TFG",
+          "start": 37547,
+          "end": 39675,
+          "token_count": 517
+        },
+        {
+          "first": 116,
+          "last": 124,
+          "label": "Bibliografía equilibrada, formación docente y síntesis de la competencia",
+          "start": 39675,
+          "end": 41502,
+          "token_count": 465
+        },
+        {
+          "first": 125,
+          "last": 129,
+          "label": "Diagnóstico de la institución, el centro y el profesorado",
+          "start": 41502,
+          "end": 47586,
+          "token_count": 1533
+        },
+        {
+          "first": 130,
+          "last": 133,
+          "label": "Indicadores de género vinculados a verificación y acreditación",
+          "start": 47586,
+          "end": 56892,
+          "token_count": 2416
+        },
+        {
+          "first": 134,
+          "last": 159,
+          "label": "Catálogo de áreas y subáreas para aplicar la competencia de género",
+          "start": 56892,
+          "end": 59256,
+          "token_count": 737
+        },
+        {
+          "first": 160,
+          "last": 162,
+          "label": "Invisibilidad de las mujeres en el canon de Artes y Humanidades",
+          "start": 59256,
+          "end": 60531,
+          "token_count": 316
+        },
+        {
+          "first": 163,
+          "last": 166,
+          "label": "Reinterpretación histórica de contribuciones y relaciones de género",
+          "start": 60531,
+          "end": 62343,
+          "token_count": 471
+        },
+        {
+          "first": 167,
+          "last": 168,
+          "label": "Símbolos, subjetividad y modelos de feminidad y masculinidad",
+          "start": 62343,
+          "end": 62961,
+          "token_count": 149
+        },
+        {
+          "first": 169,
+          "last": 171,
+          "label": "Androcentrismo y sesgos de la historiografía",
+          "start": 62961,
+          "end": 64155,
+          "token_count": 298
+        },
+        {
+          "first": 172,
+          "last": 173,
+          "label": "Invisibilidad y reconocimiento desigual en arte y literatura",
+          "start": 64155,
+          "end": 65986,
+          "token_count": 474
+        },
+        {
+          "first": 174,
+          "last": 179,
+          "label": "Crítica feminista de la abstracción filosófica y del individuo liberal",
+          "start": 65986,
+          "end": 68153,
+          "token_count": 599
+        },
+        {
+          "first": 180,
+          "last": 180,
+          "label": "Sesgos de género en los relatos y los medios de comunicación",
+          "start": 68153,
+          "end": 69151,
+          "token_count": 254
+        },
+        {
+          "first": 181,
+          "last": 182,
+          "label": "Representación artística de la violencia de género",
+          "start": 69151,
+          "end": 70053,
+          "token_count": 236
+        },
+        {
+          "first": 183,
+          "last": 195,
+          "label": "Competencias comunes de investigación y análisis de género en Humanidades",
+          "start": 70053,
+          "end": 71877,
+          "token_count": 461
+        },
+        {
+          "first": 196,
+          "last": 203,
+          "label": "Resultados de aprendizaje: historia, trabajo femenino y producción cultural",
+          "start": 71877,
+          "end": 72922,
+          "token_count": 253
+        },
+        {
+          "first": 204,
+          "last": 209,
+          "label": "Resultados de aprendizaje: crítica filosófica, epistemología y música",
+          "start": 72922,
+          "end": 73976,
+          "token_count": 274
+        },
+        {
+          "first": 210,
+          "last": 216,
+          "label": "Lengua y literatura como construcción de identidades y roles",
+          "start": 73976,
+          "end": 75312,
+          "token_count": 339
+        },
+        {
+          "first": 217,
+          "last": 222,
+          "label": "Comunicación no sexista, canon literario y traducción",
+          "start": 75312,
+          "end": 76140,
+          "token_count": 208
+        },
+        {
+          "first": 223,
+          "last": 230,
+          "label": "Resultados de aprendizaje: iconografía y contextualización del arte",
+          "start": 76140,
+          "end": 77451,
+          "token_count": 328
+        },
+        {
+          "first": 231,
+          "last": 236,
+          "label": "Resultados de aprendizaje: cultura visual, patrimonio y diseño",
+          "start": 77451,
+          "end": 78521,
+          "token_count": 274
+        },
+        {
+          "first": 237,
+          "last": 240,
+          "label": "Género como categoría y proceso en Ciencias Sociales",
+          "start": 78521,
+          "end": 80205,
+          "token_count": 396
+        },
+        {
+          "first": 241,
+          "last": 243,
+          "label": "Desigualdades materiales y relaciones de poder: ejemplo de Letherby",
+          "start": 80205,
+          "end": 81603,
+          "token_count": 347
+        },
+        {
+          "first": 244,
+          "last": 248,
+          "label": "Androcentrismo y sesgos en Economía y Antropología",
+          "start": 81603,
+          "end": 82993,
+          "token_count": 363
+        },
+        {
+          "first": 249,
+          "last": 251,
+          "label": "Género en criminalidad, participación política y protección social",
+          "start": 82993,
+          "end": 84776,
+          "token_count": 454
+        },
+        {
+          "first": 252,
+          "last": 253,
+          "label": "Sesgos en planificación urbana y decisiones judiciales",
+          "start": 84776,
+          "end": 85679,
+          "token_count": 225
+        },
+        {
+          "first": 254,
+          "last": 256,
+          "label": "Representación mediática y bases sociales de la violencia de género",
+          "start": 85679,
+          "end": 86898,
+          "token_count": 306
+        },
+        {
+          "first": 257,
+          "last": 270,
+          "label": "Competencias transversales de género en Ciencias Sociales",
+          "start": 86898,
+          "end": 88931,
+          "token_count": 520
+        },
+        {
+          "first": 271,
+          "last": 279,
+          "label": "Resultados de aprendizaje en Economía, Empresa y Turismo",
+          "start": 88931,
+          "end": 90205,
+          "token_count": 306
+        },
+        {
+          "first": 280,
+          "last": 287,
+          "label": "Resultados de aprendizaje en empleo, igualdad legal y justicia penal",
+          "start": 90205,
+          "end": 91490,
+          "token_count": 302
+        },
+        {
+          "first": 288,
+          "last": 294,
+          "label": "Políticas públicas, instituciones y derechos de las mujeres",
+          "start": 91490,
+          "end": 92479,
+          "token_count": 244
+        },
+        {
+          "first": 295,
+          "last": 302,
+          "label": "Comunicación, documentación y tratamiento informativo no sexista",
+          "start": 92479,
+          "end": 93799,
+          "token_count": 323
+        },
+        {
+          "first": 303,
+          "last": 306,
+          "label": "Formación en género para profesionales educativos y de intervención social",
+          "start": 93799,
+          "end": 95286,
+          "token_count": 354
+        },
+        {
+          "first": 307,
+          "last": 311,
+          "label": "Responsabilidad profesional y revisión de los planes de estudio",
+          "start": 95286,
+          "end": 96801,
+          "token_count": 388
+        },
+        {
+          "first": 312,
+          "last": 314,
+          "label": "Desigualdades persistentes y currículo oculto en Educación",
+          "start": 96801,
+          "end": 98916,
+          "token_count": 552
+        },
+        {
+          "first": 315,
+          "last": 318,
+          "label": "Coeducación: definición, prevención de violencia y marco legal",
+          "start": 98916,
+          "end": 100695,
+          "token_count": 492
+        },
+        {
+          "first": 319,
+          "last": 331,
+          "label": "Componentes prácticos de la coeducación",
+          "start": 100695,
+          "end": 102543,
+          "token_count": 465
+        },
+        {
+          "first": 332,
+          "last": 344,
+          "label": "Resultados transversales de aprendizaje para formar educadores",
+          "start": 102543,
+          "end": 104499,
+          "token_count": 490
+        },
+        {
+          "first": 345,
+          "last": 350,
+          "label": "Diagnóstico de sesgos y transformación del entorno escolar",
+          "start": 104499,
+          "end": 106102,
+          "token_count": 423
+        },
+        {
+          "first": 351,
+          "last": 356,
+          "label": "Recursos y metodologías para sensibilizar y prevenir violencia",
+          "start": 106102,
+          "end": 107858,
+          "token_count": 437
+        },
+        {
+          "first": 357,
+          "last": 366,
+          "label": "Resultados de aprendizaje de Educación Infantil, Primaria y Pedagogía",
+          "start": 107858,
+          "end": 109194,
+          "token_count": 337
+        },
+        {
+          "first": 367,
+          "last": 373,
+          "label": "Resultados de aprendizaje en Intervención Social",
+          "start": 109194,
+          "end": 110308,
+          "token_count": 287
+        },
+        {
+          "first": 374,
+          "last": 385,
+          "label": "Competencias del máster de formación del profesorado",
+          "start": 110308,
+          "end": 111982,
+          "token_count": 416
+        },
+        {
+          "first": 386,
+          "last": 388,
+          "label": "Pertinencia del género y vocaciones en Ciencias",
+          "start": 111982,
+          "end": 113091,
+          "token_count": 268
+        },
+        {
+          "first": 389,
+          "last": 392,
+          "label": "El estereotipo del genio masculino y la construcción colectiva de la Física",
+          "start": 113091,
+          "end": 114812,
+          "token_count": 409
+        },
+        {
+          "first": 393,
+          "last": 400,
+          "label": "Efecto Matilda y agenda profesional para la igualdad en Física",
+          "start": 114812,
+          "end": 116928,
+          "token_count": 527
+        },
+        {
+          "first": 401,
+          "last": 403,
+          "label": "Falsa neutralidad científica y riesgos químicos diferenciados",
+          "start": 116928,
+          "end": 118980,
+          "token_count": 522
+        },
+        {
+          "first": 404,
+          "last": 406,
+          "label": "Estereotipos en el aprendizaje matemático y las metáforas de la Física",
+          "start": 118980,
+          "end": 120789,
+          "token_count": 471
+        },
+        {
+          "first": 407,
+          "last": 407,
+          "label": "Género, diversidad social y evaluación ambiental",
+          "start": 120789,
+          "end": 121999,
+          "token_count": 294
+        },
+        {
+          "first": 408,
+          "last": 410,
+          "label": "Sexo en la experimentación biológica y en el análisis estadístico",
+          "start": 121999,
+          "end": 123727,
+          "token_count": 442
+        },
+        {
+          "first": 411,
+          "last": 423,
+          "label": "Competencias comunes de análisis de género en Ciencias",
+          "start": 123727,
+          "end": 125576,
+          "token_count": 462
+        },
+        {
+          "first": 424,
+          "last": 431,
+          "label": "Resultados de aprendizaje en Ciencias Biológicas y de la Tierra",
+          "start": 125576,
+          "end": 126700,
+          "token_count": 282
+        },
+        {
+          "first": 432,
+          "last": 438,
+          "label": "Resultados de aprendizaje en Ciencias Experimentales y Matemáticas",
+          "start": 126700,
+          "end": 127571,
+          "token_count": 215
+        },
+        {
+          "first": 439,
+          "last": 445,
+          "label": "Competencia sanitaria en género e interacción entre sexo y salud",
+          "start": 127571,
+          "end": 129631,
+          "token_count": 506
+        },
+        {
+          "first": 446,
+          "last": 449,
+          "label": "Diferencias epidemiológicas, cuidados y transversalización curricular",
+          "start": 129631,
+          "end": 131745,
+          "token_count": 522
+        },
+        {
+          "first": 450,
+          "last": 453,
+          "label": "Definición y mecanismos del sesgo de género sanitario",
+          "start": 131745,
+          "end": 133059,
+          "token_count": 330
+        },
+        {
+          "first": 454,
+          "last": 455,
+          "label": "Sesgos en pruebas diagnósticas y expresión clínica",
+          "start": 133059,
+          "end": 134238,
+          "token_count": 298
+        },
+        {
+          "first": 456,
+          "last": 457,
+          "label": "Representación de las mujeres y validez de los ensayos clínicos",
+          "start": 134238,
+          "end": 135513,
+          "token_count": 306
+        },
+        {
+          "first": 458,
+          "last": 458,
+          "label": "Género, trabajo rural y riesgo de zoonosis",
+          "start": 135513,
+          "end": 136403,
+          "token_count": 220
+        },
+        {
+          "first": 459,
+          "last": 462,
+          "label": "Sesgos en salud mental, psicofármacos y rehabilitación",
+          "start": 136403,
+          "end": 137845,
+          "token_count": 387
+        },
+        {
+          "first": 463,
+          "last": 464,
+          "label": "Etiquetas de enfermería y atribución de los cuidados",
+          "start": 137845,
+          "end": 138332,
+          "token_count": 125
+        },
+        {
+          "first": 465,
+          "last": 467,
+          "label": "Violencia de género: limitaciones de las inferencias causales",
+          "start": 138332,
+          "end": 140450,
+          "token_count": 511
+        },
+        {
+          "first": 468,
+          "last": 468,
+          "label": "Sesgos de información y selección al estudiar violencia de género",
+          "start": 140450,
+          "end": 141858,
+          "token_count": 340
+        },
+        {
+          "first": 469,
+          "last": 481,
+          "label": "Competencias comunes de investigación y género en Salud",
+          "start": 141858,
+          "end": 143681,
+          "token_count": 460
+        },
+        {
+          "first": 482,
+          "last": 487,
+          "label": "Determinantes sociales e interseccionales de las desigualdades de salud",
+          "start": 143681,
+          "end": 144788,
+          "token_count": 276
+        },
+        {
+          "first": 488,
+          "last": 491,
+          "label": "Diagnóstico, atención y comunicación clínica sensibles al género",
+          "start": 144788,
+          "end": 145846,
+          "token_count": 269
+        },
+        {
+          "first": 492,
+          "last": 496,
+          "label": "Evaluación de equidad sanitaria, políticas y protocolos de violencia",
+          "start": 145846,
+          "end": 146693,
+          "token_count": 212
+        },
+        {
+          "first": 497,
+          "last": 501,
+          "label": "Género como criterio de validez del diseño tecnológico y urbano",
+          "start": 146693,
+          "end": 148154,
+          "token_count": 365
+        },
+        {
+          "first": 502,
+          "last": 506,
+          "label": "Movilidad del cuidado y planificación de viviendas y ciudades",
+          "start": 148154,
+          "end": 150382,
+          "token_count": 556
+        },
+        {
+          "first": 507,
+          "last": 507,
+          "label": "Diseño participativo de tecnologías asistenciales para mayores",
+          "start": 150382,
+          "end": 151741,
+          "token_count": 321
+        },
+        {
+          "first": 508,
+          "last": 508,
+          "label": "Seguridad del automóvil y representación corporal en las pruebas",
+          "start": 151741,
+          "end": 152963,
+          "token_count": 305
+        },
+        {
+          "first": 509,
+          "last": 509,
+          "label": "Participación de las mujeres en infraestructuras de agua y saneamiento",
+          "start": 152963,
+          "end": 154221,
+          "token_count": 324
+        },
+        {
+          "first": 510,
+          "last": 510,
+          "label": "Accesibilidad e información para pasajeros aéreos con dependientes",
+          "start": 154221,
+          "end": 155754,
+          "token_count": 387
+        },
+        {
+          "first": 511,
+          "last": 511,
+          "label": "Sesgos de género en la traducción automática",
+          "start": 155754,
+          "end": 156872,
+          "token_count": 267
+        },
+        {
+          "first": 512,
+          "last": 512,
+          "label": "Seguridad urbana y tecnologías contra la violencia de género",
+          "start": 156872,
+          "end": 157660,
+          "token_count": 190
+        },
+        {
+          "first": 513,
+          "last": 526,
+          "label": "Competencias transversales de género en Ingeniería y Arquitectura",
+          "start": 157660,
+          "end": 159507,
+          "token_count": 462
+        },
+        {
+          "first": 527,
+          "last": 534,
+          "label": "Necesidades de las personas y variables de género en proyectos técnicos",
+          "start": 159507,
+          "end": 160436,
+          "token_count": 225
+        },
+        {
+          "first": 535,
+          "last": 539,
+          "label": "Resultados de aprendizaje en Arquitectura, Construcción y Civil",
+          "start": 160436,
+          "end": 161239,
+          "token_count": 198
+        },
+        {
+          "first": 540,
+          "last": 546,
+          "label": "Resultados de aprendizaje en Tecnologías Industriales",
+          "start": 161239,
+          "end": 162569,
+          "token_count": 325
+        },
+        {
+          "first": 547,
+          "last": 552,
+          "label": "Resultados de aprendizaje en Telecomunicaciones e Informática",
+          "start": 162569,
+          "end": 163263,
+          "token_count": 168
+        },
+        {
+          "first": 553,
+          "last": 558,
+          "label": "Resultados de aprendizaje en Agricultura, Forestal y Pesca",
+          "start": 163263,
+          "end": 164013,
+          "token_count": 185
+        },
+        {
+          "first": 559,
+          "last": 629,
+          "label": "Referencias bibliográficas citadas, conservadas en su orden original",
+          "start": 164013,
+          "end": 175887,
+          "token_count": 3352
+        },
+        {
+          "first": 630,
+          "last": 644,
+          "label": "Recursos docentes y guías generales para incorporar género al currículo",
+          "start": 175887,
+          "end": 177414,
+          "token_count": 462
+        },
+        {
+          "first": 645,
+          "last": 657,
+          "label": "Herramientas y bancos de recursos para docencia e investigación",
+          "start": 177414,
+          "end": 179323,
+          "token_count": 575
+        },
+        {
+          "first": 658,
+          "last": 667,
+          "label": "Guías y materiales de universidades y redes docentes",
+          "start": 179323,
+          "end": 181210,
+          "token_count": 581
+        },
+        {
+          "first": 668,
+          "last": 679,
+          "label": "Herramientas de diagnóstico, glosarios y diseño curricular",
+          "start": 181210,
+          "end": 182717,
+          "token_count": 435
+        },
+        {
+          "first": 680,
+          "last": 689,
+          "label": "Manuales, tesauros y herramientas de género en investigación",
+          "start": 182717,
+          "end": 184586,
+          "token_count": 509
+        },
+        {
+          "first": 690,
+          "last": 692,
+          "label": "Glosario: acción positiva",
+          "start": 184586,
+          "end": 185329,
+          "token_count": 184
+        },
+        {
+          "first": 693,
+          "last": 694,
+          "label": "Glosario: androcentrismo y ceguera de género",
+          "start": 185329,
+          "end": 186218,
+          "token_count": 230
+        },
+        {
+          "first": 695,
+          "last": 696,
+          "label": "Glosario: coeducación y currículo oculto",
+          "start": 186218,
+          "end": 187226,
+          "token_count": 259
+        },
+        {
+          "first": 697,
+          "last": 700,
+          "label": "Glosario: discriminación, diversidad y equidad",
+          "start": 187226,
+          "end": 188994,
+          "token_count": 445
+        },
+        {
+          "first": 701,
+          "last": 703,
+          "label": "Glosario: estereotipos, igualdad e interseccionalidad",
+          "start": 188994,
+          "end": 190466,
+          "token_count": 362
+        },
+        {
+          "first": 704,
+          "last": 707,
+          "label": "Glosario: neutralidad normativa, paridad y perspectiva de género",
+          "start": 190466,
+          "end": 192292,
+          "token_count": 485
+        },
+        {
+          "first": 708,
+          "last": 709,
+          "label": "Glosario: roles de género y trabajo de cuidados",
+          "start": 192292,
+          "end": 193917,
+          "token_count": 401
+        },
+        {
+          "first": 710,
+          "last": 712,
+          "label": "Glosario: transversalidad, violencia y visibilización",
+          "start": 193917,
+          "end": 195667,
+          "token_count": 448
+        },
+        {
+          "first": 713,
+          "last": 721,
+          "label": "Fuentes institucionales y educativas del glosario",
+          "start": 195667,
+          "end": 196555,
+          "token_count": 293
+        },
+        {
+          "first": 722,
+          "last": 729,
+          "label": "Fuentes normativas y documentales del glosario",
+          "start": 196555,
+          "end": 197305,
+          "token_count": 256
+        },
+        {
+          "first": 730,
+          "last": 741,
+          "label": "Autoría y composición del grupo de trabajo",
+          "start": 197305,
+          "end": 197989,
+          "token_count": 209
+        }
+      ],
+      "parameters": {
+        "target_tokens": 600,
+        "limit_tokens": 600,
+        "hard_limit": true,
+        "overlap_tokens": 80
+      },
+      "metrics": {
+        "count": 140,
+        "min_tokens": 125,
+        "mean_tokens": 371.8,
+        "max_tokens": 600,
+        "indexed_tokens": 52048,
+        "source_tokens": 50768,
+        "repeated_characters": 4861,
+        "covered_characters": 197989,
+        "redundancy_percent": 2.4,
         "coverage_percent": 100.0,
         "over_limit_count": 0
       }
@@ -9747,5 +14378,6 @@
     "source_name": "aqu.md",
     "source_description": "Markdown aportado por el usuario. Se conserva íntegro, incluidos metadatos, índice, tablas, notas y bibliografía. No se convierte de nuevo el PDF.",
     "extraction_note": "Se respetan los encabezados reales del Markdown; el bloque YAML inicial es metadato, no una sección. Las separaciones por líneas en blanco no siempre coinciden con párrafos editoriales: una tabla larga puede ser un solo bloque."
-  }
+  },
+  "semantic_decisions_available": true
 }

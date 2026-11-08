@@ -1,0 +1,643 @@
+{
+  "schema_version": "1.0",
+  "markdown_sha256": "c78423fec065ba2c985bd1291777fbc028151603651ee8f143ee85776b0c7c3a",
+  "created_at": "2026-11-08",
+  "run": "aqu-chatgpt-semantic-2026-11-08",
+  "model": null,
+  "producer": "ChatGPT: análisis del agente LLM en esta conversación",
+  "execution_mode": "conversation_llm",
+  "input_scope": "Texto íntegro de los 742 bloques del Markdown, leído en nueve tandas consecutivas. Las tandas de lectura no imponen fronteras de chunk.",
+  "instructions": "Lee el Markdown completo en su orden original. Agrupa bloques consecutivos por continuidad temática; detecta cambios de tema dentro de las secciones y conserva juntas las continuaciones de una idea. No reescribas, reordenes ni omitas texto. Prefiere unidades temáticas que quepan en 600 tokens, sin forzar un relleno ni separar artificialmente una unidad coherente larga (tablas, catálogos, bibliografía). Devuelve grupos exhaustivos de índices consecutivos y una etiqueta temática por grupo. El código posterior validará cobertura y subdividirá por tamaño los grupos que excedan 600, con solapamiento solo dentro de esos grupos.",
+  "limitations": "Decisiones producidas por el LLM de esta conversación, no por la API configurada ni por embeddings. El identificador exacto del modelo no está expuesto. Las etiquetas son interpretaciones del LLM y no garantizan una mejor recuperación. El ajuste al límite y los solapamientos se calculan después con reglas locales.",
+  "unitization": "blank-line-blocks-v1",
+  "unit_count": 742,
+  "config": {
+    "min_tokens": 200,
+    "target_tokens": 600,
+    "max_tokens": 600,
+    "overlap_tokens": 80,
+    "tokenizer": "cl100k_base"
+  },
+  "groups": [
+    {
+      "first": 0,
+      "last": 14,
+      "label": "Identificación, edición y licencia del documento"
+    },
+    {
+      "first": 15,
+      "last": 39,
+      "label": "Índice y mapa de contenidos"
+    },
+    {
+      "first": 40,
+      "last": 43,
+      "label": "Igualdad de género y responsabilidad social universitaria"
+    },
+    {
+      "first": 44,
+      "last": 44,
+      "label": "Elaboración y aprobación del marco por AQU Catalunya"
+    },
+    {
+      "first": 45,
+      "last": 50,
+      "label": "Destinatarios, finalidad y organización del marco"
+    },
+    {
+      "first": 51,
+      "last": 52,
+      "label": "Justificación del marco normativo"
+    },
+    {
+      "first": 53,
+      "last": 57,
+      "label": "Compromisos internacionales: CEDAW y formación en igualdad"
+    },
+    {
+      "first": 58,
+      "last": 60,
+      "label": "Igualdad en el derecho y la investigación de la Unión Europea"
+    },
+    {
+      "first": 61,
+      "last": 61,
+      "label": "Competencias de igualdad en el Espacio Europeo de Educación Superior"
+    },
+    {
+      "first": 62,
+      "last": 64,
+      "label": "Normativa estatal sobre igualdad, universidades y ciencia"
+    },
+    {
+      "first": 65,
+      "last": 66,
+      "label": "Principios de igualdad en la normativa catalana"
+    },
+    {
+      "first": 67,
+      "last": 67,
+      "label": "Obligaciones curriculares y diversidad sexual en las leyes catalanas"
+    },
+    {
+      "first": 68,
+      "last": 70,
+      "label": "Aplicación del marco a las áreas de conocimiento"
+    },
+    {
+      "first": 71,
+      "last": 71,
+      "label": "Incorporación de género al ciclo de evaluación VSMA"
+    },
+    {
+      "first": 72,
+      "last": 75,
+      "label": "Sexo y género como categorías para analizar la docencia"
+    },
+    {
+      "first": 76,
+      "last": 79,
+      "label": "Definiciones de sexo y género"
+    },
+    {
+      "first": 80,
+      "last": 84,
+      "label": "Interseccionalidad: desigualdades combinadas y vulnerabilidad al VIH"
+    },
+    {
+      "first": 85,
+      "last": 86,
+      "label": "Beneficios de la perspectiva de género para la calidad docente"
+    },
+    {
+      "first": 87,
+      "last": 88,
+      "label": "Ceguera de género y sesgos en los contenidos"
+    },
+    {
+      "first": 89,
+      "last": 92,
+      "label": "Currículo oculto, referentes e interacciones en el aula"
+    },
+    {
+      "first": 93,
+      "last": 93,
+      "label": "Sesgos en las metodologías docentes y de evaluación"
+    },
+    {
+      "first": 94,
+      "last": 94,
+      "label": "Género en la elección de estudios y la cultura profesional"
+    },
+    {
+      "first": 95,
+      "last": 100,
+      "label": "Integración curricular y competencia transversal en género"
+    },
+    {
+      "first": 101,
+      "last": 104,
+      "label": "Relevancia del género en Humanidades y Ciencias Sociales"
+    },
+    {
+      "first": 105,
+      "last": 105,
+      "label": "Coeducación y análisis del sexismo en Educación"
+    },
+    {
+      "first": 106,
+      "last": 109,
+      "label": "Aplicación de la perspectiva de género a Ciencias, Salud y Tecnología"
+    },
+    {
+      "first": 110,
+      "last": 111,
+      "label": "Género en los fundamentos de la disciplina y el diseño de investigaciones"
+    },
+    {
+      "first": 112,
+      "last": 115,
+      "label": "Formulación de preguntas y aplicación del género a proyectos y TFG"
+    },
+    {
+      "first": 116,
+      "last": 124,
+      "label": "Bibliografía equilibrada, formación docente y síntesis de la competencia"
+    },
+    {
+      "first": 125,
+      "last": 129,
+      "label": "Diagnóstico de la institución, el centro y el profesorado"
+    },
+    {
+      "first": 130,
+      "last": 133,
+      "label": "Indicadores de género vinculados a verificación y acreditación"
+    },
+    {
+      "first": 134,
+      "last": 159,
+      "label": "Catálogo de áreas y subáreas para aplicar la competencia de género"
+    },
+    {
+      "first": 160,
+      "last": 162,
+      "label": "Invisibilidad de las mujeres en el canon de Artes y Humanidades"
+    },
+    {
+      "first": 163,
+      "last": 166,
+      "label": "Reinterpretación histórica de contribuciones y relaciones de género"
+    },
+    {
+      "first": 167,
+      "last": 168,
+      "label": "Símbolos, subjetividad y modelos de feminidad y masculinidad"
+    },
+    {
+      "first": 169,
+      "last": 171,
+      "label": "Androcentrismo y sesgos de la historiografía"
+    },
+    {
+      "first": 172,
+      "last": 173,
+      "label": "Invisibilidad y reconocimiento desigual en arte y literatura"
+    },
+    {
+      "first": 174,
+      "last": 179,
+      "label": "Crítica feminista de la abstracción filosófica y del individuo liberal"
+    },
+    {
+      "first": 180,
+      "last": 180,
+      "label": "Sesgos de género en los relatos y los medios de comunicación"
+    },
+    {
+      "first": 181,
+      "last": 182,
+      "label": "Representación artística de la violencia de género"
+    },
+    {
+      "first": 183,
+      "last": 195,
+      "label": "Competencias comunes de investigación y análisis de género en Humanidades"
+    },
+    {
+      "first": 196,
+      "last": 203,
+      "label": "Resultados de aprendizaje: historia, trabajo femenino y producción cultural"
+    },
+    {
+      "first": 204,
+      "last": 209,
+      "label": "Resultados de aprendizaje: crítica filosófica, epistemología y música"
+    },
+    {
+      "first": 210,
+      "last": 216,
+      "label": "Lengua y literatura como construcción de identidades y roles"
+    },
+    {
+      "first": 217,
+      "last": 222,
+      "label": "Comunicación no sexista, canon literario y traducción"
+    },
+    {
+      "first": 223,
+      "last": 230,
+      "label": "Resultados de aprendizaje: iconografía y contextualización del arte"
+    },
+    {
+      "first": 231,
+      "last": 236,
+      "label": "Resultados de aprendizaje: cultura visual, patrimonio y diseño"
+    },
+    {
+      "first": 237,
+      "last": 240,
+      "label": "Género como categoría y proceso en Ciencias Sociales"
+    },
+    {
+      "first": 241,
+      "last": 243,
+      "label": "Desigualdades materiales y relaciones de poder: ejemplo de Letherby"
+    },
+    {
+      "first": 244,
+      "last": 248,
+      "label": "Androcentrismo y sesgos en Economía y Antropología"
+    },
+    {
+      "first": 249,
+      "last": 251,
+      "label": "Género en criminalidad, participación política y protección social"
+    },
+    {
+      "first": 252,
+      "last": 253,
+      "label": "Sesgos en planificación urbana y decisiones judiciales"
+    },
+    {
+      "first": 254,
+      "last": 256,
+      "label": "Representación mediática y bases sociales de la violencia de género"
+    },
+    {
+      "first": 257,
+      "last": 270,
+      "label": "Competencias transversales de género en Ciencias Sociales"
+    },
+    {
+      "first": 271,
+      "last": 279,
+      "label": "Resultados de aprendizaje en Economía, Empresa y Turismo"
+    },
+    {
+      "first": 280,
+      "last": 287,
+      "label": "Resultados de aprendizaje en empleo, igualdad legal y justicia penal"
+    },
+    {
+      "first": 288,
+      "last": 294,
+      "label": "Políticas públicas, instituciones y derechos de las mujeres"
+    },
+    {
+      "first": 295,
+      "last": 302,
+      "label": "Comunicación, documentación y tratamiento informativo no sexista"
+    },
+    {
+      "first": 303,
+      "last": 306,
+      "label": "Formación en género para profesionales educativos y de intervención social"
+    },
+    {
+      "first": 307,
+      "last": 311,
+      "label": "Responsabilidad profesional y revisión de los planes de estudio"
+    },
+    {
+      "first": 312,
+      "last": 314,
+      "label": "Desigualdades persistentes y currículo oculto en Educación"
+    },
+    {
+      "first": 315,
+      "last": 318,
+      "label": "Coeducación: definición, prevención de violencia y marco legal"
+    },
+    {
+      "first": 319,
+      "last": 331,
+      "label": "Componentes prácticos de la coeducación"
+    },
+    {
+      "first": 332,
+      "last": 344,
+      "label": "Resultados transversales de aprendizaje para formar educadores"
+    },
+    {
+      "first": 345,
+      "last": 350,
+      "label": "Diagnóstico de sesgos y transformación del entorno escolar"
+    },
+    {
+      "first": 351,
+      "last": 356,
+      "label": "Recursos y metodologías para sensibilizar y prevenir violencia"
+    },
+    {
+      "first": 357,
+      "last": 366,
+      "label": "Resultados de aprendizaje de Educación Infantil, Primaria y Pedagogía"
+    },
+    {
+      "first": 367,
+      "last": 373,
+      "label": "Resultados de aprendizaje en Intervención Social"
+    },
+    {
+      "first": 374,
+      "last": 385,
+      "label": "Competencias del máster de formación del profesorado"
+    },
+    {
+      "first": 386,
+      "last": 388,
+      "label": "Pertinencia del género y vocaciones en Ciencias"
+    },
+    {
+      "first": 389,
+      "last": 392,
+      "label": "El estereotipo del genio masculino y la construcción colectiva de la Física"
+    },
+    {
+      "first": 393,
+      "last": 400,
+      "label": "Efecto Matilda y agenda profesional para la igualdad en Física"
+    },
+    {
+      "first": 401,
+      "last": 403,
+      "label": "Falsa neutralidad científica y riesgos químicos diferenciados"
+    },
+    {
+      "first": 404,
+      "last": 406,
+      "label": "Estereotipos en el aprendizaje matemático y las metáforas de la Física"
+    },
+    {
+      "first": 407,
+      "last": 407,
+      "label": "Género, diversidad social y evaluación ambiental"
+    },
+    {
+      "first": 408,
+      "last": 410,
+      "label": "Sexo en la experimentación biológica y en el análisis estadístico"
+    },
+    {
+      "first": 411,
+      "last": 423,
+      "label": "Competencias comunes de análisis de género en Ciencias"
+    },
+    {
+      "first": 424,
+      "last": 431,
+      "label": "Resultados de aprendizaje en Ciencias Biológicas y de la Tierra"
+    },
+    {
+      "first": 432,
+      "last": 438,
+      "label": "Resultados de aprendizaje en Ciencias Experimentales y Matemáticas"
+    },
+    {
+      "first": 439,
+      "last": 445,
+      "label": "Competencia sanitaria en género e interacción entre sexo y salud"
+    },
+    {
+      "first": 446,
+      "last": 449,
+      "label": "Diferencias epidemiológicas, cuidados y transversalización curricular"
+    },
+    {
+      "first": 450,
+      "last": 453,
+      "label": "Definición y mecanismos del sesgo de género sanitario"
+    },
+    {
+      "first": 454,
+      "last": 455,
+      "label": "Sesgos en pruebas diagnósticas y expresión clínica"
+    },
+    {
+      "first": 456,
+      "last": 457,
+      "label": "Representación de las mujeres y validez de los ensayos clínicos"
+    },
+    {
+      "first": 458,
+      "last": 458,
+      "label": "Género, trabajo rural y riesgo de zoonosis"
+    },
+    {
+      "first": 459,
+      "last": 462,
+      "label": "Sesgos en salud mental, psicofármacos y rehabilitación"
+    },
+    {
+      "first": 463,
+      "last": 464,
+      "label": "Etiquetas de enfermería y atribución de los cuidados"
+    },
+    {
+      "first": 465,
+      "last": 467,
+      "label": "Violencia de género: limitaciones de las inferencias causales"
+    },
+    {
+      "first": 468,
+      "last": 468,
+      "label": "Sesgos de información y selección al estudiar violencia de género"
+    },
+    {
+      "first": 469,
+      "last": 481,
+      "label": "Competencias comunes de investigación y género en Salud"
+    },
+    {
+      "first": 482,
+      "last": 487,
+      "label": "Determinantes sociales e interseccionales de las desigualdades de salud"
+    },
+    {
+      "first": 488,
+      "last": 491,
+      "label": "Diagnóstico, atención y comunicación clínica sensibles al género"
+    },
+    {
+      "first": 492,
+      "last": 496,
+      "label": "Evaluación de equidad sanitaria, políticas y protocolos de violencia"
+    },
+    {
+      "first": 497,
+      "last": 501,
+      "label": "Género como criterio de validez del diseño tecnológico y urbano"
+    },
+    {
+      "first": 502,
+      "last": 506,
+      "label": "Movilidad del cuidado y planificación de viviendas y ciudades"
+    },
+    {
+      "first": 507,
+      "last": 507,
+      "label": "Diseño participativo de tecnologías asistenciales para mayores"
+    },
+    {
+      "first": 508,
+      "last": 508,
+      "label": "Seguridad del automóvil y representación corporal en las pruebas"
+    },
+    {
+      "first": 509,
+      "last": 509,
+      "label": "Participación de las mujeres en infraestructuras de agua y saneamiento"
+    },
+    {
+      "first": 510,
+      "last": 510,
+      "label": "Accesibilidad e información para pasajeros aéreos con dependientes"
+    },
+    {
+      "first": 511,
+      "last": 511,
+      "label": "Sesgos de género en la traducción automática"
+    },
+    {
+      "first": 512,
+      "last": 512,
+      "label": "Seguridad urbana y tecnologías contra la violencia de género"
+    },
+    {
+      "first": 513,
+      "last": 526,
+      "label": "Competencias transversales de género en Ingeniería y Arquitectura"
+    },
+    {
+      "first": 527,
+      "last": 534,
+      "label": "Necesidades de las personas y variables de género en proyectos técnicos"
+    },
+    {
+      "first": 535,
+      "last": 539,
+      "label": "Resultados de aprendizaje en Arquitectura, Construcción y Civil"
+    },
+    {
+      "first": 540,
+      "last": 546,
+      "label": "Resultados de aprendizaje en Tecnologías Industriales"
+    },
+    {
+      "first": 547,
+      "last": 552,
+      "label": "Resultados de aprendizaje en Telecomunicaciones e Informática"
+    },
+    {
+      "first": 553,
+      "last": 558,
+      "label": "Resultados de aprendizaje en Agricultura, Forestal y Pesca"
+    },
+    {
+      "first": 559,
+      "last": 629,
+      "label": "Referencias bibliográficas citadas, conservadas en su orden original"
+    },
+    {
+      "first": 630,
+      "last": 644,
+      "label": "Recursos docentes y guías generales para incorporar género al currículo"
+    },
+    {
+      "first": 645,
+      "last": 657,
+      "label": "Herramientas y bancos de recursos para docencia e investigación"
+    },
+    {
+      "first": 658,
+      "last": 667,
+      "label": "Guías y materiales de universidades y redes docentes"
+    },
+    {
+      "first": 668,
+      "last": 679,
+      "label": "Herramientas de diagnóstico, glosarios y diseño curricular"
+    },
+    {
+      "first": 680,
+      "last": 689,
+      "label": "Manuales, tesauros y herramientas de género en investigación"
+    },
+    {
+      "first": 690,
+      "last": 692,
+      "label": "Glosario: acción positiva"
+    },
+    {
+      "first": 693,
+      "last": 694,
+      "label": "Glosario: androcentrismo y ceguera de género"
+    },
+    {
+      "first": 695,
+      "last": 696,
+      "label": "Glosario: coeducación y currículo oculto"
+    },
+    {
+      "first": 697,
+      "last": 700,
+      "label": "Glosario: discriminación, diversidad y equidad"
+    },
+    {
+      "first": 701,
+      "last": 703,
+      "label": "Glosario: estereotipos, igualdad e interseccionalidad"
+    },
+    {
+      "first": 704,
+      "last": 707,
+      "label": "Glosario: neutralidad normativa, paridad y perspectiva de género"
+    },
+    {
+      "first": 708,
+      "last": 709,
+      "label": "Glosario: roles de género y trabajo de cuidados"
+    },
+    {
+      "first": 710,
+      "last": 712,
+      "label": "Glosario: transversalidad, violencia y visibilización"
+    },
+    {
+      "first": 713,
+      "last": 721,
+      "label": "Fuentes institucionales y educativas del glosario"
+    },
+    {
+      "first": 722,
+      "last": 729,
+      "label": "Fuentes normativas y documentales del glosario"
+    },
+    {
+      "first": 730,
+      "last": 741,
+      "label": "Autoría y composición del grupo de trabajo"
+    }
+  ]
+}

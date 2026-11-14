@@ -8,7 +8,7 @@ Portal de demostraciones interactivas para docencia. La navegación se organiza 
 
 - **[Teoría de la Información](teoria-de-la-informacion/index.html):** conserva el índice de TI_GCED y sus seis recursos sobre circunferencia unidad, periodicidad espectral, aliasing, cuantificación, series de Fourier y bins de la DFT. Incorpora la demostración de polos, ceros y respuesta en frecuencia.
 - **[Inteligencia artificial](inteligencia-artificial/index.html):** simulador interactivo de RAG, comparación de seis estrategias de chunking sobre un documento de AQU Catalunya (`chunking/index.html`) y vídeos sobre la ventana de contexto, el concepto de RAG y LLM Wiki (`llm_wiki_explicado.mp4`).
-- **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico y coexistencia (`EspectroyRedes.html`), demostración de QAM, ruido y regiones de decisión (`QAM, ruido y regiones de decisión.html`), comparación de la propagación de nueve bandas de radiofrecuencia (`Bandas de radiofrecuencia_ cómo se propaga cada una.html`), animación de espectro ensanchado por secuencia directa (`Espectro ensanchado por secuencia directa.html`), y vídeo narrado sobre cómo las ondas atraviesan las paredes (`ondas-atraviesan-paredes.html`).
+- **[Redes inalámbricas](redes-inalambricas/index.html):** laboratorio de espectro doméstico y coexistencia (`EspectroyRedes.html`), demostración de QAM, ruido y regiones de decisión (`QAM, ruido y regiones de decisión.html`), comparación de la propagación de nueve bandas de radiofrecuencia (`Bandas de radiofrecuencia_ cómo se propaga cada una.html`), animación de espectro ensanchado por secuencia directa (`Espectro ensanchado por secuencia directa.html`) y vídeos sobre diagramas de radiación (`diagramas-de-radiacion.html`) y cómo las ondas atraviesan las paredes (`ondas-atraviesan-paredes.html`).
 
 ## Estructura
 
@@ -53,8 +53,5 @@ Antes de enviar cambios, ejecuta `git diff --check`. Recorre portada, índices y
 
 Añade cada nueva demo al índice de su apartado. Describe en la solicitud de cambios el comportamiento modificado, el navegador y las comprobaciones realizadas; adjunta capturas si hay cambios visuales.
 
-## Procedencia y licencia
-
-Los seis recursos y el índice de Teoría de la Información se importaron de [TI_GCED](https://github.com/cjescudero/TI_GCED), revisión `cdfb2023ed7bb4c68bf3472a6b24a259681d5b4b`. El repositorio y sitio originales permanecen independientes. Se conserva la presentación y el orden del índice, añadiendo polos y ceros y el regreso a la portada; los enlaces de navegación y licencia se adaptan a su nueva ubicación.
 
 Copyright © 2025–2026 Carlos J. Escudero. Distribuido bajo la [licencia MIT](LICENSE).
